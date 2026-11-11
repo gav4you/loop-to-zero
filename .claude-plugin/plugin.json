@@ -1,0 +1,10 @@
+{
+  "name": "loop-to-zero",
+  "description": "Verify and fix a body of items in repeated rounds until one full pass finds zero wrong, learning from each correction.",
+  "version": "0.1.0",
+  "author": { "name": "gav4you" },
+  "license": "MIT",
+  "homepage": "https://github.com/gav4you/loop-to-zero",
+  "repository": "https://github.com/gav4you/loop-to-zero",
+  "keywords": ["skill", "verification", "review", "audit", "documentation"]
+}

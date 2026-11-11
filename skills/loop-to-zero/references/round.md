@@ -1,0 +1,231 @@
+# Each round in detail
+
+Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.md`).
+
+## 1. Start
+- **Hold the writer lock:** `lock acquire` (`--session auto` with the guard hook; without it, an id of your
+  own). Only one session writes to a loop. A new session takes over with `lock release` by the old session (or
+  with the id `S/writer.lock` names), then `lock acquire`.
+- **Re-read both lessons files and `S/classes.md`.** In solo mode, once the snapshot and queue below are made,
+  read each chunk in its own session after a context reset, with that chunk's filled reader brief (`r<R>/briefs/<slot>.md`) as the first prompt, chunks in
+  order, not `S/HANDOFF.md`, which leads to `loop.md`. After the last chunk's session, the writer's steps start
+  after another context reset, from `S/HANDOFF.md` (the briefs' limits end with the reading sessions). Run the handoff's
+  resume steps and re-read the lessons only after step 2's reading, before step 3, so the reading stays cold.
+- **Snapshot:** `snapshot` writes `snapshot.jsonl` and its hash, copies `S/classes.md` into the round folder
+  (readers use that copy all round), writes `list.json`, and cuts the list into `chunks.json` (about 70 items
+  each, on window boundaries; positions are counted from 1). It refuses once anything in the round has been
+  rendered. Later tools refuse a snapshot whose hash no longer matches.
+- **Queue:** each chunk's readers are one job each, queued together with `queue init`
+  (`references/queue-and-outages.md`).
+- **Canaries, if the owner approved them** (never in solo mode, where the writer is the only reader):
+  `canary plan` places one or two planted items per reader in their windows only (see "Canaries" below).
+
+## 2. Read
+- Readers read cold and cover every item, in the owner's mode (`references/modes.md`), with the briefs in
+  `references/briefs.md`.
+- No item edits are committed in any unit until the round's reading is done. Decision-log entries may be
+  committed at any time; the guard allows a commit that holds no item files.
+- **Read-only work may run during the reading,** in agent mode: confirming wrongs already reported,
+  spot-checks, sweeps to find hits, and drafting fixes in the round's `drafts/<id>.md` (applied after the
+  reading). No item file is edited or committed. During a known limit wait this work spends the same limit: save
+  state first, then only confirm the wrongs already reported (reading the files the confirm checks need, such as
+  earlier fixlogs, is part of that). Spot-checks, sweeps, drafts and the search for a refuted universal's other refuters (`references/fixing.md`, "The
+  refuter") wait for the reset; a local tool run you
+  don't read hit by hit (`ltz queue status`, `ltz sweep --count`) is fine.
+  Whoever is reading (the reader agents, or you in
+  solo mode) finishes the current window before stopping or turning to other work, so positions end on multiples of
+  the window size. In solo mode, run sweeps only after your own reading
+  is done, so their hits don't colour items you haven't read yet. A count-only check (`ltz sweep` hit counts,
+  not the hits) is allowed mid-read. If a sweep did show you unread items, note them in the retro and re-read
+  them after a context reset, as a re-run of their range (`references/modes.md`).
+- **Reading order.** Readers keep list order, so chunks stay contiguous.
+- A reader stopped by a limit, or stopped early with a resume position, is continued. Its range still counts
+  as part of the pass.
+
+## 3. Verify
+`references/briefs.md`, "Verifying the readers' work":
+- coverage, computed from the files;
+- confirm every wrong in the union with the confirm checks in `references/fixing.md`, and the unit's mapped
+  outside findings that no reader marked (`foundBy: "audit"`; `references/setup.md`, "Existing outside findings");
+- spot-check 10 ok items per reader: 5 at random, and 5 weighted toward items an earlier fix changed and
+  toward classes that produced wrongs;
+- handle this unit's open lines in `S/cross-unit-edits.txt` with verdict "deferred" (hits another unit's round
+  logged for it, and owed re-judges): judge each with the confirm checks, add a hit confirmed wrong that no reader marked to
+  `confirmed.json` (`"foundBy": "sweep"`), make any reverts they call for in step 4, and mark each settled (round, date);
+- write `confirmed.json` (the find list), then `record` writes `report.json` and `measure.json`.
+
+## 4. Fix
+Follow `references/fixing.md`:
+1. sweep;
+2. fix the seed and the hits;
+3. fix the dependents;
+4. re-read;
+5. `diffcheck`;
+6. commit.
+
+Add the sweep's confirmed finds, and finds from a whole-unit re-read, to `confirmed.json`
+(`"foundBy": "sweep"`) as each is confirmed, before its fix. After the commit, re-run `record`, so the
+measure counts them as found by none.
+
+## 5. Check the fixes
+- A cold fix checker reads every changed item (cross-unit edits included), and every item the new text names.
+  Build its `--list` input file from the changed items (with `changed`, each edited field's `old` text included) plus the named items (without it).
+- Fix its real wrongs as a follow-up commit, as `references/fixing.md` says (a find in old text is swept first), and
+  check that follow-up too, until a check returns 0. Its finds in
+  this unit's old text go into `confirmed.json` (`"foundBy": "fixcheck"`). Re-run `record` after every fix check, a clean one included: it reads the checker's
+  result files (the fix-check counts, and any "ruled:" ok). A find in another
+  unit's item is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
+  policy).
+- If a stronger reviewer is available (an advisor, say), have it re-judge the find list and the near-misses in
+  `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
+  fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`. The writer
+  adds to `boundaries.md` in step 3: an
+  item confirmed ok after real doubt (a near-miss), with one line on why.
+
+## 6. Learn
+The retro, as in `references/learning.md`.
+
+## 7. Report
+- Update `S/loop.md` (trend, cost, Next step) and `S/HANDOFF.md`, and the runtime's memory if there is one
+  (pointers only: it can load into every session, readers' and fix checkers' included).
+  Commit a checkpoint of `S/` if it is under version control, or copy it to a dated backup if not (`references/state-template.md`, "Checkpoints").
+- Report to the owner in the order of `references/owner-asks.md` ("Reporting a round"). It is information,
+  not a stop.
+
+## 8. Close or continue
+The unit closes when one pass meets all of these:
+- every item was read at full depth (a filtered, tiered or partly skimmed pass never counts);
+- 0 confirmed wrongs;
+- no `boundary-silent` or `ruled-wording` `pending-owner` verdicts (no close setting lets these through); and no `rule-meaning` ones, unless the
+  owner decided (a process decision) that they don't block a close (see the closed statuses below);
+- no open defect for the unit in `S/defects.md`, if the owner decided that defects block a close (check the file:
+  readers mark ok an item that describes a code fault accurately, so the round's verdicts can miss one);
+- none of its items edited after the pass read them (a past round adjusted to 0 included).
+
+**Blocked only by what a re-read can't clear.** When a pass's only blockers are `pending-owner` items, or open
+defects when `defectsBlock` is set, and nothing was edited after it was read, don't start another round:
+re-reading unchanged text can't clear a question or a defect. Wait for the owner's answer or decision. If the owner keeps the ruling (or the answer makes the item ok), the item leaves
+`pending` (a kept ruled ok goes into `ruledKept`: `references/briefs.md`) and `record` is re-run. Make any edits the answer calls for first
+(`references/fixing.md`, "Carrying a ruling into the items" and "Reverting"); then that pass counts if it still meets the conditions
+above. If the answer makes the item wrong, it is a wrong of that
+pass: fix it and continue.
+The same holds while any open owner question holds drafted fixes (such as an override question or a ruling-level lead):
+a new round would read text known to be wrong. Wait for the answer, then apply the drafts (or close as the owner
+chose).
+A defect marked closed in `S/defects.md` by an owner decision no longer blocks, though that pass's `zeroBlockers`
+may still count it. If a later round finds it again at the same pin, it stays closed: list the id in `confirmed.json`'s
+`defects` as before, and don't log a new open entry without a new owner decision.
+
+**Closed statuses:**
+- `closed`;
+- `closed-owner-questions-open`, if the owner decided that owner questions (`rule-meaning`) don't block and the
+  closing pass left `rule-meaning` items open (with none, the status is `closed`). If a later answer makes one of
+  its items wrong, log that as a lead (SKILL.md, "Cross-unit effects"). When the last of them is
+  answered (`S/owner-questions.md` shows each one's decision id), the status becomes `closed`; if the unit is `closed-leads-pending` or `final-check` by then, its "was"
+  status does;
+- `closed-leads-pending`, once a lead is logged against the closed unit. It stays that way until the
+  final targeted check settles the lead, even one that has since become moot. `loop.md`'s Units line keeps the closed status it returns to ("was
+  <status>", at first the status it replaced);
+- `closed-known-wrongs`, if the owner chose to close by an override (SKILL.md, "Owner
+  overrides"). It is never reported as clean;
+- `closed-by-stopping-rule`, if the owner approved a stopping rule and it was met. It is reported as such,
+  never as a zero. A unit that closes with a confirmed wrong still unfixed, or over a dropped range, is
+  `closed-known-wrongs` instead (SKILL.md, "Owner overrides"), whatever rule closed it.
+
+`final-check` is not a closed status: the tools treat it as open. It marks a closed unit reopened, with the
+owner's OK, for the final targeted check. The check runs as the unit's next round, F (a round that so far holds only a baseline snapshot is taken again as F): `ltz snapshot <S> <unit> <F>`
+before any edit, then the fixes, `diffcheck` and the fix checker as usual. Afterwards, take a new baseline with
+`ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the final-check edits. Then set the unit back to the
+closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
+`closed-leads-pending` itself). If round F confirmed any wrong, the unit is reported with its adjusted closing
+count (`0 (adj n, ...)`, fixed in the final check), never as a clean zero. A `closed-known-wrongs` unit whose
+known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
+(date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
+- **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`: queue just the chunks that cover
+  it, read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with no dropped range, `init` alone writes an empty
+  queue). Leads are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). `ltz record` accepts a `final-check`
+  unit with chunks left unqueued, and reports them as not read.
+- **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
+  that closed with them. Apply the held draft (re-checked against today's bar), log it in round F's fixlog, and
+  fix-check it.
+- **Mark each lead settled** in `closed-unit-leads.txt`, and each known wrong and dropped range in `known-wrongs.txt` (round F, date). If new leads are logged
+  against a unit after its round F (by round F's sweeps or otherwise), the final targeted check repeats for those
+  units, with the owner's OK, until none is open.
+- **At the loop's end** (the owner's call), report every unit's status as it stands, and turn the guard off for
+  the project if it is on (`scripts/hooks/README.md`, "Enabling it for one project").
+
+Before a `closed-by-stopping-rule` or `closed-known-wrongs` status is set on a unit with fixes committed after its
+closing round was read, take a baseline with `ltz snapshot <S> <unit> <R+1>`, so `diffcheck` doesn't flag them as
+edits to a closed unit. When the unit closes, set its status in `S/loop.md` and `S/config.json`, checkpoint `S/` again as in step 7,
+and tell the owner, naming any open defect for the unit (`S/defects.md`); the next unit starts as setup question 2
+decided (`references/setup.md`). Otherwise, start
+the next round (or wait; see "Blocked only by what a re-read can't clear" above).
+
+**A round that can no longer reach zero still finishes its reading.** Full coverage feeds the fixes and the
+measure.
+
+A reader's range dropped with the owner's approval (queue state `dropped-by-owner`, with the decision id, `P-n`) means the
+pass was not full depth, so it cannot close the unit, unless reruns read the whole dropped tail before any of the
+unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
+
+## Between rounds only
+- **Change modes only between rounds:** readers, concurrency, a stand-in for an external reviewer, canaries,
+  freezing the bar.
+- **If a reader or reviewer becomes unavailable mid-round, wait** (`references/queue-and-outages.md`, "Limits
+  and credits"), rather than switch.
+
+There are two exceptions mid-round:
+- **A new class on an open bar.** Sweep every unit for it as soon as step 2 lets sweeps run (a count-only
+  `ltz sweep --count` may run now), and confirm its hits as any sweep's (step 4). It
+  joins `S/classes.md` for the next round's copy, and the report names it; the owner may drop it.
+- **A ruling.** It applies to this round's verdicts at once and goes into the decision log and
+  `S/classes.md` (one given in a solo reading or fix-check session, after the hand-back: `references/modes.md`). Readers
+  see it from the next round's copy.
+
+## Pending owner, defects, wishes
+- **`pending-owner`.** A verdict that turns on an open owner question, for one of the three `pendingReason`s
+  (SKILL.md, Verdicts); any other item the evidence plainly refutes stays `wrong`. Nothing it touches is edited until the
+  owner answers. The question pauses only what it touches (those verdicts, and the fixes that depend on its answer); the
+  rest of the round goes on.
+- **`defect`.** Either the evidence itself is at fault (the code, or a config that differs from the policy it
+  implements), or a requirement item states something the evidence does not meet. Log it in `S/defects.md` and
+  tell the owner. The item is not "fixed" to match the evidence. For a descriptive item, a mismatch with the
+  evidence is `wrong`; `defect` is for a fault in evidence the item describes accurately (a policy-vs-config
+  mismatch: `references/setup.md`, "Policy and config evidence").
+  A fault in the evidence (code, or a config that differs from its policy) found with a wrong item, or while
+  fixing one, goes in `S/defects.md` as its own entry naming that item; in
+  `confirmed.json` the item stays `wrong` (an id can't be both). A defect closes only by an owner decision (the
+  owner may record that the code was fixed); mark it closed in `defects.md` with the decision id.
+- **A wish raised mid-round** goes in that round's report, when the report is written.
+- **An override while reading is still open:** the status flips after the whole round's reading finishes (or after
+  the owner drops what is still unread, as its own decision).
+- **A stopping rule adopted mid-round** counts only from the owner's approval: only rounds whose snapshot is
+  taken after the approval count toward it.
+- **Switching accounts with `queue replace`** is a recovery, not a mode change (with the owner's OK).
+- **A wish is not a rule change.** An owner's wish to finish sooner ("close it tonight") doesn't change a
+  rule. Answer it with options, including "amend <rule>" and its cost.
+
+## Canaries (planted test items)
+- **What they are.** The writer writes them in a file and adds them with `ltz canary add <S> <unit> <R> --from
+  <file>`. They are known-wrong items, with the wrong varied in kind and class, plus known-ok tricky items. They are shown only inside readers' windows.
+- **What must never happen.** They are never written into the items or the evidence. If `S/` is
+  under version control, `canaries.jsonl`, every `canary-plan.json` and `canaries-src/` go in its `.gitignore`,
+  with the readers' `scratch/` folders (probe copies of the code); `ltz canary gitignore` checks the file.
+- **Scoring.** `record` scores them apart: per reader, the canaries caught and the false alarms on ok
+  canaries. They are excluded from coverage and from the estimate.
+- **Keep readers unaware.** Never tell readers about canaries. Make them look like real items, and change
+  their style each round so readers can't learn to spot them.
+  - Readers may not open `list.json`, because a canary's id is not in it.
+  - A window that holds a canary shows one item more than its range. That is a known tell: keep canaries to
+    one or two per reader.
+- **What a miss shows.** A reader who misses a canary gets a supplementary read of its range by a fresh agent,
+  as for trimmed evidence, before the pass counts. If its misses are in late windows only (it is tiring), also
+  shorten the chunks.
+
+## The remaining-wrongs estimate
+`record` estimates how many wrongs each chunk still holds, from the overlap of its two readers (the Chapman
+capture-recapture estimator: N = (n1+1)(n2+1)/(m+1) − 1).
+- **Always report it with its caveat.** The readers share a brief, so they are not independent,
+  and the estimate runs low. Wrongs found by none add to it.
+- **Use it to answer "when will it end?"** as a count of wrongs likely still unfound, never as a date. A large
+  estimate with a small overlap means more readers per chunk would pay.

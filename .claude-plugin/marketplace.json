@@ -1,0 +1,12 @@
+{
+  "name": "loop-to-zero-marketplace",
+  "description": "Marketplace for the loop-to-zero skill",
+  "owner": { "name": "gav4you" },
+  "plugins": [
+    {
+      "name": "loop-to-zero",
+      "source": "./",
+      "description": "Verify and fix a body of items in repeated rounds until one full pass finds zero wrong, learning from each correction."
+    }
+  ]
+}
