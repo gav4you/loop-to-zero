@@ -82,7 +82,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   unedited unless the owner says otherwise. It becomes a
   `pending-owner` question only if the ambiguity is in a rule.
 - **Requirement items.** If the item states a requirement and the evidence does not meet it, record the
-  verdict `defect`, log it in `S/defects.md`, and leave the item (see "Requirement items" below). A
+  verdict `defect`, work it and log it in `S/defects.md` (`references/debugging.md`), and leave the item (see
+  "Requirement items" below). A
   `defect` is not counted as a wrong.
 - **Owner questions.** An item is `pending-owner` only under SKILL.md's Verdicts exceptions (checks 1 and 2
   above). It is never counted wrong and never decided by the loop. Any other item the evidence plainly refutes

@@ -127,6 +127,7 @@ it", "park it"); a ruling decides a rule, a scope or a definition.
 | `references/modes.md` | Agents, solo or an external reviewer |
 | `references/queue-and-outages.md` | Sizing, the queue, limits, cost |
 | `references/fixing.md` | Confirm checks and fix steps |
+| `references/debugging.md` | Working a `defect`: reproduce, isolate, diagnose, propose; the `defects.md` entry |
 | `references/reading-classes.md` | The starter classes, the three lenses, the universal words |
 | `references/owner-asks.md` | Asking, recording rulings, reporting |
 | `references/state-template.md` | The state folder |
@@ -178,7 +179,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    canaries.
 2. **Read:** cold readers in the owner's mode. No item commits until the reading is done.
 3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`); spot-check
-   10 oks per reader; write the find list, then run `record`.
+   10 oks per reader; write the find list, then run `record`. Work each new `defect` through
+   `references/debugging.md`, and never edit the evidence.
 4. **Fix:** sweep, fix the seed and hits, fix dependents, re-read, re-run extract, diff check, commit. Then
    re-record the measure with the sweep's finds counted as "found by none". Finds in other units go to
    their logs, never into this unit's find list.

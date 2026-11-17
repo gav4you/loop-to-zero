@@ -188,8 +188,9 @@ There are two exceptions mid-round:
   owner answers. The question pauses only what it touches (those verdicts, and the fixes that depend on its answer); the
   rest of the round goes on.
 - **`defect`.** Either the evidence itself is at fault (the code, or a config that differs from the policy it
-  implements), or a requirement item states something the evidence does not meet. Log it in `S/defects.md` and
-  tell the owner. The item is not "fixed" to match the evidence. For a descriptive item, a mismatch with the
+  implements), or a requirement item states something the evidence does not meet. Work it through
+  `references/debugging.md` (reproduce, isolate, diagnose, propose), log it in `S/defects.md` in that file's entry
+  form, and tell the owner. The item is not "fixed" to match the evidence. For a descriptive item, a mismatch with the
   evidence is `wrong`; `defect` is for a fault in evidence the item describes accurately (a policy-vs-config
   mismatch: `references/setup.md`, "Policy and config evidence").
   A fault in the evidence (code, or a config that differs from its policy) found with a wrong item, or while

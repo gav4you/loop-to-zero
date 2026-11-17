@@ -153,8 +153,8 @@ Report, in this order:
 5. **Cost:** tokens and wall-clock time, against the estimate.
 6. **Lessons logged**, and any SKILL.md change you propose.
 7. **Open questions and defects:** every open owner question (such as `pending-owner` items, an override
-   question or a ruling-level lead), `outsideBar` items, this round's `defect` verdicts, and every open defect
-   in `S/defects.md`.
+   question or a ruling-level lead), `outsideBar` items, this round's `defect` verdicts (each with its root cause
+   and proposed fix, one line each: `references/debugging.md`), and every open defect in `S/defects.md`.
 8. **What other steps send to the report,** such as a new ruling entry's text, a class added mid-pass, a
    proposed wording change with its replay numbers, a lesson promotion, a wish, and hedges left in place of a
    revert. Note each in the round's `retro.md` when it happens, so the report can list it.

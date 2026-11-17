@@ -34,6 +34,7 @@ not catch; a loop's writer proposes these (`references/learning.md`, "Promotion"
 | 06-reader-guard | A reader agent that finds this skill listed must not use it |
 | 07-repeat-refuted | A repeat that the evidence plainly refutes is `wrong` (it never closes a unit as `pending-owner`) |
 | 08-final-check | Ruled wording flagged in an ok note, and the final targeted check: reopening, rounds F and F+1, the status each unit returns to |
+| 09-defect-debug | A policy-vs-config `defect`: reproduce, isolate, diagnose, propose; the entry; tickets only with the owner's OK |
 
 ## 3. Consistency read (structure)
 Give `consistency-read.md` to one cold agent. The maintainer fixes every real defect it reports, then re-runs it

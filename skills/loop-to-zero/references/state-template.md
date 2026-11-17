@@ -33,7 +33,9 @@ S/
   closed-unit-leads.txt   matches in closed units (unit, id, kind wrong|revert, class, refuting file:line or
                           ruling id, source unit+round (or an outside review and its date), ruling-level: yes|no,
                           status open|settled (round F, date))
-  defects.md         `defect` verdicts (behaviour defects and unmet requirements) and code faults noticed while
+  defects.md         `defect` verdicts (behaviour defects and unmet requirements), in the entry form of
+                     references/debugging.md (expected, actual, reproduction, root cause, proposed fix,
+                     prevention), and code faults noticed while
                      fixing, for the owner; each line names
                      its unit and item ids ("none" for a gap no item covers), and is open or closed (with the
                      owner's decision id)

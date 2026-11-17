@@ -306,7 +306,9 @@ the skill's maintainer).
    concurrency, and the fix-checker mode. Quote each option's cost as a range of tokens and wall-clock
    time, from the measurement. Also ask whether readers may run probes of the code in a scratch copy:
    recommend allowing them where the research finds claims about run-time behaviour (config loading,
-   parsing), and read only otherwise.
+   parsing), and read only otherwise. Probes also let the writer reproduce a `defect`
+   (`references/debugging.md`). If a project tracker is connected, also ask whether defects may be filed as
+   tickets, each with the owner's OK or under a standing process decision.
    - **Canaries** (planted test items, `references/round.md`). Recommend one or two per reader per round,
      and never in solo mode (the writer is the only reader). They measure each reader's catch rate and false alarms, and they never enter the
      items.
