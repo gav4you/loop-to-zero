@@ -41,8 +41,8 @@ bounds it.
 | U7 conditional effect | "X sends errors to the tracker" | It is gated by config or a flag | State the gate: "when <FLAG> is set" |
 | U8 consequence chain | "A, so B, so C" | A later step drops a qualifier an earlier step carries | Carry the qualifier into each later step |
 | U9 defaults | "defaults to Y" | It is `X ?? Y`, `X \|\| Y` (falsy values such as 0, "" or false take the default), a truthiness guard, a destructuring or parameter default (only `undefined` takes it), or set elsewhere | "X, or Y when it is unset" (or "when falsy", as the code does) |
-| U11 ambiguity | An item that can be read two ways ("passes a timeout": the option, or its effect?) | Two readings, which the evidence would judge differently | Rewrite it to say one thing |
 | U10 count | "N per request", "three handlers" | The count is off anywhere | Recount with an unlimited search, or drop the number |
+| U11 ambiguity | An item that can be read two ways ("passes a timeout": the option, or its effect?) | Two readings, which the evidence would judge differently | Rewrite it to say one thing |
 | C1 cite resolves | The named file, section or key | It doesn't exist at the pin, or says something else | Correct the cite |
 | C2 value | Numbers, periods, thresholds, units | They differ from the evidence | Correct the value and its unit. For a requirement item, only when the cite is the requirement's own source; a differing implementation is a `defect` |
 | C3 effective setting | "X is set to Y" | A default is overridden, inherited or disabled elsewhere | State the effective value and where it is set (for a requirement item, a differing implementation is a `defect`) |
@@ -50,7 +50,7 @@ bounds it.
 | C5 names | Roles, owners, systems | A name is renamed or retired | Use the current name |
 
 Where softening is not allowed (setup question 4), the "Fix form" column's hedge forms don't apply.
-Subtraction still does. Prove the scope; a requirement item the evidence fails is a `defect`.
+Subtraction still does, for descriptive items. Prove the scope; a requirement item the evidence fails is a `defect`.
 
 **The search rule.** A search that backs a universal runs with no output limit at any layer: no `head`, no
 tool result cap, no truncated shell output. It covers the whole evidence boundary, and it looks for aliases,

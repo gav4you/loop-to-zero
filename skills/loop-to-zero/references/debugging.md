@@ -25,8 +25,8 @@ isolate, diagnose, fix), with the fix step changed to "propose": the evidence is
      reading".
    - **Write the reproduction** as steps someone else can re-run at the pin.
 2. **Isolate.**
-   - **Every place the value is set,** defaulted, overridden, inherited or gated by a flag (the lenses of C3
-     effective setting and U7 conditional effect, `references/reading-classes.md`). Search without limits:
+   - **Every place the value is set,** defaulted, overridden, inherited or gated by a flag (what the starter
+     classes C3 effective setting and U7 conditional effect check, `references/reading-classes.md`). Search without limits:
      never truncate a search with `head` or `Select-Object -First`.
    - **When it came in:** the history of the cited lines up to the pin (`git log -L` or `git blame`): the commit
      that brought the value in, and its date. A recent change is the first suspect, not proof.

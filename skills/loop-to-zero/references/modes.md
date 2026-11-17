@@ -14,7 +14,8 @@ false low.
 - The next round with independent readers confirmed 51.
 
 If the owner rules solo anyway, say what is given up. Early on, have a cold reader re-read one sample window in a
-fresh session the owner opens (setup question 6), from a reader brief filled for it alone: an opaque slot name
+fresh session the owner opens (setup question 6; if the owner ruled such sessions out, after a context reset
+instead, as for a solo reading session), from a reader brief filled for it alone: an opaque slot name
 of its own, not queued (so its renders stay out of your render log), `{SCRATCH}` for that slot, that window's
 positions, and the brief's Write path changed to `{SCRATCH}agent-<slot>.jsonl` (an `agent-*.jsonl` in the
 round folder would be read by `record`). Confirm each wrong it finds that your pass missed as a wrong of the round
@@ -28,7 +29,7 @@ Your judgments get no independent check, so the mode makes up for it with order 
   (the rules, the round's `classes.md` copy with the ruling texts it quotes, the precedents), the items and
   the evidence. Only when confirming the wrongs (`references/round.md`, step 3) consult the history that
   `references/fixing.md` ("History") lists. Outside findings are used only after your own reading (`references/setup.md`, "Existing outside findings").
-- **Spot-checks:** re-read 10 ok items, chosen by the rule in `references/round.md`, step 3, in the writer's
+- **Spot-checks:** re-read 10 ok items (10 per round: you are the only reader), chosen by the rule in `references/round.md`, step 3, in the writer's
   session after the reading. That session already starts after a context reset (`references/round.md`, step 1),
   so the spot-checks need no session of their own. They come before the fixes.
 - **A ruling given in a solo reading or fix-check session** (the owner tells that session): the brief's

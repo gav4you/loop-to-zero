@@ -15,7 +15,8 @@ Lessons change behaviour from now on, and reach back to the earlier verdicts and
 is due, propose it to the skill's maintainer (`references/learning.md`, "Promotion").
 
 All lessons below come from 1 project's history (about 70 verification rounds, 3 discovery phases and a
-large plan review), unless a lesson says otherwise.
+large plan review), unless a lesson says otherwise. A lesson that names "an improve-and-harden loop" comes from
+the loop that improves this skill's own text: repeated cold reads of one text, each followed by fixes.
 
 ## Setup
 - **✗ Predefine the names and classes from repo research.**
@@ -32,7 +33,7 @@ large plan review), unless a lesson says otherwise.
 - **✗ Ask what zero is for.**
   - **Rule:** a fixed reference needs less than a fully correct one.
   - **Why:** a fix loop on a reference grew (4, 6, 13, 18 findings, about 3 hours a round) until the owner
-    stopped it as wasteful, and froze it instead.
+    stopped it as wasteful, and kept the items as the reference instead (a stopping rule).
   - **Change:** setup question 0.
   - **Seen:** 1.
 - **✗ Census the owner questions from every governing document.**
@@ -248,9 +249,9 @@ large plan review), unless a lesson says otherwise.
     A zero-wrong round missed run-ons after appended clauses.
   - **Change:** `fixing.md`, step 5.
   - **Seen:** 4 or more.
-- **✓ One wording per class, reused from a correct precedent.**
+- **✓ One wording per class, reused from an earlier fix found correct.**
   - **Why:** fresh prose for each item kept producing new overreaches. A shared wording was checked once,
-    against a precedent, before the batch.
+    against that earlier fix, before the batch.
   - **Change:** `fixing.md`, step 2.
   - **Seen:** several.
 - **✓ Drain a recurring class with narrow falsifiers.**

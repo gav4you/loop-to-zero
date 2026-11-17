@@ -73,7 +73,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
     Cite in the item only what its new text states.
 - **Classes.** Name every class that applies; an item can carry several. The repeat test matches on any overlap, so
   a class left off can hide a repeat. The first listed is the class whose universal
-  the refuter falsifies most directly (on a tie, table order). It governs the wording and the regression pattern.
+  the refuter falsifies most directly (on a tie, the one listed first in `S/classes.md`). It governs the wording and the regression pattern.
 - **Partly true items** count as one wrong.
 - **Ambiguous wording** ("passes a timeout": the option, or its effect?) is a wrong under the bar's
   ambiguity class (if the bar has none: "A class found mid-pass" on an open bar). Rewrite the item to say one
@@ -145,8 +145,8 @@ Every fix follows 2 to 4.
      after later edits.
    - Adding a member to a closed list ("only A and B") is a new universal. It needs the same proof; without
      it, subtract, or open the list if softening is allowed.
-4. **One wording per class.** Fix every hit of a class with one wording, reused from a correct precedent or
-   the source's own words. Don't write fresh prose for each item.
+4. **One wording per class.** Fix every hit of a class with one wording, reused from an earlier fix of that class
+   already found correct (not `S/precedents.md`, which readers read) or the source's own words. Don't write fresh prose for each item.
 
 ## 3. Dependents
 Search for items that cite the changed item or restate its conclusion, in this unit and in others. Fix them

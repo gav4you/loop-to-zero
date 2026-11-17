@@ -116,8 +116,8 @@ test reader may run. The steps match SKILL.md's Setup.
    `ltz snapshot --order <file>`, one file per unit (a permutation of its ids). Discovery verdicts count as earlier passes for the history check, the
    escalation trigger, the known instances sweep patterns test, and the rounds `replay` measures (set
    `historyFolders: ["discovery"]` in the main config only; the discovery folder's own copy
-   omits it). `S/`'s `classes.md` and decision log stay the master copies, and lessons, `defects.md` and
-   `owner-questions.md` stay in `S/`: copy `S/classes.md` to `S/discovery/classes.md`, and mirror `S/checks/patterns/` to
+   omits it). `S/`'s `classes.md` and decision log stay the master copies, and lessons, `defects.md`,
+   `owner-questions.md` and `cross-unit-edits.txt` (with its "deferred" lines, which round 1 reads there) stay in `S/`: copy `S/classes.md` to `S/discovery/classes.md`, and mirror `S/checks/patterns/` to
    `S/discovery/checks/patterns/` (removing retired patterns), before each discovery snapshot and each `diffcheck`
    there, and again at once whenever they change (a ruling, a new class,
    a fix's new pattern, which is written to `S/checks/patterns/` first); the fix checker reads

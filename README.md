@@ -58,7 +58,7 @@ To install it as a personal skill instead, copy `skills/loop-to-zero/` into `~/.
 
 ## Status
 
-Version 0.1.0. The text has been through 23 rounds of its own improve-and-harden loop, and gets one more round a
+Version 0.2.0. The text has been through 23 rounds of its own improve-and-harden loop, and gets one more round a
 week. Its own consistency reads still find a few small wording problems each round; none found in the last round was
 serious.
 
