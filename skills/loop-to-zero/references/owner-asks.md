@@ -141,7 +141,8 @@ Every setup question (`references/setup.md`) belongs to the owner, including:
 
 ## Reporting a round (information, not a stop)
 Report, in this order:
-1. **The trend:** wrongs per round, with adjusted counts shown.
+1. **The trend:** wrongs per round, with adjusted counts shown, and per class (`references/learning.md`, "The
+   retro", step 2), naming any class that is not falling.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
    your own edit, a new class, a missing ruling, writer misjudgment) and by who found them (both readers, one only, none), plus
    reader false alarms. A round still being read is reported as "at least n (reading incomplete)".

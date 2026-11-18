@@ -673,6 +673,31 @@ export function record({ S, unit, R, chunkReaders }) {
     if (!markedBy.has(id) && byId.has(id)) warnings.push(`confirmed.json: ${id} is rejected, but no reader marked it wrong`);
   }
 
+  // Templated ok notes: one reader writing the same note (file:line refs and numbers aside) on 5 or more
+  // items. A note copied from item to item is a default, not a reading of each item; the writer gives
+  // those ranges a supplementary read (references/briefs.md, "Verifying the readers' work").
+  const TEMPLATE_MIN = 5;
+  const bySlot = new Map();
+  for (const rinfo of readers.values()) {
+    for (const r of rinfo.real.values()) {
+      if (r.obj.verdict !== 'ok' || canaryMap.has(r.obj.id)) continue;
+      const raw = String(r.obj.note ?? '').trim();
+      const key = raw.replace(/([\w.\/\\@+-]+):(\d+)(?:-(\d+))?/g, '<ref>').replace(/\d+/g, '#').replace(/\s+/g, ' ').toLowerCase();
+      if (!key) continue;
+      if (!bySlot.has(r.src)) bySlot.set(r.src, new Map());
+      const g = bySlot.get(r.src);
+      if (!g.has(key)) g.set(key, { sample: raw, ids: [] });
+      g.get(key).ids.push(r.obj.id);
+    }
+  }
+  for (const [slot, g] of [...bySlot].sort((x, y) => x[0].localeCompare(y[0]))) {
+    for (const { sample, ids } of g.values()) {
+      if (ids.length >= TEMPLATE_MIN) {
+        warnings.push(`${slot}: ${ids.length} ok notes share one text ("${sample.slice(0, 60)}"): ${ids.join(', ')}; a template is not a reading of each item, so give that range a supplementary read`);
+      }
+    }
+  }
+
   if (problems.length) return { output, problems, warnings };
 
   // ---- measure ----

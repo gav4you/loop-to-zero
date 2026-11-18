@@ -825,6 +825,7 @@ Notes on these fields:
     a fix checker has run, which is normal at a round's first `record`.
   - `canaries.<slot>`: `{planted, plantedWrong, plantedOk, caught, missed, falseAlarms, okCorrect, notJudged, detail}`.
   - **The estimate** is Chapman: N = ((n1+1)(n2+1)/(m+1)) − 1, and remaining = N − (n1 + n2 − m). It uses the first two readers listed for a chunk. It is a low estimate: readers share a brief, so they are not independent, and `foundByNone` adds to it.
+  - **Templated ok notes:** `record` warns when one reader file's ok notes share one text on 5 or more items (file:line refs and numbers ignored, case and spacing folded), naming the ids. A warning only: the writer gives that range a supplementary read.
 - **`r<R>/queue.json`:** `{opaque?, groups: [{chunk, slots}], slots: [{slot, chunk, from, to, state, agent, reset, parent?, created?, transcripts?, dropped?, agentHistory?, history}]}`.
   - States are `queued`, `running`, `stopped-limit`, `stopped-credits`, `stopped-context`, `done`, `replaced` and `dropped-by-owner`.
   - `done`, `replaced` and `dropped-by-owner` are closed; every other state is open, `queued` included.

@@ -11,7 +11,7 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
 | A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
-| Only one of two readers found a confirmed wrong | That class is easy to miss. Propose a sharper wording |
+| Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
 | A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
 | A class turns up that the setup research did not predefine | The research missed a source. Add it to `S/research.md`, and propose adding it to `references/setup.md`'s research sources to the skill's maintainer |
@@ -102,11 +102,20 @@ until that check.
    - **Who found it:** both readers; one reader only; none (the writer's own check (`spot-check`), a sweep, an audit, the fix
      checker in old text, or the extract).
 
+   **For each wrong a reader missed, check its render log** before choosing a remedy. If the reader never
+   showed the refuting line, it failed to look: the remedy is reading depth (window size, the whole-context
+   lens, a supplementary read), not a sharper class wording. If it showed the line and still marked ok, it
+   misjudged: then a sharper wording is the remedy (Triggers, "Only one of two readers found a confirmed
+   wrong").
+
    Count reader false alarms separately. A reader wrong overturned by a ruling given mid-round is not a false
    alarm: it goes under "missing ruling", and it is not in the round's count. Record it in `confirmed.json`'s
    `withdrawn` list with the ruling id, so `ltz record` counts it apart. A wrong outside a frozen bar is not a false
    alarm either: it goes in the `outsideBar` list.
 2. **If the count rose,** say whether the bar moved (old text, newly seen) or your edits regressed.
+   **Break the trend down by class** from the rounds' `confirmed.json` files (wrongs per class per round, each
+   wrong under its first-listed class, computed with a tool). A
+   falling total can hide a class that is flat or rising; name any such class in the report.
 3. **The scores:** the canary scores, the remaining-wrongs estimate, the early-versus-late reading depth, and the
    recall of the unit's outside findings (`references/setup.md`, "Existing outside findings").
    **Calibrate the estimate:** for each earlier round of the unit, compare its total estimate with the wrongs

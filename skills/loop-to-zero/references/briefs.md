@@ -192,6 +192,8 @@ Reply with the path, the counts, and one line per wrong.
      items uncovered.
    - **A reader that trims its evidence to pass the check** (dropping cites, for example) has that range
      re-read.
+   - **A reader whose ok notes repeat one text** on 5 or more items (`ltz record` warns, refs and numbers
+     aside) wrote a default, not a reading: give that range a supplementary read, as below.
    - **A reader that admits shortcuts or unchecked areas** ("read only the first lines", "area 2 not
      checked") gets a supplementary read of those ranges before acceptance. `record` takes the re-run's
      lines in place of the parent's for that range, so run the confirm checks on any wrong the parent marked

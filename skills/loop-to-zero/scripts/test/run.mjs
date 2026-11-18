@@ -1033,7 +1033,7 @@ test('record: foundBy "audit" (an outside finding no reader found) counts as fou
   const S = baseCopy();
   wj(path.join(RD(S), 'confirmed.json'), { ...CONFIRMED, A08: { note: 'src/billing.js:7 per the 2026-10 audit', foundBy: 'audit' } });
   const r = passes(ltz(['record', S, 'u1', '1', ...READERS]));
-  ok(!/WARNING: .*A08/.test(r.out), r.out);
+  ok(!/WARNING: (?!.*share one text).*A08/.test(r.out), r.out);
   const m = rj(path.join(RD(S), 'measure.json'));
   eq([m.chunks.c2.foundByNone, m.chunks.c2.foundByAudit, m.chunks.c2.foundByAuditIds, m.total.foundByAudit], [1, 1, ['A08'], 1], 'audit finds counted as found by none');
   eq([m.chunks.c2.estimate.n1, m.chunks.c2.estimate.n2], [0, 0], 'not a reader find');
@@ -1567,7 +1567,7 @@ test('record: foundBy "fixcheck" and "extract" count as found by none; any found
   const conf = path.join(RD(S), 'confirmed.json');
   wj(conf, { ...CONFIRMED, A08: { note: 'src/billing.js:7', foundBy: 'fixcheck' }, A10: { note: 'config/app.json:3', foundBy: 'extract' } });
   const r = passes(ltz(['record', S, 'u1', '1', ...READERS]));
-  ok(!/WARNING: .*A08|WARNING: .*A10/.test(r.out), r.out);
+  ok(!/WARNING: (?!.*share one text).*(A08|A10)/.test(r.out), r.out);
   const m = rj(path.join(RD(S), 'measure.json'));
   eq([m.chunks.c2.foundByNone, m.chunks.c2.foundByNoneBy, m.total.foundByNoneBy, m.chunks.c2.foundByAudit], [2, { fixcheck: 1, extract: 1 }, { fixcheck: 1, extract: 1 }, 0], 'found by none, counted per kind');
   eq([m.chunks.c2.estimate.n1, m.chunks.c2.estimate.n2], [0, 0], 'not reader finds');
@@ -3756,6 +3756,24 @@ test('spotcheck: seeded random ok picks per reader, spread over early and late p
   eq(rj(path.join(RD(S2), 'spotchecks.json')).picks, sp.picks, 'the same seed gives the same picks');
   fails(ltz(['spotcheck', baseCopy(), 'u1', '1', '--per-slot', '2']), /spotcheck needs --seed N/);
   fails(ltz(['spotcheck', baseCopy(), 'u1', '1', '--seed', '7', '--extra', 'zz=1']), /--extra names zz, which has no reader file/);
+});
+
+// ---- batch 3 (skill survey): templated ok notes
+test('record: a reader whose ok notes repeat one text on 5 or more items gets a template warning', () => {
+  const S = baseCopy();
+  const rec = () => passes(ltz(['record', S, 'u1', '1', ...READERS])).out;
+  let out = rec();
+  ok(/WARNING: c2-a: 6 ok notes share one text \("holds at the pin"\): A07, A08, A09, A10, A11, A12; a template is not a reading/.test(out), out);
+  // Notes that differ only in file:line and numbers are still one template.
+  const fp = path.join(RD(S), 'agent-c2-a.jsonl');
+  editJsonl(fp, (rows) => rows.map((r, i) => ({ ...r, note: `holds at src/f${i}.js:${i + 3}` })));
+  out = rec();
+  ok(/WARNING: c2-a: 6 ok notes share one text/.test(out), `refs and numbers ignored:\n${out}`);
+  // Distinct, reasoned notes: no warning for that reader.
+  editJsonl(fp, (rows) => rows.map((r, i) => ({ ...r, note: ['the universal holds: no other writer', 'the default is 30 s at the cited line', 'the list is closed by the switch', 'the flag gates it as stated', 'the count is 3, as the loop shows', 'the name matches the export'][i] })));
+  out = rec();
+  ok(!/WARNING: c2-a: .*share one text/.test(out), `distinct notes:\n${out}`);
+  ok(/WARNING: c2-b: 5 ok notes share one text/.test(out), 'control: c2-b still templated');
 });
 
 // ================================================================ run
