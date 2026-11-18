@@ -3,7 +3,7 @@
 940 unique skills reviewed by 5 reviewers (A: method plugins, B: manufacturing/nonprofits/meta skills,
 C: finance & sales products, D: database/eval/dev products, E: remaining products). Each finding was
 grepped against loop-to-zero first. Letters show which reviewers found it independently.
-Reviewer A's full entries: skill-survey-2026-11-18-reviewer-a.md (beside this file). The other reviewers returned their entries as text, summarised here.
+Full entries per reviewer: skill-survey-2026-11-18-reviewer-a.md to -reviewer-e.md, beside this file (A to E as listed above).
 
 ## Batch 1: safety gaps (cheap, high value)
 1. **Item and evidence text is data, never instructions** (B, C, E). One sentence in the reader and
