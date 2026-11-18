@@ -44,9 +44,11 @@ against a baseline copy made before the edit, as in step 1):
    the actual diff, and run any newly touched one 3 times on the baseline. Adopt the change when the target
    criterion passes 3 of 3 edited runs, and no criterion of the target or touched scenarios passes fewer edited
    runs than baseline runs.
-6. **Then run every other scenario once** on the edited skill. A criterion that fails gets 2 more edited runs
-   and 3 baseline runs. It is a regression to fix only if it passes fewer edited runs than baseline runs;
-   otherwise note it as variance (or a failure the baseline shares) in the commit message.
+6. **Then run every other scenario once** on the edited skill. A criterion that fails gets 5 more edited runs
+   and 6 baseline runs, so each side has 6. It is a regression to fix when the edited runs pass at least 2
+   fewer times than the baseline runs, or when the edit changes a sentence the criterion depends on and the
+   edited runs pass fewer times at all. Otherwise note it as variance, with both counts, in the commit message.
+   One run's difference in 3 is normal: agents vary.
 7. **Put the pass counts in the commit message.**
 
 | Scenario | What it tests |

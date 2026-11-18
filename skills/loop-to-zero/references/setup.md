@@ -61,12 +61,14 @@ test reader may run. The steps match SKILL.md's Setup.
    round makes the guard block item commits. If the evidence is live or not text, split the setup sitting in two:
    settle question 5 (the boundary and pin, and who takes the export and strips its secrets, or the text
    conversion) first, take the export or make the conversion (into `S/evidence/<date>/`; point config `evidence` at it then, as
-   step 8 describes), research its parts, run r0, then ask the rest. r0
-   measures one reader, so the
-   cost of two readers per chunk is an extrapolation; say so. Use `ltz cost --timeline` on r0's transcript to
-   split startup from per-item tokens and read minutes per window. r0 carries no canaries. This per-item
-   figure is a floor. Long jobs add the agent's re-reads of its own context
-   (`references/queue-and-outages.md`, "Cost").
+   step 8 describes), research its parts, run r0, then ask the rest. r0 carries no canaries.
+
+   **Quoting r0's cost to the owner:**
+   - Split startup from per-item tokens with `ltz cost --timeline` on r0's transcript, and read minutes per
+     window.
+   - **Call the per-item figure a floor** wherever you quote it: long jobs add the agent's re-reads of its own
+     context (`references/queue-and-outages.md`, "Cost").
+   - r0 measures one reader, so the cost of two readers per chunk is an extrapolation; say so.
 7. **Ask the setup questions** (below), with the research and the measured costs. The format is in
    `references/owner-asks.md`.
 8. **Finish setup,** once the owner has said when to apply the answers ("Gathering the owner questions").
