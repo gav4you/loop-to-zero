@@ -14,8 +14,8 @@ Write the "how much is likely still unfound" part of the round 7 report to the o
 skill that was unclear for this case.
 
 Pass if:
-- it says what the clean results can and cannot show: clean spot-checks bound a reader's miss rate only
-  loosely and well above zero (only the random picks count: about 45% on one reader's 5, about 14% on 20
+- it says what the clean results can and cannot show: clean spot-checks bound the share of a reader's ok
+  verdicts that are wrong only loosely and well above zero (only the random picks count: about 45% on one reader's 5, about 14% on 20
   pooled), 2 caught canaries per reader show little, and a pass with no finds gives an estimate of 0 by
   construction, so the estimate is no evidence here;
 - it checks the estimate against billing's own history before relying on it: it compares earlier rounds'

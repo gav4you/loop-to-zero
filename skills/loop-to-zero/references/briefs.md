@@ -217,7 +217,8 @@ Reply with the path, the counts, and one line per wrong.
    - `confirmed.json` may be drafted while readers are still reading; run `record` only after the reading is done.
      A wrong confirmed before every reader of its chunk is done stays provisional: re-run the history check
      against the other reader's line when it arrives.
-   - Spot-check 10 ok items per reader by the rule in `references/round.md`, step 3 (5 random, 5 weighted).
+   - Spot-check 10 ok items per reader by the rule in `references/round.md`, step 3 (5 random, drawn with
+     `ltz spotcheck`; 5 weighted).
    - List every reader wrong you don't confirm in `rejected`, with its reason and the file:line that answers it
      (`references/fixing.md`, "The confirm checks").
    - Write `confirmed.json`.

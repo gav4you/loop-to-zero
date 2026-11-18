@@ -207,7 +207,7 @@ function sweepOne(sources, cfg, p, items, unit, label, count) {
   return { label, hits, scanned: scanned.length, missed, knownWhere, untested };
 }
 
-export function replay({ S, patternFile, rounds }) {
+export function replay({ S, patternFile, rounds, holdout }) {
   const cfg = loadConfig(S);
   if (!rounds) fail('--rounds <unit> is required (a unit, a comma list, or "all")');
   const units = rounds === 'all' ? Object.keys(cfg.units) : rounds.split(',').map((u) => requireUnit(cfg, u.trim()));
@@ -215,6 +215,12 @@ export function replay({ S, patternFile, rounds }) {
   for (const p of patterns) if (!p.class) fail(`replay: pattern ${p.id || p.regex} has no "class"; recall is measured against confirmed wrongs of that class`);
   const out = [];
   const totals = patterns.map(() => ({ ofClass: 0, recalled: 0, falseHits: 0, otherClassHits: 0, rounds: 0 }));
+  // --holdout <unit>/r<R>[,...]: the rounds a rule was written from. Recall is reported again without them,
+  // so a rule is judged on rounds it was not fitted to. A history round is named with its label
+  // (such as discovery/u1/r3).
+  const held = new Set(holdout ? String(holdout).split(',').map((x) => x.trim()).filter(Boolean) : []);
+  const heldSeen = new Set();
+  const outTotals = patterns.map(() => ({ ofClass: 0, recalled: 0, falseHits: 0, rounds: 0 }));
   let replayed = 0;
   let replayedHist = 0;
   let overturnedTotal = 0;
@@ -246,6 +252,9 @@ export function replay({ S, patternFile, rounds }) {
     if (!fs.existsSync(snapP) || !fs.existsSync(confP)) continue;
     replayed++;
     if (src.base !== S) replayedHist++;
+    const roundLabel = `${src.label}${unit}/${r.name}`;
+    const isHeld = held.has(roundLabel);
+    if (isHeld) heldSeen.add(roundLabel);
     const judgments = loadJudgments(src.base);
     const items = checkItems(readJsonl(snapP, { what: snapP }).rows, snapP);
     const conf = loadConfirmed(confP);
@@ -280,6 +289,13 @@ export function replay({ S, patternFile, rounds }) {
       t.falseHits += falseHits.length;
       t.otherClassHits += otherClass.length;
       t.rounds++;
+      if (!isHeld) {
+        const o = outTotals[i];
+        o.ofClass += ofClass.length;
+        o.recalled += recalled.length;
+        o.falseHits += falseHits.length;
+        o.rounds++;
+      }
       out.push(
         `${src.label}${unit}/${r.name} ${p.id || p.class}: recall ${recalled.length}/${ofClass.length}` +
           (missed.length ? ` (missed ${missed.join(', ')})` : '') +
@@ -297,11 +313,20 @@ export function replay({ S, patternFile, rounds }) {
     const t = totals[i];
     return `${p.id || p.class}: recall ${t.recalled}/${t.ofClass}, false hits ${t.falseHits} over ${t.rounds} round(s)`;
   });
+  for (const h of held) if (!heldSeen.has(h)) fail(`--holdout ${h} names no replayed round (rounds are named <unit>/r<R>, or <folder>/<unit>/r<R> for a history folder)`);
+  let ho = '';
+  if (held.size) {
+    if (outTotals.every((o) => o.rounds === 0)) fail('--holdout leaves no round to replay');
+    ho = `; held out ${[...held].join(',')}: ` + patterns.map((p, i) => {
+      const o = outTotals[i];
+      return `${p.id || p.class}: recall ${o.recalled}/${o.ofClass}, false hits ${o.falseHits} over ${o.rounds} round(s)`;
+    }).join('; ');
+  }
   const ov = overturnedTotal ? `; ${overturnedTotal} overturned wrong(s) not counted (${[...overturnedIn].join(', ')})` : '';
   return {
     output: out.join('\n'),
     problems: hist.problems,
-    summary: `replay: ${replayed} round(s)${replayedHist ? ` (${replayedHist} from historyFolders)` : ''}; ${sums.join('; ')}${ov}`,
+    summary: `replay: ${replayed} round(s)${replayedHist ? ` (${replayedHist} from historyFolders)` : ''}; ${sums.join('; ')}${ov}${ho}`,
     totals,
   };
 }

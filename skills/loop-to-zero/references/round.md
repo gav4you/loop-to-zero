@@ -48,7 +48,11 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
 - confirm every wrong in the union with the confirm checks in `references/fixing.md`, and the unit's mapped
   outside findings that no reader marked (`foundBy: "audit"`; `references/setup.md`, "Existing outside findings");
 - spot-check 10 ok items per reader: 5 at random, and 5 weighted toward items an earlier fix changed and
-  toward classes that produced wrongs;
+  toward classes that produced wrongs. Draw the random 5 with `ltz spotcheck <S> <unit> <R> --seed <N>`: it
+  spreads them over each reader's early and late positions and records the picks and seed in
+  `spotchecks.json`. A reader that missed a canary or reads less deeply late gets more random picks
+  (`--extra <slot>=5` adds 5 to its 5; its 5 weighted picks still apply). Draw them once any supplementary
+  read is done: a rerun slot's file gets picks of its own. Note the weighted picks and why in `retro.md`;
 - handle this unit's open lines in `S/cross-unit-edits.txt` with verdict "deferred" (hits another unit's round
   logged for it, and owed re-judges): judge each with the confirm checks, add a hit confirmed wrong that no reader marked to
   `confirmed.json` (`"foundBy": "sweep"`), make any reverts they call for in step 4, and mark each settled (round, date);
@@ -241,8 +245,9 @@ capture-recapture estimator: N = (n1+1)(n2+1)/(m+1) − 1).
 A round with no finds is still a sample. Say what each clean result can and cannot show:
 - **The estimate is 0 by construction** when no reader found anything, and its range is 0–0 for the same reason:
   report both as showing nothing, not as a precise zero.
-- **Clean spot-checks bound a reader's miss rate only loosely.** With none wrong out of n random picks, the
-  95% upper bound on the rate is 1 − 0.05^(1/n): 45% for 5 (one reader's random picks in a round), 26% for 10,
+- **Clean spot-checks bound only loosely the share of a reader's ok verdicts that are wrong** (not the share of
+  real wrongs it missed: with few wrongs left, the two differ a lot). With none wrong out of n random picks, the
+  95% upper bound on that share is 1 − 0.05^(1/n): 45% for 5 (one reader's random picks in a round), 26% for 10,
   14% for 20, 7% for 40. Only random picks count; weighted picks don't estimate a rate. Quote each reader's
   bound, and the round's random picks pooled for the readers as a group. Compute the figure with a tool for the
   n you have.

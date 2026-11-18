@@ -140,6 +140,11 @@ rounds with `ltz replay`:
 A rule that catches nothing it should, or floods with false hits, is not adopted as written. Put the replay
 numbers in the lesson's **Replay** field.
 
+**Hold out the rounds a rule came from.** A pattern or wording written from a wrong will recall that wrong, so
+its recall there proves nothing. Run `ltz replay ... --holdout <unit>/r<R>` naming the round(s) it was written
+from, and judge the rule on the held-out recall and false hits. If no other round holds a wrong of the class,
+say "no held-out history yet" rather than quoting the in-sample recall.
+
 ## Promotion
 - **Moving a lesson up.** A project lesson goes into the skill's `lessons.md`, as a new lesson or merged into one
   that says the same thing, only when:

@@ -228,7 +228,7 @@ function editJsonl(p, fn) {
 
 // ================================================================ tests
 // ---- help
-for (const c of ['snapshot', 'render', 'show', 'record', 'queue', 'diffcheck', 'sweep', 'flips', 'canary', 'cost', 'replay', 'lock', 'rulings']) {
+for (const c of ['snapshot', 'render', 'show', 'record', 'queue', 'diffcheck', 'sweep', 'flips', 'canary', 'cost', 'replay', 'lock', 'rulings', 'spotcheck']) {
   test(`help: ${c} --help`, () => {
     const r = passes(ltz([c, '--help']));
     ok(r.out.includes(c), 'help names the command');
@@ -3721,6 +3721,41 @@ test('record: each chunk estimate carries its range and lowConfidence, and the t
   eq(c1.lowConfidence, true, 'c1 overlap is 1');
   eq(m.total.estimate.lowConfidence, true, 'total flags it');
   ok(Array.isArray(m.total.estimate.range), 'total range');
+});
+
+// ---- batch 2b (skill survey): held-out replay, seeded spot-checks
+test('replay --holdout: recall is also reported without the rounds the rule came from', () => {
+  const S = makeS();
+  snap(S);
+  wj(path.join(RD(S), 'confirmed.json'), { A05: { note: 'docs/spec.md:8', class: 'U1' } });
+  passes(ltz(['snapshot', S, 'u1', '2', '--chunk-size', '6']), 'snapshot r2');
+  wj(path.join(S, 'u1', 'r2', 'confirmed.json'), { A07: { note: 'src/billing.js:4', class: 'U1' } });
+  const r = passes(ltz(['replay', S, patFile(S, ONLY), '--rounds', 'u1', '--holdout', 'u1/r2']));
+  ok(/U-only: recall 2\/2, false hits \d+ over 2 round\(s\)/.test(r.out), `all rounds:\n${r.out}`);
+  ok(/held out u1\/r2: U-only: recall 1\/1, false hits \d+ over 1 round\(s\)/.test(r.out), `held-out line:\n${r.out}`);
+  fails(ltz(['replay', S, patFile(S, ONLY), '--rounds', 'u1', '--holdout', 'u1/r9']), /--holdout u1\/r9 names no replayed round/);
+  fails(ltz(['replay', S, patFile(S, ONLY), '--rounds', 'u1', '--holdout', 'u1/r1,u1/r2']), /--holdout leaves no round to replay/);
+});
+test('spotcheck: seeded random ok picks per reader, spread over early and late positions, recorded in spotchecks.json', () => {
+  const run = (S, extra = []) => ltz(['spotcheck', S, 'u1', '1', '--seed', '7', '--per-slot', '2', ...extra]);
+  const S = baseCopy();
+  const r = passes(run(S, ['--extra', 'c2-b=2']));
+  const sp = rj(path.join(RD(S), 'spotchecks.json'));
+  eq([sp.seed, sp.perSlot], [7, 2], 'seed and count recorded');
+  eq(Object.keys(sp.picks).sort(), ['c1-a', 'c1-b', 'c2-a', 'c2-b'], 'one entry per reader file');
+  eq([sp.picks['c1-a'].length, sp.picks['c2-b'].length], [2, 4], 'per slot, plus --extra');
+  for (const [slot, picks] of Object.entries(sp.picks)) {
+    const wrongs = new Set(rjl(path.join(RD(S), `agent-${slot}.jsonl`)).filter((o) => o.verdict === 'wrong').map((o) => o.id));
+    ok(picks.every((x) => !wrongs.has(x.id)), `${slot}: only items it marked ok`);
+    ok(picks.some((x) => x.half === 'early') && picks.some((x) => x.half === 'late'), `${slot}: early and late both picked: ${JSON.stringify(picks)}`);
+  }
+  ok(/spotcheck u1 r1: seed 7/.test(r.out), r.out);
+  fails(run(S), /refusing: .*spotchecks\.json already exists/);
+  const S2 = baseCopy();
+  passes(run(S2, ['--extra', 'c2-b=2']));
+  eq(rj(path.join(RD(S2), 'spotchecks.json')).picks, sp.picks, 'the same seed gives the same picks');
+  fails(ltz(['spotcheck', baseCopy(), 'u1', '1', '--per-slot', '2']), /spotcheck needs --seed N/);
+  fails(ltz(['spotcheck', baseCopy(), 'u1', '1', '--seed', '7', '--extra', 'zz=1']), /--extra names zz, which has no reader file/);
 });
 
 // ================================================================ run

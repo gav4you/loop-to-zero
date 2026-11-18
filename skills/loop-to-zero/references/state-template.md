@@ -73,6 +73,7 @@ S/
                      chunks.json,
                      window files (w-<slot>-<from>.txt), render-<slot>.jsonl logs, agent-<slot>.jsonl, queue.json, canary-plan.json,
                      confirmed.json (the find list), report.json (per item: verdict, note, cites_read),
+                     spotchecks.json (the random spot-check picks and their seed, from ltz spotcheck),
                      measure.json, fixlog.jsonl (id, unit for a cross-unit edit, field, old, new, search, hits, judged, blindSpots, scopeNote, scopeText, ruling, basis and source for a requirement item),
                      fixcheck-<K>-<chunk>-input.jsonl, fixcheck-<K>-<chunk>.jsonl, retro.md,
                      drafts/<id>.md (fixes drafted before they may be applied), briefs/<slot>.md (each filled

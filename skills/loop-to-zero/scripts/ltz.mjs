@@ -10,6 +10,7 @@ import { record } from './lib/record.mjs';
 import * as queue from './lib/queue.mjs';
 import { diffcheck } from './lib/diffcheck.mjs';
 import { sweep, replay } from './lib/patterns.mjs';
+import { spotcheck } from './lib/spotcheck.mjs';
 import { flips } from './lib/flips.mjs';
 import * as canary from './lib/canary.mjs';
 import { cost, costQueue, timeline } from './lib/cost.mjs';
@@ -200,14 +201,22 @@ cost --timeline <transcript.jsonl>
   each message's tokens with its timestamp, elapsed time and the running total, marks each "ltz
   render" call as a window ("render ... show" is extra reading and starts none), and sums the startup
   (before the first render) and each window: tokens, messages and minutes.`,
-  replay: `replay <S> <pattern.json|classfile> --rounds <unit>[,<unit>...|all]
+  replay: `replay <S> <pattern.json|classfile> --rounds <unit>[,<unit>...|all] [--holdout <unit>/r<R>[,...]]
   Run the pattern(s) over each past round's snapshot.jsonl that has a confirmed.json, and report recall
   on confirmed wrongs of the pattern's class and false hits on items not confirmed wrong. With config
   "historyFolders", each folder's <folder>/<unit>/r* rounds are replayed too, first (labelled such as
   discovery/u1/r3); a missing folder is a PROBLEM. A confirmed wrong whose latest judgments.jsonl
   line for that unit and round, in the state folder holding the round (S/ or the history folder), has
   "now" "ok" or "pending-owner" was overturned and is not counted. A class file is a JSON array of
-  patterns (or {"patterns": [...]}).`,
+  patterns (or {"patterns": [...]}). --holdout names the rounds a rule was written from (a history round
+  by its label, such as discovery/u1/r3); the summary then also gives each pattern's recall and false hits
+  without them, which is the figure to judge the rule on.`,
+  spotcheck: `spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K> ...]
+  Draw each reader's random spot-checks: K (default 5) of the items its result file marked ok (canaries
+  excluded), half from the early half of its positions and half from the late half, reproducibly from the
+  seed. --extra adds picks for one reader (one that missed a canary or skims late windows). Writes
+  r<R>/spotchecks.json {seed, perSlot, extra, picks: {<slot>: [{id, position, half}]}}; refuses if it
+  exists. The weighted picks are the writer's own choice and are not drawn here.`,
   lock: `lock <S> acquire|release|check --session <id>|auto
   S/writer.lock {session, since}. acquire refuses if another session holds it; release refuses for
   another session; check exits non-zero only when another session holds it. --session auto reads the
@@ -235,7 +244,8 @@ const FLAGS = {
   flips: {},
   canary: { from: 'string', 'per-slot': 'string', seed: 'string' },
   cost: { queue: 'bool', timeline: 'string' },
-  replay: { rounds: 'string' },
+  replay: { rounds: 'string', holdout: 'string' },
+  spotcheck: { seed: 'string', 'per-slot': 'string', extra: 'multi' },
   lock: { session: 'string' },
   rulings: {},
 };
@@ -325,7 +335,10 @@ function run(cmd, argv) {
       return cost({ files: pos });
     case 'replay':
       need(pos, 2, cmd);
-      return replay({ S: pos[0], patternFile: pos[1], rounds: flags.rounds });
+      return replay({ S: pos[0], patternFile: pos[1], rounds: flags.rounds, holdout: flags.holdout });
+    case 'spotcheck':
+      need(pos, 3, cmd);
+      return spotcheck({ S: pos[0], unit: pos[1], R: pos[2], seed: flags.seed, perSlot: flags['per-slot'], extra: flags.extra });
     case 'lock':
       need(pos, 2, cmd);
       return lock({ S: pos[0], action: pos[1], session: flags.session });
