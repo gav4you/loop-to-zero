@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import { fail, normPath, isInside, escapeRe, globToRegExp } from './util.mjs';
 import { evidenceSources, routeSource } from './sources.mjs';
 
@@ -17,6 +18,33 @@ function safeRelPath(p) {
   const n = normPath(p);
   if (!n || path.isAbsolute(n) || /^[A-Za-z]:/.test(n) || n.split('/').includes('..')) return null;
   return n;
+}
+
+/** A folder's content hash: every file's relative path and content, in sorted path order. */
+export function treeHash(root) {
+  const files = [];
+  const walk = (rel) => {
+    for (const d of fs.readdirSync(path.join(root, rel), { withFileTypes: true })) {
+      const r = rel ? `${rel}/${d.name}` : d.name;
+      if (d.isDirectory()) walk(r);
+      else if (d.isFile()) files.push(r);
+    }
+  };
+  walk('');
+  files.sort();
+  const h = crypto.createHash('sha256');
+  for (const f of files) {
+    h.update(f + '\0');
+    h.update(crypto.createHash('sha256').update(fs.readFileSync(path.join(root, f))).digest('hex') + '\n');
+  }
+  return h.digest('hex');
+}
+
+/** Fails when a dir source pinned by "sha256" no longer matches its files. */
+export function checkDirPin(src) {
+  if (src.type !== 'dir' || src.sha256 === undefined) return;
+  const now = treeHash(path.resolve(src.root));
+  if (now !== src.sha256) fail(`evidence dir ${src.root} has changed since it was pinned: sha256 ${now}, config "sha256" ${src.sha256}`);
 }
 
 /** One evidence source: a git repo at its pin, or a folder. Paths are relative to the source. */
@@ -37,6 +65,7 @@ class SourceReader {
     } else {
       if (!fs.existsSync(src.root)) fail(`evidence root not found: ${src.root}`);
       this.root = path.resolve(src.root);
+      checkDirPin(src);
     }
   }
 

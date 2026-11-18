@@ -8,6 +8,8 @@ import { fail, writeJson, writeJsonl, sha256File, parsePosInt, parseRound } from
 export const ITEM_TYPES = ['requirement', 'description'];
 import { loadConfig, requireUnit, loadItems, roundDir, readerResultFiles, loadCanaries } from './state.mjs';
 import { rulingCheck } from './rulings.mjs';
+import { evidenceSources } from './sources.mjs';
+import { treeHash, checkDirPin } from './evidence.mjs';
 
 /** Cut 1..n into chunks of chunkSize; a tail shorter than half a chunk joins the previous chunk. */
 export function cutChunks(n, chunkSize) {
@@ -101,6 +103,13 @@ export function snapshot({ S, unit, R, chunkSize, order }) {
   const ordered = order ? readOrder(order, items.map((it) => it.id)) : items.map((it) => it.id);
   const listIds = r0 ? ordered.slice(0, cfg.windowSize) : ordered;
   const size = chunkSize ? parsePosInt(chunkSize, '--chunk-size') : defaultChunkSize(cfg.windowSize);
+  // A folder of evidence is pinned by its content hash: refuse a changed one, and print the hash to pin.
+  const dirPinHints = [];
+  for (const src of evidenceSources(cfg)) {
+    if (src.type !== 'dir') continue;
+    if (src.sha256 === undefined) dirPinHints.push(`evidence dir ${src.root} has no "sha256"; to pin it, set "sha256": "${treeHash(path.resolve(src.root))}" on that source`);
+    else checkDirPin(src);
+  }
   fs.mkdirSync(rd, { recursive: true });
   const snap = path.join(rd, 'snapshot.jsonl');
   writeJsonl(snap, items);
@@ -118,6 +127,7 @@ export function snapshot({ S, unit, R, chunkSize, order }) {
       (order ? `, list in the --order file's order` : '') +
       ` -> ${rd}`,
     warnings: [
+      ...dirPinHints,
       ...(r0 && chunkSize ? ['--chunk-size is ignored for r0 (one window)'] : []),
       ...(types.length ? [`"type" is neither "requirement" nor "description" for: ${types.slice(0, 10).join(', ')}${types.length > 10 ? ', ...' : ''}`] : []),
     ],

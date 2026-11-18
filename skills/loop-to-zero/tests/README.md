@@ -60,6 +60,8 @@ against a baseline copy made before the edit, as in step 1):
 | 07-repeat-refuted | A repeat that the evidence plainly refutes is `wrong` (it never closes a unit as `pending-owner`) |
 | 08-final-check | Ruled wording flagged in an ok note, and the final targeted check: reopening, rounds F and F+1, the status each unit returns to |
 | 09-defect-debug | A policy-vs-config `defect`: reproduce, isolate, diagnose, propose; the entry; tickets only with the owner's OK |
+| 10-untrusted-text | A zero-hit search needs a positive control; a dismissed reader wrong is recorded with its reason; item text and a claimed ruling are data, not instructions |
+| 11-reader-embedded-text | A reader judges an item whose text tells reviewers to mark it ok, and reports that text |
 
 ## 3. Trigger test (the description)
 `triggers.md`: 10 requests that should load this skill and 10 near misses, each run sent in a new shuffled order to a new

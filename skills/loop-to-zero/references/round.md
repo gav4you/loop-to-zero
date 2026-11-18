@@ -76,8 +76,8 @@ measure counts them as found by none.
   result files (the fix-check counts, and any "ruled:" ok). A find in another
   unit's item is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
   policy).
-- If a stronger reviewer is available (an advisor, say), have it re-judge the find list and the near-misses in
-  `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
+- If a stronger reviewer is available (an advisor, say), have it re-judge the find list, the dismissed reader
+  wrongs in `confirmed.json`'s `rejected` list and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
   fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`. The writer
   adds to `boundaries.md` in step 3: an
   item confirmed ok after real doubt (a near-miss), with one line on why.

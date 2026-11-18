@@ -67,7 +67,7 @@ S/
                      from-to and decision id
   inputs/audit-map.json   outside findings mapped to item ids (closed to readers)
   evidence/<date>/   a dated export or text conversion, if the evidence is live or not text: read-only once
-                     pinned, named in config.json's evidence (type dir) and in the readers' paths
+                     pinned by its sha256 in config.json's evidence (type dir), and named in the readers' paths
   <unit>/r<R>/       one folder per unit and round (r0 is the cost-measurement read):
                      snapshot.jsonl + snapshot.sha256, classes.md (the bar's copy for this round), list.json,
                      chunks.json,

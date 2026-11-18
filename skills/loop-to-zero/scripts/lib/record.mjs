@@ -12,7 +12,7 @@ import {
 } from './coverage.mjs';
 import { estimateRemaining, ESTIMATE_CAVEAT, round2 } from './estimate.mjs';
 
-const RESERVED = new Set(['pending', 'defects', 'withdrawn', 'outsideBar', 'ruledKept']);
+const RESERVED = new Set(['pending', 'defects', 'withdrawn', 'outsideBar', 'ruledKept', 'rejected']);
 // plain-fix-failure: the earlier fix did not settle it; new-text: the wrong is in text an earlier fix
 // introduced; earlier-miss: a different claim of the same class in old text, missed earlier.
 export const REPEAT_REASONS = ['plain-fix-failure', 'new-text', 'earlier-miss'];
@@ -35,10 +35,12 @@ export const ALWAYS_BLOCKING_PENDING = ['boundary-silent', 'ruled-wording'];
  * Parse confirmed.json:
  * {"<id>": {note, foundBy?, class?, repeatReason?, repeatNote?, rulingsChecked?},
  *  "pending": [{id, pendingReason, question?}], "withdrawn": [{id, ruling}],
- *  "outsideBar": [{id, note}], "ruledKept": [{id, ruling}], "defects": [ids]}
+ *  "outsideBar": [{id, note}], "ruledKept": [{id, ruling}], "defects": [ids], "rejected": [{id, note}]}
+ * "rejected" lists each reader wrong the writer did not confirm, with the reason and the file:line that
+ * answers the refuter (or a note starting "history:" naming the earlier reasoned ok).
  * A bare id in "pending" (rounds before pending reasons) is read, with no reason; record refuses it.
- * "outsideBar" and "ruledKept" are read leniently: their shape errors come back in outsideBarShape and
- * ruledKeptShape, which record reports as PROBLEMs (other callers, such as replay and the
+ * "outsideBar", "ruledKept" and "rejected" are read leniently: their shape errors come back in outsideBarShape,
+ * ruledKeptShape and rejectedShape, which record reports as PROBLEMs (other callers, such as replay and the
  * earlier-round repeat scan, ignore them).
  */
 export function loadConfirmed(file) {
@@ -105,7 +107,21 @@ export function loadConfirmed(file) {
     if (RESERVED.has(k)) continue;
     wrongs.set(k, v);
   }
-  return { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape };
+  const jv = raw.rejected === undefined ? [] : raw.rejected;
+  const rejected = new Map();
+  const rejectedShape = [];
+  if (!Array.isArray(jv)) rejectedShape.push('confirmed.json: "rejected" must be an array of {"id", "note"} entries');
+  else {
+    jv.forEach((x, i) => {
+      if (!isObj(x) || typeof x.id !== 'string') {
+        rejectedShape.push(`confirmed.json: "rejected" entry ${i + 1} (${JSON.stringify(x)}) is not an {"id", "note"} entry`);
+        return;
+      }
+      if (rejected.has(x.id)) rejectedShape.push(`confirmed.json: "rejected" lists ${x.id} twice`);
+      rejected.set(x.id, x.note);
+    });
+  }
+  return { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape, rejected, rejectedShape };
 }
 
 /** The owner's close rulings: {ownerQuestionsBlock (default true), defectsBlock (default false)}. */
@@ -407,7 +423,7 @@ export function record({ S, unit, R, chunkReaders }) {
   }
 
   // Confirmed wrongs, pending ids and defects.
-  const { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape } = loadConfirmed(confirmedPath);
+  const { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape, rejected, rejectedShape } = loadConfirmed(confirmedPath);
   for (const [id, v] of wrongs) {
     if (canaryMap.has(id)) problems.push(`confirmed.json: ${id} is a canary; canaries are scored, never confirmed`);
     else if (!byId.has(id)) problems.push(`confirmed.json: ${id} is not an item in this round's snapshot`);
@@ -463,6 +479,21 @@ export function record({ S, unit, R, chunkReaders }) {
     if (pending.has(id)) problems.push(`confirmed.json: ${id} is both outside the bar and pending`);
     if (withdrawn.has(id)) problems.push(`confirmed.json: ${id} is both outside the bar and withdrawn`);
     if (defects.has(id)) problems.push(`confirmed.json: ${id} is both outside the bar and a defect`);
+  }
+
+  // Rejected: reader wrongs the writer did not confirm. Each names its reason and the file:line that
+  // answers the refuter, or starts "history:" (an earlier reasoned ok that holds), so the stronger
+  // reviewer can re-judge the dismissal.
+  problems.push(...rejectedShape);
+  for (const [id, note] of rejected) {
+    if (!byId.has(id)) problems.push(`confirmed.json: rejected id ${id} is not an item in this round's snapshot`);
+    const txt = typeof note === 'string' ? note.trim() : '';
+    if (!/^history:/i.test(txt) && !noteRefs(txt).length) {
+      problems.push(`confirmed.json: rejected ${id} has no file:line that answers the refuter (or a note starting "history:" that names the earlier reasoned ok)`);
+    }
+    for (const [has, what] of [[wrongs, 'confirmed wrong'], [pending, 'pending'], [defects, 'a defect'], [withdrawn, 'withdrawn'], [outsideBar, 'outside the bar']]) {
+      if (has.has(id)) problems.push(`confirmed.json: ${id} is both rejected and ${what}`);
+    }
   }
 
   // Ranges the owner approved dropping (queue state dropped-by-owner, with a decision id).
@@ -623,6 +654,23 @@ export function record({ S, unit, R, chunkReaders }) {
       if (has.has(k.id)) problems.push(`confirmed.json: ${k.id} is both in "ruledKept" and ${what}`);
     }
     kept.add(`${k.id}\u0000${k.ruling}`);
+  }
+
+  // Every reader wrong left unconfirmed needs a "rejected" entry: no silent dismissals.
+  const markedBy = new Map();
+  for (const rinfo of readers.values()) {
+    for (const r of rinfo.real.values()) {
+      if (r.obj.verdict !== 'wrong' || canaryMap.has(r.obj.id)) continue;
+      if (!markedBy.has(r.obj.id)) markedBy.set(r.obj.id, new Set());
+      markedBy.get(r.obj.id).add(r.src);
+    }
+  }
+  for (const [id, by] of markedBy) {
+    if (wrongs.has(id) || pending.has(id) || defects.has(id) || withdrawn.has(id) || outsideBar.has(id) || rejected.has(id)) continue;
+    problems.push(`confirmed.json: ${id} was marked wrong by ${[...by].sort().join(', ')} but is not confirmed, pending, a defect, withdrawn or outside the bar, and has no "rejected" entry (its reason and the file:line that answers the refuter)`);
+  }
+  for (const id of rejected.keys()) {
+    if (!markedBy.has(id) && byId.has(id)) warnings.push(`confirmed.json: ${id} is rejected, but no reader marked it wrong`);
   }
 
   if (problems.length) return { output, problems, warnings };
@@ -859,6 +907,9 @@ export function record({ S, unit, R, chunkReaders }) {
         // No reader read it (every reader's range here was dropped by the owner): never "ok".
         verdict = 'unread';
         note = slots.length ? `not read: ${readerNotes}` : 'not read (final check)';
+      } else if (rejected.has(id)) {
+        entryExtra.rejected = rejected.get(id);
+        note = `rejected: ${rejected.get(id)} | ${readerNotes}`;
       } else {
         note = readerNotes;
       }
@@ -919,7 +970,7 @@ export function record({ S, unit, R, chunkReaders }) {
     summary:
       `record ${unit} r${measure.round}: ${items.length} items (ok ${counts.ok}, wrong ${counts.wrong}, pending-owner ${counts['pending-owner']}, defect ${counts.defect}, unread ${counts.unread}, outside-bar ${counts['outside-bar']}); ` +
       `full depth ${measure.fullDepth ? 'yes' : 'NO'}, counts as zero ${measure.countsAsZero ? 'yes' : `no (${blockers.join(', ')})`}; ` +
-      `${readers.size} reader files covered${rr}; confirmed ${tot.confirmed}, found by one reader ${tot.foundByOneReader}, by none ${tot.foundByNone}${fc}${ob}; ` +
+      `${readers.size} reader files covered${rr}; confirmed ${tot.confirmed}, found by one reader ${tot.foundByOneReader}, by none ${tot.foundByNone}, rejected ${rejected.size}${fc}${ob}; ` +
       `estimated remaining ${est.remaining} (${ESTIMATE_CAVEAT}) -> report.json, measure.json`,
   };
 }

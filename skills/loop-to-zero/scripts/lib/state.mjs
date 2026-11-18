@@ -18,7 +18,7 @@ export const CONFIG_KEYS = [
   'ownerQuestionsBlock', 'defectsBlock', 'decisionLog', 'rulingIdPattern', 'requireRulingEntries', 'historyFolders',
 ];
 export const UNIT_CONFIG_KEYS = ['status', 'itemFiles'];
-export const SOURCE_CONFIG_KEYS = ['type', 'repo', 'pin', 'root', 'prefix'];
+export const SOURCE_CONFIG_KEYS = ['type', 'repo', 'pin', 'root', 'prefix', 'sha256'];
 
 export const DEFAULT_UNIVERSAL_WORDS = [
   'only', 'every', 'each', 'all', 'always',

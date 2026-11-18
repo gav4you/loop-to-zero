@@ -611,7 +611,10 @@ Notes on these fields:
   that no open unit also lists (see "The guard works per file" in `hooks/README.md`), and diffcheck
   flags any change to its items. Any other status, `final-check` included, counts as open.
 - **Evidence.** `evidence` is one source, or a list of prefixed sources (see "Evidence sources"). For
-  folder evidence, use `{"type": "dir", "root": "<path>"}`.
+  folder evidence, use `{"type": "dir", "root": "<path>", "sha256": "<hash>"}`. `snapshot` prints the
+  folder's hash while `sha256` is unset (a warning); once it is set, `snapshot`, `render` and `show` refuse
+  the folder if any file in it has changed, been added or been removed since. The hash covers every file's
+  relative path and content.
 - Set `itemsRoot` when the items live in a different repo from the evidence.
 - `boundaryPaths` are globs describing the evidence boundary, used by searches.
 - `ownerQuestionsBlock` and `defectsBlock` are the owner's close decisions (process decisions; see "Counting a round as
@@ -656,9 +659,16 @@ Notes on these fields:
    "withdrawn": [{"id": "<id>", "ruling": "<ruling id>"}],
    "outsideBar": [{"id": "<id>", "note": "<what the evidence shows, with file:line>"}],
    "ruledKept": [{"id": "<id>", "ruling": "<ruling id>"}],
+   "rejected": [{"id": "<id>", "note": "<why; the file:line that answers the refuter, or history: ...>"}],
    "defects": ["<id>", ...]}
   ```
-  - `pending`, `withdrawn`, `outsideBar`, `ruledKept` and `defects` are reserved keys.
+  - `pending`, `withdrawn`, `outsideBar`, `ruledKept`, `rejected` and `defects` are reserved keys.
+  - **`rejected`** lists every reader wrong the writer did not confirm (a false alarm), each with a note that
+    names a file:line answering the refuter, or starts "history:" and names the earlier reasoned ok. A reader
+    wrong (canaries aside) that is not confirmed, pending, a defect, withdrawn, outside the bar or rejected is
+    a PROBLEM, and so is a note with neither, or an id also in another list. One no reader marked gives a
+    warning. In `measure.json` they stay false alarms; `report.json` shows them `ok`, with the note under
+    `rejected`.
   - **`withdrawn`** (optional) lists reader wrongs that a ruling given mid-round overturned. In
     `measure.json` they are not false alarms: they are counted per slot as `withdrawnByRuling.<slot>`,
     and in total as `withdrawn`. They are not confirmed wrongs, so they are out of the confirmed count

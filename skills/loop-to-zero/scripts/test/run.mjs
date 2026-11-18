@@ -51,9 +51,20 @@ function fails(r, re, label = '') {
   return r;
 }
 const rj = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
+// A confirmed.json written with no "rejected" key gets one for each base-round reader wrong (A02, A03,
+// A09) it leaves unaccounted, so tests about other fields need not restate the dismissals. Write
+// "rejected" explicitly (even []) to test the rule itself.
+const BASE_READER_WRONGS = ['A02', 'A03', 'A09'];
+function withRejected(o) {
+  if (!o || typeof o !== 'object' || Array.isArray(o) || 'rejected' in o) return o;
+  const ids = (k) => (Array.isArray(o[k]) ? o[k].map((x) => (typeof x === 'string' ? x : x && x.id)) : []);
+  const taken = new Set([...Object.keys(o), ...ids('pending'), ...ids('defects'), ...ids('withdrawn'), ...ids('outsideBar')]);
+  const rejected = BASE_READER_WRONGS.filter((id) => !taken.has(id)).map((id) => ({ id, note: 'src/auth.js:1 answers the reader; fixture dismissal' }));
+  return rejected.length ? { ...o, rejected } : o;
+}
 const wj = (p, o) => {
   fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, JSON.stringify(o, null, 2) + '\n');
+  fs.writeFileSync(p, JSON.stringify(path.basename(p) === 'confirmed.json' ? withRejected(o) : o, null, 2) + '\n');
 };
 const rjl = (p) => fs.readFileSync(p, 'utf8').split(/\r?\n/).filter((l) => l.trim()).map((l) => JSON.parse(l));
 const wjl = (p, rows) => {
@@ -1629,6 +1640,7 @@ test('queue rerun: a new opaque slot for a range of its parent; refused outside 
 });
 test('record: a rerun\'s lines replace its parent\'s for its range (the latest wins), checked against its own render log', () => {
   const S = baseCopy();
+  wj(path.join(RD(S), 'confirmed.json'), { ...CONFIRMED, rejected: [{ id: 'A09', note: 'config/app.json:2 holds; fixture dismissal' }, { id: 'A04', note: 'src/billing.js:2 holds 0.2 as the item says; fixture dismissal' }] });
   const rec = (extra = READERS) => ltz(['record', S, 'u1', '1', ...extra]);
   passes(ltz(['queue', S, 'u1', '1', 'init', '--pairs', 'c1=c1-a,c1-b', 'c2=c2-a,c2-b']));
   passes(ltz(['queue', S, 'u1', '1', 'rerun', 'c1-a', '--from', '2', '--to', '5']));
@@ -2073,6 +2085,7 @@ test('record: "ruledKept" (ruled oks whose ruling the owner kept) silences their
 });
 test('record: a wrong the replaced lines marked that the replacing rerun does not mark is a warning with its id', () => {
   const S = baseCopy();
+  wj(path.join(RD(S), 'confirmed.json'), { ...CONFIRMED, rejected: [{ id: 'A09', note: 'config/app.json:2 holds; fixture dismissal' }, { id: 'A04', note: 'src/billing.js:2 holds 0.2 as the item says; fixture dismissal' }] });
   const rec = () => ltz(['record', S, 'u1', '1', ...READERS]);
   passes(ltz(['queue', S, 'u1', '1', 'init', '--pairs', 'c1=c1-a,c1-b', 'c2=c2-a,c2-b']));
   // c1-a marked A02 and A03 wrong; the rerun keeps A03 wrong, marks A02 ok, and A04 wrong.
@@ -3623,6 +3636,72 @@ test('guard: a search piped into head / Select-Object -First is blocked', () => 
   eq(guard(bash('rg -c only src'), { env }).code, 0, 'unlimited search allowed');
   eq(guard(ps('Get-Content a.txt | Select-Object -First 5'), { env }).code, 0, 'head without a search allowed');
   eq(guard({ tool_name: 'Edit', tool_input: { file_path: path.join(RUN, 'x.txt') } }, { env }).code, 0, 'normal edit allowed');
+});
+
+// ---- batch 1 (skill survey): dismissed wrongs need a reason; folder evidence is checksummed
+test('record: every reader wrong left unconfirmed needs a "rejected" entry with its reason and the file:line that answers it', () => {
+  const S = baseCopy();
+  const conf = path.join(RD(S), 'confirmed.json');
+  const rec = () => ltz(['record', S, 'u1', '1', ...READERS]);
+  const bare = { ...CONFIRMED, rejected: [] };
+  // c2-b marked A09 wrong and the writer did not confirm it: a silent dismissal is refused.
+  wj(conf, bare);
+  fails(rec(), /PROBLEM: confirmed.json: A09 was marked wrong by c2-b but is not confirmed, pending, a defect, withdrawn or outside the bar, and has no "rejected" entry/);
+  const NOTE = 'config/app.json:2 is 30, as the item says; the reader misread the unit';
+  wj(conf, { ...bare, rejected: [{ id: 'A09', note: NOTE }] });
+  const r = passes(rec(), 'with its reason');
+  const m = rj(path.join(RD(S), 'measure.json'));
+  eq([m.chunks.c2.falseAlarms['c2-b'], m.chunks.c2.falseAlarmIds['c2-b']], [1, ['A09']], 'still a false alarm');
+  const by = Object.fromEntries(rj(path.join(RD(S), 'report.json')).items.map((x) => [x.id, x]));
+  eq(by.A09.verdict, 'ok', 'reported ok');
+  ok(by.A09.note.includes(`rejected: ${NOTE}`), `the reason is in the report: ${by.A09.note}`);
+  ok(/rejected 1/.test(r.out), `counted in the summary:
+${r.out}`);
+  // An earlier reasoned ok may stand in for the file:line.
+  wj(conf, { ...bare, rejected: [{ id: 'A09', note: 'history: u1 r0 slot x reasoned ok on this exact point holds' }] });
+  passes(rec(), 'a history reason');
+  for (const [extra, re] of [
+    [{ ...bare, rejected: [{ id: 'A09', note: 'looks fine to me' }] }, /PROBLEM: confirmed.json: rejected A09 has no file:line that answers the refuter \(or a note starting "history:" that names the earlier reasoned ok\)/],
+    [{ ...bare, rejected: [{ id: 'A09' }] }, /rejected A09 has no file:line/],
+    [{ ...bare, rejected: 'A09' }, /PROBLEM: confirmed.json: "rejected" must be an array of {"id", "note"} entries/],
+    [{ ...bare, rejected: [{ id: 'A09', note: NOTE }, { id: 'A09', note: NOTE }] }, /"rejected" lists A09 twice/],
+    [{ ...bare, rejected: [{ id: 'A02', note: NOTE }, { id: 'A09', note: NOTE }] }, /A02 is both rejected and confirmed wrong/],
+    [{ ...bare, rejected: [{ id: 'A09', note: NOTE }], outsideBar: [{ id: 'A09', note: NOTE }] }, /A09 is both rejected and outside the bar/],
+    [{ ...bare, rejected: [{ id: 'Z9', note: NOTE }, { id: 'A09', note: NOTE }] }, /rejected id Z9 is not an item in this round's snapshot/],
+  ]) {
+    wj(conf, extra);
+    fails(rec(), re);
+  }
+  wj(conf, { ...bare, rejected: [{ id: 'A09', note: NOTE }, { id: 'A10', note: NOTE }] });
+  ok(/WARNING: confirmed.json: A10 is rejected, but no reader marked it wrong/.test(passes(rec()).out), 'a warning only');
+});
+test('evidence: a dir source with "sha256" is refused once its files change; without one, snapshot prints the hash to pin', () => {
+  const root = path.join(RUN, `export-${++nS}`);
+  fs.mkdirSync(path.join(root, 'sub'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'policy.md'), '# Policy\nRotation: 90 days\n');
+  fs.writeFileSync(path.join(root, 'sub', 'b.md'), 'b\n');
+  const S = makeS({ config: { evidence: { type: 'dir', root } } });
+  const r0 = snap(S);
+  const m = /evidence dir .* has no "sha256"; to pin it, set "sha256": "([0-9a-f]{64})" on that source/.exec(r0.out);
+  ok(m, `snapshot names the hash to pin:
+${r0.out}`);
+  const cfgP = path.join(S, 'config.json');
+  const cfg = rj(cfgP);
+  wj(cfgP, { ...cfg, evidence: { ...cfg.evidence, sha256: m[1] } });
+  ok(!/has no "sha256"/.test(snap(S).out), 'no hint once pinned');
+  const show = () => ltz(['show', S, 'u1', '1', 't-a', 'policy.md:2']);
+  ok(/Rotation: 90 days/.test(passes(show(), 'control: unchanged').out), 'reads while unchanged');
+  fs.writeFileSync(path.join(root, 'sub', 'b.md'), 'b changed\n');
+  fails(show(), /evidence dir .* has changed since it was pinned: sha256 [0-9a-f]{64}, config "sha256" [0-9a-f]{64}/);
+  fs.writeFileSync(path.join(root, 'sub', 'b.md'), 'b\n');
+  passes(show(), 'restored');
+  fs.writeFileSync(path.join(root, 'new.md'), 'x\n');
+  fails(show(), /has changed since it was pinned/, 'an added file');
+  fs.rmSync(path.join(root, 'new.md'));
+  fs.renameSync(path.join(root, 'sub', 'b.md'), path.join(root, 'sub', 'c.md'));
+  fails(show(), /has changed since it was pinned/, 'a renamed file');
+  wj(cfgP, { ...cfg, evidence: { ...cfg.evidence, sha256: 'abc' } });
+  fails(show(), /evidence: "sha256" must be 64 hex characters/);
 });
 
 // ================================================================ run

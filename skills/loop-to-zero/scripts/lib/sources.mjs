@@ -1,5 +1,6 @@
 // Evidence sources. config.evidence is one source or a list of sources, each with a "prefix":
-//   {"type":"git","repo":"..","pin":"..","prefix":""}  or  {"type":"dir","root":"..","prefix":"export/"}
+//   {"type":"git","repo":"..","pin":"..","prefix":""}  or  {"type":"dir","root":"..","prefix":"export/","sha256":".."}
+// A dir source's optional "sha256" pins its files: every tool refuses the folder once they change.
 // A cite's path goes to the source with the longest matching prefix, and the prefix is stripped
 // before that source reads the file. A single object (no prefix) is the source for every path.
 import { fail, normPath } from './util.mjs';
@@ -27,6 +28,7 @@ export function evidenceSources(cfg) {
       if (!s.repo || !s.pin) fail(`${where}: git evidence needs "repo" and "pin"`);
     } else if (s.type === 'dir') {
       if (!s.root) fail(`${where}: dir evidence needs "root"`);
+      if (s.sha256 !== undefined && !/^[0-9a-f]{64}$/.test(String(s.sha256))) fail(`${where}: "sha256" must be 64 hex characters (the hash snapshot prints)`);
     } else {
       fail(`${where}: "type" must be "git" or "dir" (got ${JSON.stringify(s.type)})`);
     }

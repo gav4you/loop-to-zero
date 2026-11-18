@@ -88,6 +88,11 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 - **Owner questions.** An item is `pending-owner` only under SKILL.md's Verdicts exceptions (checks 1 and 2
   above). It is never counted wrong and never decided by the loop. Any other item the evidence plainly refutes
   stays `wrong` while questions are open, an override question included.
+- **A reader wrong you don't confirm** (a false alarm: check 3's reasoned ok, a different symbol, dead text)
+  goes in `confirmed.json`'s `rejected` list, with the reason and the file:line that answers the refuter, or a
+  note starting "history:" that names the earlier reasoned ok. A dismissal needs the same grounding as a
+  confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
+  is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5).
 
 ## 1. Sweep
 - **Write the class's sweep patterns first,** at least as wide as the seed. Sweep along every axis, not just
@@ -200,6 +205,12 @@ A lesson that keeps recurring needs a check that runs, not more words.
   transient. A real one is fixed as its own change.
 
 ## Searches that back a bound
+These rules hold for every such search: a reader's, the fix checker's, and yours in a spot-check, a confirm check
+or a fix.
+- **Show that the search can hit.** Zero hits back a bound only after the same command, on the same paths,
+  finds something known to be there (the item's own cited name, or a line you have read). A wrong path, a bad
+  escape, a skipped file type or an encoding mismatch also prints nothing. Check the exit status too (`rg` exits
+  2 on an error, 1 on no match). Name the control in the note.
 - **No output limit at any layer:** no `| head`, the search tool's own result cap off, and shell output not
   truncated. To keep each output small, split the boundary into path sets that together cover it; `-l` or `-c` shows
   where the hits are, and each hit is then read.

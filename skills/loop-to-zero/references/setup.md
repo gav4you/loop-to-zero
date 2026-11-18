@@ -77,7 +77,9 @@ test reader may run. The steps match SKILL.md's Setup.
      - non-text evidence (PDF, docx): a pinned text conversion with one canonical numbering, which the owner
        approves as the evidence;
      - an export or text conversion goes in `S/evidence/<date>/`, named in config `evidence` (type `dir`) and
-       in the readers' paths;
+       in the readers' paths. Pin it by content: `ltz snapshot` prints the folder's hash, which goes in that
+       source's `sha256`; every tool then refuses the folder once any file in it changes, is added or is
+       removed;
      - secrets: `render` masks secret-looking values by default. Keep files that are mostly secrets out of the
        boundary;
      - cite forms: `path:12`, `path:20-25`, `path:Key` (the key's line and the 10 lines after it; cite a longer section as a line range) or `path#a.b.c`

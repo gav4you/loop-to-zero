@@ -55,7 +55,8 @@ Subtraction still does, for descriptive items. Prove the scope; a requirement it
 **The search rule.** A search that backs a universal runs with no output limit at any layer: no `head`, no
 tool result cap, no truncated shell output. It covers the whole evidence boundary, and it looks for aliases,
 re-exports and wrappers (`references/fixing.md`). Truncated output is how a false sole-location or non-use
-claim survives.
+claim survives. So is a search that cannot hit: zero hits count only after the same search finds something
+known to be there.
 
 **Accepted forms.** The source's own vocabulary is accepted. So is a context the item states (for example
 "in Postgres"); read the claim in that context.

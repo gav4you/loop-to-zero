@@ -80,7 +80,8 @@ history or diffs of the items, and memory and handoff files.
 Try to prove each item wrong. Cover every item; never sample. The evidence that counts is: {BOUNDARY}. Apply the three lenses quoted in classes.md:
 claim vs source, whole context, and adversarial input. Check every field the rules define. Read the
 universal words that classes.md lists literally. Back every "no X", "only X" or
-"every X" with a search at the pin with NO output limit.
+"every X" with a search at the pin with NO output limit. A search that finds nothing counts only once the same
+command, on the same paths, finds something you know is there; name that control in the note.
 An item whose wording an "accepted by ruling" entry approves is ok. If the evidence differs from that wording,
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
@@ -164,7 +165,8 @@ cross-references are a common fix error.
 For each new clause:
 - Does it overreach? Read literally the universal words, and any list the clause closes (by "only", "all", "both" or a count, or by
   giving it as the whole set). Back every bound with
-  a search with NO output limit, and name that search in the note.
+  a search with NO output limit, and name that search in the note. A search that finds nothing counts only once
+  the same command, on the same paths, finds something you know is there; name that control too.
 - Is it true as stated, at every file:line it names?
 - Did the edit break the rest of the item: a lost qualifier, or a mismatch with its other fields?
 
@@ -216,6 +218,8 @@ Reply with the path, the counts, and one line per wrong.
      A wrong confirmed before every reader of its chunk is done stays provisional: re-run the history check
      against the other reader's line when it arrives.
    - Spot-check 10 ok items per reader by the rule in `references/round.md`, step 3 (5 random, 5 weighted).
+   - List every reader wrong you don't confirm in `rejected`, with its reason and the file:line that answers it
+     (`references/fixing.md`, "The confirm checks").
    - Write `confirmed.json`.
 3. **Write `report.json`** (`ltz record`): one check per item, with its verdict, note and `cites_read`.
    - `cites_read` comes only from the render logs, never copied from the item's own cites.
