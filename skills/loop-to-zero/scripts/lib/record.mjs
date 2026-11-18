@@ -10,7 +10,7 @@ import { decisionLogIds, barRulings } from './rulings.mjs';
 import {
   loadRenderLog, citeInLog, citeLinesRead, mergeLineMaps, noteRefs, refInLog, slotCoverage, fmtPositions,
 } from './coverage.mjs';
-import { estimateRemaining, ESTIMATE_CAVEAT, round2 } from './estimate.mjs';
+import { estimateRemaining, estimateRange, ESTIMATE_CAVEAT, round2 } from './estimate.mjs';
 
 const RESERVED = new Set(['pending', 'defects', 'withdrawn', 'outsideBar', 'ruledKept', 'rejected']);
 // plain-fix-failure: the earlier fix did not settle it; new-text: the wrong is in text an earlier fix
@@ -739,7 +739,11 @@ export function record({ S, unit, R, chunkReaders }) {
       const [a, b] = slots;
       const both = conf.filter((id) => marked.get(a).has(id) && marked.get(b).has(id)).length;
       const est = estimateRemaining(m.foundBy[a], m.foundBy[b], both);
-      m.estimate = { pair: [a, b], n1: m.foundBy[a], n2: m.foundBy[b], m: both, ...est, caveat: ESTIMATE_CAVEAT };
+      const rng = estimateRange(m.foundBy[a], m.foundBy[b], both);
+      m.estimate = { pair: [a, b], n1: m.foundBy[a], n2: m.foundBy[b], m: both, ...est, range: [rng.remainingLow, rng.remainingHigh], lowConfidence: rng.lowConfidence, ...(rng.why ? { why: rng.why } : {}), caveat: ESTIMATE_CAVEAT };
+      totEst.rangeLow = (totEst.rangeLow || 0) + rng.remainingLow;
+      totEst.rangeHigh = (totEst.rangeHigh || 0) + rng.remainingHigh;
+      if (rng.lowConfidence) totEst.lowConfidenceChunks = [...(totEst.lowConfidenceChunks || []), name];
       if (slots.length > 2) m.estimate.note = `uses the first two readers listed (${a}, ${b})`;
       totEst.N += est.N;
       totEst.foundByReaders += est.foundByReaders;
@@ -797,6 +801,15 @@ export function record({ S, unit, R, chunkReaders }) {
   }
   totEst.N = round2(totEst.N);
   totEst.remaining = round2(totEst.remaining);
+  {
+    const { rangeLow = 0, rangeHigh = 0, lowConfidenceChunks = [], ...rest } = totEst;
+    totEst.range = [round2(rangeLow), round2(rangeHigh)];
+    totEst.lowConfidence = lowConfidenceChunks.length > 0;
+    totEst.lowConfidenceChunks = lowConfidenceChunks;
+    delete totEst.rangeLow;
+    delete totEst.rangeHigh;
+    void rest;
+  }
   measure.total = { ...tot, estimate: { ...totEst, caveat: ESTIMATE_CAVEAT } };
   const notFull = Object.entries(measure.chunks).filter(([, m]) => !m.fullDepth).map(([k]) => k);
   measure.fullDepth = notFull.length === 0;
@@ -971,6 +984,6 @@ export function record({ S, unit, R, chunkReaders }) {
       `record ${unit} r${measure.round}: ${items.length} items (ok ${counts.ok}, wrong ${counts.wrong}, pending-owner ${counts['pending-owner']}, defect ${counts.defect}, unread ${counts.unread}, outside-bar ${counts['outside-bar']}); ` +
       `full depth ${measure.fullDepth ? 'yes' : 'NO'}, counts as zero ${measure.countsAsZero ? 'yes' : `no (${blockers.join(', ')})`}; ` +
       `${readers.size} reader files covered${rr}; confirmed ${tot.confirmed}, found by one reader ${tot.foundByOneReader}, by none ${tot.foundByNone}, rejected ${rejected.size}${fc}${ob}; ` +
-      `estimated remaining ${est.remaining} (${ESTIMATE_CAVEAT}) -> report.json, measure.json`,
+      `estimated remaining ${est.remaining} (range ${est.range[0]}-${est.range[1]}${est.lowConfidence ? `, low confidence in ${est.lowConfidenceChunks.join(', ')}` : ''}; ${ESTIMATE_CAVEAT}) -> report.json, measure.json`,
   };
 }

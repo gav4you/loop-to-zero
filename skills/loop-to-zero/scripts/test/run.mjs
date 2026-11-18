@@ -7,7 +7,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync, spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { chapman, estimateRemaining, ESTIMATE_CAVEAT } from '../lib/estimate.mjs';
+import { chapman, estimateRemaining, estimateRange, ESTIMATE_CAVEAT } from '../lib/estimate.mjs';
 import { parseCite } from '../lib/util.mjs';
 import { cutChunks } from '../lib/snapshot.mjs';
 import { loadRenderLog, citeInLog } from '../lib/coverage.mjs';
@@ -3702,6 +3702,25 @@ ${r0.out}`);
   fails(show(), /has changed since it was pinned/, 'a renamed file');
   wj(cfgP, { ...cfg, evidence: { ...cfg.evidence, sha256: 'abc' } });
   fails(show(), /evidence: "sha256" must be 64 hex characters/);
+});
+
+// ---- batch 2a (skill survey): what a clean round can show
+test('estimate: a 95% range on the remaining wrongs (Chapman variance), and lowConfidence when the overlap is under 3', () => {
+  eq(estimateRange(14, 4, 2), { remainingLow: 0, remainingHigh: 21.86, lowConfidence: true, why: 'overlap m = 2 (under 3): the estimate is unstable' }, 'small overlap');
+  eq(estimateRange(20, 20, 10), { remainingLow: 0, remainingHigh: 19.89, lowConfidence: false }, 'good overlap');
+  eq(estimateRange(0, 0, 0), { remainingLow: 0, remainingHigh: 0, lowConfidence: true, why: 'no reader found a wrong: the estimate is 0 by construction and shows nothing' }, 'a zero pass');
+  eq(estimateRange(40, 40, 30).lowConfidence, false, 'control');
+  ok(estimateRange(40, 40, 30).remainingHigh > 0, 'a positive upper bound');
+});
+test('record: each chunk estimate carries its range and lowConfidence, and the total says whether any chunk is low-confidence', () => {
+  const S = baseCopy();
+  passes(ltz(['record', S, 'u1', '1', ...READERS]));
+  const m = rj(path.join(RD(S), 'measure.json'));
+  const c1 = m.chunks.c1.estimate;
+  ok(Array.isArray(c1.range) && c1.range.length === 2 && c1.range[0] <= c1.remaining && c1.range[1] >= c1.remaining, `c1 range brackets remaining: ${JSON.stringify(c1)}`);
+  eq(c1.lowConfidence, true, 'c1 overlap is 1');
+  eq(m.total.estimate.lowConfidence, true, 'total flags it');
+  ok(Array.isArray(m.total.estimate.range), 'total range');
 });
 
 // ================================================================ run

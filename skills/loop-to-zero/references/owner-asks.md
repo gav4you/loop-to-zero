@@ -146,9 +146,13 @@ Report, in this order:
    your own edit, a new class, a missing ruling, writer misjudgment) and by who found them (both readers, one only, none), plus
    reader false alarms. A round still being read is reported as "at least n (reading incomplete)".
 3. **How much is likely still unfound:**
-   - the remaining-wrongs estimate, with its caveat;
+   - the remaining-wrongs estimate, with its caveat, its range and any low-confidence flag from `measure.json`;
+   - how far this unit's earlier estimates ran low: each earlier round's estimate against the wrongs later rounds
+     found in text that round had read, unedited since (`references/learning.md`, "The retro", step 3);
    - the canary scores per reader (caught, false alarms);
-   - the found-by-only-one-reader count.
+   - the found-by-only-one-reader count;
+   - what the clean results can and cannot show (`references/round.md`, "What a clean result shows"). Never
+     present a clean round as proof that nothing is left.
 4. **Cross-unit counts:** edits in units not yet closed, and leads in closed units.
 5. **Cost:** tokens and wall-clock time, against the estimate.
 6. **Lessons logged**, and any SKILL.md change you propose.

@@ -230,3 +230,25 @@ capture-recapture estimator: N = (n1+1)(n2+1)/(m+1) − 1).
   and the estimate runs low. Wrongs found by none add to it.
 - **Use it to answer "when will it end?"** as a count of wrongs likely still unfound, never as a date. A large
   estimate with a small overlap means more readers per chunk would pay.
+- **Give its range and confidence.** `record` writes a rough 95% range (`range`) for each chunk and the total,
+  and flags `lowConfidence` when the two readers share fewer than 3 finds. Quote the range, and say when it is
+  low-confidence.
+- **Correct it by the unit's own history** before relying on it: compare each earlier round's estimate with the
+  wrongs later rounds found in text that round had read, unedited since (the retro, step 3). If the estimate ran
+  low by a factor, say so with the figure.
+
+## What a clean result shows
+A round with no finds is still a sample. Say what each clean result can and cannot show:
+- **The estimate is 0 by construction** when no reader found anything, and its range is 0–0 for the same reason:
+  report both as showing nothing, not as a precise zero.
+- **Clean spot-checks bound a reader's miss rate only loosely.** With none wrong out of n random picks, the
+  95% upper bound on the rate is 1 − 0.05^(1/n): 45% for 5 (one reader's random picks in a round), 26% for 10,
+  14% for 20, 7% for 40. Only random picks count; weighted picks don't estimate a rate. Quote each reader's
+  bound, and the round's random picks pooled for the readers as a group. Compute the figure with a tool for the
+  n you have.
+- **Caught canaries show little alone.** 2 of 2 is consistent with a reader who misses most wrongs (the same
+  bound gives 78%). Readers are new agents each round, so pool canaries across all readers and rounds of the
+  unit before quoting a rate (8 of 8 still allows 31%), and remember they test only the kinds of wrong you
+  planted.
+- **What a zero pass does show** is that the bar's classes, read at full depth, found nothing this round. The
+  close rests on that, not on an estimate of zero.

@@ -799,13 +799,15 @@ Notes on these fields:
     - `withdrawn`, `withdrawnByRuling.<slot>` (reader wrongs a ruling overturned; not false alarms);
     - `outsideBar.<slot>`, `outsideBarItems`, `outsideBarIds` (reader wrongs outside a frozen bar,
       listed for the owner; not false alarms, not confirmed);
-    - `estimate`: `{pair, n1, n2, m, N, foundByReaders, remaining, caveat, partial?, note?}` (`note`
-      with more than two readers), or `{pair: null, reason, caveat}` with fewer than two.
+    - `estimate`: `{pair, n1, n2, m, N, foundByReaders, remaining, range, lowConfidence, why?, caveat, partial?,
+      note?}` (`note` with more than two readers), or `{pair: null, reason, caveat}` with fewer than two.
+      `range` is a rough 95% range on `remaining` from Chapman's variance (Seber); `lowConfidence` is true when
+      the overlap `m` is under 3, and `why` says why (a pass with no finds gives 0 by construction).
   - `total` holds:
     - the chunks' counts, summed (the `.<slot>` ones stay per slot), except `unionSize`; of the id
       lists, only `outsideBarIds`;
-    - `estimate`: `{N, foundByReaders, remaining, chunksEstimated, chunksNotEstimated, caveat}`, the
-      chunks' estimates summed;
+    - `estimate`: `{N, foundByReaders, remaining, range, lowConfidence, lowConfidenceChunks, chunksEstimated,
+      chunksNotEstimated, caveat}`, the chunks' estimates and ranges summed;
     - `pending`, `pendingByReason`, `unread`, `fullDepth`, `chunksNotFullDepth`, `countsAsZero`.
   - `reruns`: `[{slot, parent, chunk, from, to, state, positionsTaken}]`, every rerun merged in.
   - `ruledOks`: `[{id, slot, ruling, refs}]`, every `ok` whose note starts `ruled: <ruling id>` (the

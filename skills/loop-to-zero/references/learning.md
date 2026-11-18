@@ -109,6 +109,13 @@ until that check.
 2. **If the count rose,** say whether the bar moved (old text, newly seen) or your edits regressed.
 3. **The scores:** the canary scores, the remaining-wrongs estimate, the early-versus-late reading depth, and the
    recall of the unit's outside findings (`references/setup.md`, "Existing outside findings").
+   **Calibrate the estimate:** for each earlier round of the unit, compare its total estimate with the wrongs
+   later rounds confirmed in items that round read and nobody edited since (repeats with `earlier-miss`, and
+   `judgments.jsonl` lines that turned that round's ok to wrong). Record the ratio found-later / estimated in
+   `retro.md`; the report quotes it (`references/owner-asks.md`, "Reporting a round", item 3). A round whose
+   estimate was 0 has no ratio: record its later finds as "found later despite an estimate of 0". The latest
+   rounds' ratios have had few later rounds to be checked against, and a zero round finds nothing to count
+   against them, so they look better than they are: say so.
 4. **Lessons:** which lessons were applied this round, and which were broken. Promote each project lesson that
    qualifies ("Promotion", below).
 5. **Cost:** the estimate against the actual (`ltz cost`).
