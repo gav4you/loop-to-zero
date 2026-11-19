@@ -11,6 +11,7 @@ import * as queue from './lib/queue.mjs';
 import { diffcheck } from './lib/diffcheck.mjs';
 import { sweep, replay } from './lib/patterns.mjs';
 import { spotcheck } from './lib/spotcheck.mjs';
+import { crosscheck } from './lib/crosscheck.mjs';
 import { flips } from './lib/flips.mjs';
 import * as canary from './lib/canary.mjs';
 import { cost, costQueue, timeline } from './lib/cost.mjs';
@@ -211,6 +212,10 @@ cost --timeline <transcript.jsonl>
   patterns (or {"patterns": [...]}). --holdout names the rounds a rule was written from (a history round
   by its label, such as discovery/u1/r3); the summary then also gives each pattern's recall and false hits
   without them, which is the figure to judge the rule on.`,
+  crosscheck: `crosscheck <S> [--unit <unit>]
+  List every cite two or more items share (a family to judge together: readers see one window at a
+  time and never compare items), and flag the families whose items state different numbers. Reports
+  only; never fails or judges.`,
   spotcheck: `spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K> ...]
   Draw each reader's random spot-checks: K (default 5) of the items its result file marked ok (canaries
   excluded), half from the early half of its positions and half from the late half, reproducibly from the
@@ -246,6 +251,7 @@ const FLAGS = {
   cost: { queue: 'bool', timeline: 'string' },
   replay: { rounds: 'string', holdout: 'string' },
   spotcheck: { seed: 'string', 'per-slot': 'string', extra: 'multi' },
+  crosscheck: { unit: 'string' },
   lock: { session: 'string' },
   rulings: {},
 };
@@ -339,6 +345,9 @@ function run(cmd, argv) {
     case 'spotcheck':
       need(pos, 3, cmd);
       return spotcheck({ S: pos[0], unit: pos[1], R: pos[2], seed: flags.seed, perSlot: flags['per-slot'], extra: flags.extra });
+    case 'crosscheck':
+      need(pos, 1, cmd);
+      return crosscheck({ S: pos[0], unit: flags.unit });
     case 'lock':
       need(pos, 2, cmd);
       return lock({ S: pos[0], action: pos[1], session: flags.session });

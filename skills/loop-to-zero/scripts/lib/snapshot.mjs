@@ -8,7 +8,7 @@ import { fail, writeJson, writeJsonl, sha256File, parsePosInt, parseRound } from
 export const ITEM_TYPES = ['requirement', 'description'];
 import { loadConfig, requireUnit, loadItems, roundDir, readerResultFiles, loadCanaries } from './state.mjs';
 import { rulingCheck } from './rulings.mjs';
-import { evidenceSources } from './sources.mjs';
+import { evidenceSources, pinRecord } from './sources.mjs';
 import { treeHash, checkDirPin } from './evidence.mjs';
 
 /** Cut 1..n into chunks of chunkSize; a tail shorter than half a chunk joins the previous chunk. */
@@ -115,6 +115,8 @@ export function snapshot({ S, unit, R, chunkSize, order }) {
   writeJsonl(snap, items);
   fs.writeFileSync(path.join(rd, 'snapshot.sha256'), `${sha256File(snap)}  snapshot.jsonl\n`);
   fs.copyFileSync(classes, path.join(rd, 'classes.md'));
+  // The evidence this round reads, so later tools can tell when the pin has moved since.
+  writeJson(path.join(rd, 'pin.json'), { sources: pinRecord(cfg) });
   writeJson(path.join(rd, 'list.json'), listIds);
   const chunks = r0 ? { c1: { from: 1, to: listIds.length } } : cutChunks(listIds.length, size);
   writeJson(path.join(rd, 'chunks.json'), chunks);

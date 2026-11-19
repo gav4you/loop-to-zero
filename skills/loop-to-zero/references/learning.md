@@ -103,7 +103,9 @@ until that check.
 ## The retro (`r<R>/retro.md`)
 1. **Sort each confirmed wrong on two axes.**
    - **Origin:** pre-existing text; your own edit; a new class; a missing ruling (including a reader wrong
-     overturned by a ruling given mid-round). A verdict of yours later overturned is "writer misjudgment"; when
+     overturned by a ruling given mid-round); evidence moved (the owner moved the pin and only the new evidence
+     refutes the item: `record` warns when the pin moved since the round's snapshot; such a wrong adjusts no
+     earlier round's count and is no reader miss). A verdict of yours later overturned is "writer misjudgment"; when
      a ruling overturns it, it is "missing ruling" if the bar lacked the ruling's point, and "writer misjudgment"
      if the entry covered it and you misread it.
    - **Who found it:** both readers; one reader only; none (the writer's own check (`spot-check`), a sweep, an audit, the fix

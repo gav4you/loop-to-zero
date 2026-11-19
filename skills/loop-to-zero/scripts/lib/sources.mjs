@@ -3,6 +3,9 @@
 // A dir source's optional "sha256" pins its files: every tool refuses the folder once they change.
 // A cite's path goes to the source with the longest matching prefix, and the prefix is stripped
 // before that source reads the file. A single object (no prefix) is the source for every path.
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fail, normPath } from './util.mjs';
 
 function normPrefix(p, where) {
@@ -55,4 +58,60 @@ export function routeSource(sources, p) {
 export function sourceBases(cfg) {
   const list = Array.isArray(cfg.evidence) ? cfg.evidence : [cfg.evidence || {}];
   return list.flatMap((s) => [s && s.repo, s && s.root]).filter(Boolean);
+}
+
+/**
+ * The pin a round reads, as snapshot writes it to <round>/pin.json: each source with its git pin
+ * resolved to a commit (so a moved branch or tag still names what was read), or its folder and sha256.
+ */
+export function pinRecord(cfg) {
+  return evidenceSources(cfg).map((s) => {
+    if (s.type === 'git') {
+      let commit;
+      try {
+        commit = execFileSync('git', ['-C', s.repo, 'rev-parse', '--verify', '--quiet', `${s.pin}^{commit}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim() || undefined;
+      } catch {
+        commit = undefined;
+      }
+      return { type: 'git', prefix: s.prefix, repo: s.repo, pin: s.pin, ...(commit ? { commit } : {}) };
+    }
+    return { type: 'dir', prefix: s.prefix, root: s.root, ...(s.sha256 !== undefined ? { sha256: s.sha256 } : {}) };
+  });
+}
+
+/** A round's recorded pin, or null when the round has no pin.json (rounds snapshotted before it existed). */
+export function loadPinRecord(roundDir) {
+  const p = path.join(roundDir, 'pin.json');
+  if (!fs.existsSync(p)) return null;
+  let o;
+  try {
+    o = JSON.parse(fs.readFileSync(p, 'utf8'));
+  } catch (e) {
+    fail(`${p}: not valid JSON (${e.message})`);
+  }
+  if (!o || !Array.isArray(o.sources)) fail(`${p}: needs {"sources": [...]}`);
+  return o.sources;
+}
+
+/** How two pin records differ, as text, or null when every source reads the same evidence. */
+export function pinDifference(was, now) {
+  const key = (s) => (s.type === 'git' ? `git ${s.repo} @ ${s.commit || s.pin}` : `dir ${s.root}${s.sha256 ? ` sha256 ${s.sha256.slice(0, 12)}` : ''}`);
+  const a = new Map(was.map((s) => [s.prefix || '', key(s)]));
+  const b = new Map(now.map((s) => [s.prefix || '', key(s)]));
+  const out = [];
+  for (const p of new Set([...a.keys(), ...b.keys()])) {
+    if (a.get(p) !== b.get(p)) out.push(`${p || '(no prefix)'}: ${a.get(p) || 'none'} -> ${b.get(p) || 'none'}`);
+  }
+  return out.length ? out.join('; ') : null;
+}
+
+/** The config with its evidence set back to a recorded pin (a git source reads its recorded commit). */
+export function configAtPin(cfg, rec) {
+  return {
+    ...cfg,
+    evidence: rec.map((s) =>
+      s.type === 'git'
+        ? { type: 'git', repo: s.repo, pin: s.commit || s.pin, prefix: s.prefix }
+        : { type: 'dir', root: s.root, prefix: s.prefix, ...(s.sha256 !== undefined ? { sha256: s.sha256 } : {}) }),
+  };
 }

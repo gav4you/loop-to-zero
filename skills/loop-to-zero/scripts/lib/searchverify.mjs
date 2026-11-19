@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { fail, globToRegExp, normPath, listRounds, readJsonl, LtzError } from './util.mjs';
 import { splitLines } from './evidence.mjs';
 import { loadConfig, requireUnit } from './state.mjs';
-import { evidenceSources, routeSource } from './sources.mjs';
+import { evidenceSources, routeSource, pinRecord, loadPinRecord, pinDifference, configAtPin } from './sources.mjs';
 
 const squash = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
 
@@ -47,6 +47,12 @@ export function searches({ S, rounds }) {
   const cfg = loadConfig(S);
   const units = !rounds || rounds === 'all' ? Object.keys(cfg.units) : rounds.split(',').map((u) => requireUnit(cfg, u.trim()));
   const scanner = new PinScanner(cfg);
+  // Each round is re-run at the pin its snapshot recorded (pin.json), so a pin moved since does not
+  // show up as a too-narrow scope. A round with no pin.json is re-run at the current pin.
+  const nowPin = pinRecord(cfg);
+  const scanners = new Map();
+  let ownPin = 0;
+  let noPin = 0;
   const out = [];
   const bounded = [];
   const problems = [];
@@ -58,6 +64,15 @@ export function searches({ S, rounds }) {
       const p = path.join(r.dir, 'fixlog.jsonl');
       if (!fs.existsSync(p)) continue;
       const rows = readJsonl(p, { what: `${unit}/${r.name}/fixlog.jsonl` }).rows;
+      const rec = loadPinRecord(r.dir);
+      let roundScanner = scanner;
+      if (!rec) noPin++;
+      else if (pinDifference(rec, nowPin)) {
+        const k = JSON.stringify(rec);
+        if (!scanners.has(k)) scanners.set(k, new PinScanner(configAtPin(cfg, rec)));
+        roundScanner = scanners.get(k);
+        ownPin++;
+      }
       // The field's final text in this round: the last "new" logged for that id and field.
       const lastNew = new Map();
       for (const { obj: x } of rows) lastNew.set(`${x.id}\u0000${x.field}`, x.new);
@@ -75,7 +90,7 @@ export function searches({ S, rounds }) {
         structured++;
         let res;
         try {
-          res = scanner.run({ ...e.search, paths: undefined });
+          res = roundScanner.run({ ...e.search, paths: undefined });
         } catch (err) {
           if (!(err instanceof LtzError)) throw err;
           problems.push(`${where}: ${err.message}`);
@@ -101,7 +116,9 @@ export function searches({ S, rounds }) {
     failed: differ > 0 || problems.length > 0,
     summary:
       `searches: ${structured} structured search(es) re-run over ${scanner.boundary ? 'boundaryPaths' : 'every file (no boundaryPaths)'} at ${scanner.describe()}; ` +
-      `${differ} differ from their logged hits, ${bounded.length} bounded by a scopeNote, ${freeText} free-text not re-runnable`,
+      `${differ} differ from their logged hits, ${bounded.length} bounded by a scopeNote, ${freeText} free-text not re-runnable` +
+      (ownPin ? `; ${ownPin} round(s) re-run at their own snapshot pin (the pin has moved since)` : '') +
+      (noPin ? `; ${noPin} round(s) with no pin.json, re-run at the current pin` : ''),
   };
 }
 

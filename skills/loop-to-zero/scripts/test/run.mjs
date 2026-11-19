@@ -2434,6 +2434,71 @@ test('searches: re-runs logged structured searches over boundaryPaths and report
   fails(ltz(['searches', S, '--rounds', 'u1']), /no structured fixlog searches in u1; nothing to re-run/);
   fails(ltz(['searches', S, '--rounds', 'u9']), /not in config\.json "units"/);
 });
+test('snapshot: records the evidence pin each round reads (git commit resolved) in pin.json', () => {
+  const S = makeS();
+  snap(S);
+  const pin = rj(path.join(RD(S), 'pin.json'));
+  ok(Array.isArray(pin.sources) && pin.sources.length === 1, JSON.stringify(pin));
+  const s = pin.sources[0];
+  eq(s.type, 'git');
+  eq(s.pin, 'v1');
+  eq(s.commit, git(['rev-parse', 'v1^{commit}']).trim(), 'the tag resolved to its commit');
+});
+test('searches: a round snapshotted at an earlier pin is re-run at its own pin, not the moved one', () => {
+  // V1-LINE matches src/auth.js:3 at v1 only; HEAD changed that line.
+  const S = makeS();
+  snap(S);
+  wjl(path.join(RD(S), 'fixlog.jsonl'), [fl('A01', 'title', 'a', 'b', { search: { regex: 'V1-LINE' }, hits: 1, blindSpots: 'x' })]);
+  passes(ltz(['searches', S, '--rounds', 'u1']), 'same pin: 1 hit');
+  const cfg = rj(path.join(S, 'config.json'));
+  wj(path.join(S, 'config.json'), { ...cfg, evidence: { ...cfg.evidence, pin: 'HEAD' } });
+  const r = passes(ltz(['searches', S, '--rounds', 'u1']), 'the pin moved, but the round is re-run at its own pin');
+  ok(/1 round\(s\) re-run at their own snapshot pin/.test(r.out), r.out);
+  fs.rmSync(path.join(RD(S), 'pin.json'));
+  const r2 = fails(ltz(['searches', S, '--rounds', 'u1']), /1 differ/, 'control: with no pin.json the current pin is used, and the search no longer hits');
+  ok(/1 round\(s\) with no pin\.json, re-run at the current pin/.test(r2.out), r2.out);
+});
+test('record: warns when the evidence pin moved since the round\'s snapshot', () => {
+  const S = baseCopy();
+  passes(ltz(['record', S, 'u1', '1', ...READERS]), 'control: same pin');
+  ok(!/pin moved/.test(ltz(['record', S, 'u1', '1', ...READERS]).out), 'no warning at the same pin');
+  const cfg = rj(path.join(S, 'config.json'));
+  wj(path.join(S, 'config.json'), { ...cfg, evidence: { ...cfg.evidence, pin: 'HEAD' } });
+  const r = ltz(['record', S, 'u1', '1', ...READERS]);
+  ok(/WARNING: evidence pin moved since this round's snapshot/.test(r.out), r.out);
+});
+test('record: a wrong whose note starts "self-contradiction:" needs no evidence file:line (the item refutes itself)', () => {
+  const S = makeS();
+  snap(S);
+  const self = { verdict: 'wrong', note: 'self-contradiction: the title says 2 + 2 = 5', class: ['C2'] };
+  reader(S, 'c1-a', 1, 6, { A04: self });
+  reader(S, 'c1-b', 1, 6, { A04: self });
+  reader(S, 'c2-a', 7, 12);
+  reader(S, 'c2-b', 7, 12);
+  wj(path.join(RD(S), 'confirmed.json'), { A04: { note: 'self-contradiction: 2 + 2 is not 5', class: 'C2' } });
+  const r = ltz(['record', S, 'u1', '1', ...READERS]);
+  ok(!/A04.*names no file:line/.test(r.out), r.out);
+  reader(S, 'c1-b', 1, 6, { A04: { verdict: 'wrong', note: 'the sum is off', class: ['C2'] } });
+  ok(/A04.*wrong, but its note names no file:line/.test(ltz(['record', S, 'u1', '1', ...READERS]).out), 'control: without the prefix a file:line is still required');
+});
+test('crosscheck: groups items that cite the same line and flags differing numbers among them', () => {
+  const its = [
+    item('A01', 'timeout is 30 seconds', ['config/app.json:2']),
+    item('A02', 'the timeout is 60', ['config/app.json:2']),
+    item('A03', 'timeout 30', ['config/app.json:2']),
+    item('A04', 'retries is 3', ['config/app.json:3']),
+    item('A05', 'retries are 3', ['config/app.json:3']),
+    item('A06', 'login calls check', ['src/auth.js:3']),
+  ];
+  const S = makeS({ items: its });
+  const r = passes(ltz(['crosscheck', S]));
+  ok(/config\/app\.json:2: 3 items \(A01, A02, A03\); numbers differ: A01 \[30\], A02 \[60\], A03 \[30\]/.test(r.out), r.out);
+  ok(/config\/app\.json:3: 2 items \(A04, A05\)/.test(r.out) && !/app\.json:3.*differ/.test(r.out), r.out);
+  ok(!/src\/auth\.js:3/.test(r.out), 'a cite only one item uses is not a family');
+  ok(/2 shared cite\(s\), 1 with differing numbers/.test(r.out), r.out);
+  const r2 = passes(ltz(['crosscheck', S, '--unit', 'u2']));
+  ok(/0 shared cite/.test(r2.out), r2.out);
+});
 test('sweep --count: only counts per pattern and unit, never the hits; known instances still checked', () => {
   const S = makeS();
   const f = patFile(S, ONLY);

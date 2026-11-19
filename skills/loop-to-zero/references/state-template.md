@@ -69,7 +69,8 @@ S/
   evidence/<date>/   a dated export or text conversion, if the evidence is live or not text: read-only once
                      pinned by its sha256 in config.json's evidence (type dir), and named in the readers' paths
   <unit>/r<R>/       one folder per unit and round (r0 is the cost-measurement read):
-                     snapshot.jsonl + snapshot.sha256, classes.md (the bar's copy for this round), list.json,
+                     snapshot.jsonl + snapshot.sha256, pin.json (the evidence pin this round reads),
+                     classes.md (the bar's copy for this round), list.json,
                      chunks.json,
                      window files (w-<slot>-<from>.txt), render-<slot>.jsonl logs, agent-<slot>.jsonl, queue.json, canary-plan.json,
                      confirmed.json (the find list), report.json (per item: verdict, note, cites_read),

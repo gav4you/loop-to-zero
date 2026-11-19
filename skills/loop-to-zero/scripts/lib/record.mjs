@@ -7,6 +7,7 @@ import {
   loadCanaries, loadCanaryPlan, plantedFor, readerResultPath, renderLogPath, historyFolders,
 } from './state.mjs';
 import { decisionLogIds, barRulings } from './rulings.mjs';
+import { pinRecord, loadPinRecord, pinDifference } from './sources.mjs';
 import {
   loadRenderLog, citeInLog, citeLinesRead, mergeLineMaps, noteRefs, refInLog, slotCoverage, fmtPositions,
 } from './coverage.mjs';
@@ -359,6 +360,11 @@ export function record({ S, unit, R, chunkReaders }) {
 
   const problems = [];
   const warnings = [];
+  const roundPin = loadPinRecord(rd);
+  const pinMoved = roundPin ? pinDifference(roundPin, pinRecord(cfg)) : null;
+  if (pinMoved) {
+    warnings.push(`evidence pin moved since this round's snapshot (${pinMoved}): tools now read the new pin, so a wrong only the new evidence shows is evidence drift, not a reader miss`);
+  }
   let sha = null;
   try {
     sha = verifySnapshot(rd);
@@ -579,7 +585,9 @@ export function record({ S, unit, R, chunkReaders }) {
           for (const ci of Array.isArray(o.cites) ? o.cites : []) {
             if (!citeInLog(log, ci)) problems.push(`${where}: cites ${ci}, which is not in its render log`);
           }
-          if (o.verdict === 'wrong') {
+          // A wrong refuted by the item's own text (its figures disagree with each other) has no evidence
+          // line to name: its note starts "self-contradiction:" and quotes the clash instead.
+          if (o.verdict === 'wrong' && !/^s*self-contradiction:/i.test(String(o.note ?? ''))) {
             const refs = noteRefs(o.note);
             if (!refs.length) problems.push(`${where}: wrong, but its note names no file:line`);
             else if (!refs.some((ref) => refInLog(log, ref))) {

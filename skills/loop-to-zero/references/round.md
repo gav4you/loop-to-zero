@@ -53,6 +53,9 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   `spotchecks.json`. A reader that missed a canary or reads less deeply late gets more random picks
   (`--extra <slot>=5` adds 5 to its 5; its 5 weighted picks still apply). Draw them once any supplementary
   read is done: a rerun slot's file gets picks of its own. Note the weighted picks and why in `retro.md`;
+- run `ltz crosscheck <S> --unit <unit>`: it lists the cites two or more items share and flags those whose
+  items state different numbers. Readers see one window at a time and never compare items, so judge each
+  flagged family together, at the evidence;
 - handle this unit's open lines in `S/cross-unit-edits.txt` with verdict "deferred" (hits another unit's round
   logged for it, and owed re-judges): judge each with the confirm checks, add a hit confirmed wrong that no reader marked to
   `confirmed.json` (`"foundBy": "sweep"`), make any reverts they call for in step 4, and mark each settled (round, date);
