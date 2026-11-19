@@ -43,11 +43,19 @@ bounds it.
 | U9 defaults | "defaults to Y" | It is `X ?? Y`, `X \|\| Y` (falsy values such as 0, "" or false take the default), a truthiness guard, a destructuring or parameter default (only `undefined` takes it), or set elsewhere | "X, or Y when it is unset" (or "when falsy", as the code does) |
 | U10 count | "N per request", "three handlers" | The count is off anywhere | Recount with an unlimited search, or drop the number |
 | U11 ambiguity | An item that can be read two ways ("passes a timeout": the option, or its effect?) | Two readings, which the evidence would judge differently | Rewrite it to say one thing |
+| U12 defined, not wired | "X happens via Y", "Y handles X", "X is sent by Y()" | Y is defined but nothing on X's path calls or registers it, or it is deprecated or disabled. A definition alone never backs the claim: the reader finds the call or registration site on X's path | Name the path that does it, or subtract the claim |
 | C1 cite resolves | The named file, section or key | It doesn't exist at the pin, or says something else | Correct the cite |
 | C2 value | Numbers, periods, thresholds, units | They differ from the evidence | Correct the value and its unit. For a requirement item, only when the cite is the requirement's own source; a differing implementation is a `defect` |
 | C3 effective setting | "X is set to Y" | A default is overridden, inherited or disabled elsewhere | State the effective value and where it is set (for a requirement item, a differing implementation is a `defect`) |
 | C4 scope | "MFA is enforced" | The evidence covers only some environments or populations | For a descriptive item, state the scope ("in production"). A requirement item is never narrowed to fit: that is a `defect` |
 | C5 names | Roles, owners, systems | A name is renamed or retired | Use the current name |
+| C6 evaluated expression | A quoted cron line, version range, regex, glob or CIDR, and what it covers ("so Node 20 and 21") | Evaluating the expression in its consumer's dialect gives a different set. A version claim also separates the declared range (a manifest such as package.json) from the resolved version (the lockfile or the runtime) | Evaluate it with a tool or a scratch helper, never by eye, and state what it covers in its own terms; or subtract the coverage clause |
+
+**Every class entry in `S/classes.md`, starter or new, has an "Is not" line and an "Ok example" line,** each written
+out: the nearest class it could be confused with, and one made-up claim of its shape that holds. That includes the
+catch-alls (ambiguity, closed list, names) and any class kept only on a condition. An entry missing either is not
+ready for the owner. The pair is what stops two readers filing one wrong under different classes. Two classes that both fit an item follow the tie-break in
+`references/fixing.md` ("Classes"), so order `S/classes.md` with the narrower, more mechanical classes first.
 
 Where softening is not allowed (setup question 4), the "Fix form" column's hedge forms don't apply.
 Subtraction still does, for descriptive items. Prove the scope; a requirement item the evidence fails is a `defect`.

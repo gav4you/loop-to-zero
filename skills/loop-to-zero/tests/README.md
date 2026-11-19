@@ -68,6 +68,7 @@ against a baseline copy made before the edit, as in step 1):
 | 13-process-checks | Replaying a rule with its source round held out; seeded, spread spot-check picks with extra picks for a reader that missed a canary; reconciling an extract against its source |
 | 14-reader-ok-notes | A reader whose ok notes for a range share one templated text: the writer flags it and gives that range a supplementary read |
 | 15-retro-diagnosis | 14 wrongs from one reformatted file confirmed against the pin as one cause; a one-reader miss diagnosed from the render log; the trend broken down by class |
+| 16-class-research | Drafting a class set from claim shapes: defined-not-wired and evaluated-expression classes, an "Is not" line and ok example on every entry, cross-item checks |
 
 ## 3. Trigger test (the description)
 `triggers.md`: 10 requests that should load this skill and 10 near misses, each run sent in a new shuffled order to a new

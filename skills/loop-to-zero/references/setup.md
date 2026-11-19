@@ -215,6 +215,8 @@ another.
 - a name in the project's terms;
 - a definition;
 - what makes it wrong;
+- an "Is not" line (the nearest class it could be confused with) and an "Ok example" line (a made-up claim of its
+  shape that holds), on every entry, starter or new, catch-alls and conditional entries included;
 - 2 to 3 example item ids from the repo, or "none found";
 - sweep patterns, tested so that together they hit every known instance;
 - the fix form;
@@ -222,7 +224,7 @@ another.
 - its replay result. If the project has recorded rounds, run `ltz replay` and record which past confirmed
   wrongs the class catches, and its false hits.
 
-**The draft bar.** Each proposed class's name, definition, what makes it wrong and fix form go into a draft
+**The draft bar.** Each proposed class's name, definition, what makes it wrong, what it is not, its ok example and fix form go into a draft
 `S/classes.md` for the r0 test reader (its example ids, pattern, source and replay result stay in `research.md`),
 together with quoted copies of the three lenses from `references/reading-classes.md` and the universal words
 (config `universalWords` when set, otherwise that file's list). Readers can
