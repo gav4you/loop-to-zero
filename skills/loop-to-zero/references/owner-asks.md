@@ -15,6 +15,15 @@ including "knowingly amends" overrides, not only rulings. List each ask in `S/ow
 with the unit and item ids that wait on it, and add its decision id once it is answered, so a later session can
 see what is still open.
 
+**Each decision-log entry records** the question as asked, the options offered, the owner's words verbatim, the
+choice, and why each rejected option was rejected (the owner's reason if given; otherwise your recommendation's
+reason, labelled as yours). A later reader can then tell what was weighed, not only what won.
+
+**Before each report, check every open question against the decisions recorded since it was asked.** A later
+decision whose words settle it, even one given on another topic, withdraws it: mark it in `S/owner-questions.md`
+with that decision id and the date, report it as withdrawn (with your reading of how the decision settles it,
+labelled for the owner to correct), and stop asking it.
+
 **Unprompted rulings** are recorded the same way, for example "stop flagging those" or "that's covered by
 R-12".
 - Add each bar ruling to `S/classes.md` under accepted by ruling (`references/reading-classes.md`). The entry's
@@ -140,7 +149,14 @@ Every setup question (`references/setup.md`) belongs to the owner, including:
 - Push, publish, a tag, or freezing a release or the items as the reference (setup question 0).
 
 ## Reporting a round (information, not a stop)
-Report, in this order:
+Open with two things, before item 1:
+- **A headline:** one or two sentences on what the round found and whether the unit can close, stamped with
+  the round and pin its figures are as of ("round 5, at v3.2"). Take every figure from `record`'s output.
+- **Decisions needed:** each open owner question that blocks a close or holds drafted fixes, one line each:
+  what it blocks and by when the answer is needed (for example, before the next round's snapshot). Write "none"
+  when there are none.
+
+Then report, in this order:
 1. **The trend:** wrongs per round, with adjusted counts shown, and per class (`references/learning.md`, "The
    retro", step 2), naming any class that is not falling.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
@@ -158,7 +174,8 @@ Report, in this order:
 5. **Cost:** tokens and wall-clock time, against the estimate.
 6. **Lessons logged**, and any SKILL.md change you propose.
 7. **Open questions and defects:** every open owner question (such as `pending-owner` items, an override
-   question or a ruling-level lead), `outsideBar` items, this round's `defect` verdicts (each with its root cause
+   question or a ruling-level lead), ranked by what it blocks (a close, then held drafts, then nothing), each with
+   its age in days since it was asked, and the questions withdrawn since the last report, `outsideBar` items, this round's `defect` verdicts (each with its root cause
    and proposed fix, one line each: `references/debugging.md`), and every open defect in `S/defects.md`.
 8. **What other steps send to the report,** such as a new ruling entry's text, a class added mid-pass, a
    proposed wording change with its replay numbers, a lesson promotion, a wish, and hedges left in place of a

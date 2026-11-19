@@ -70,6 +70,7 @@ against a baseline copy made before the edit, as in step 1):
 | 15-retro-diagnosis | 14 wrongs from one reformatted file confirmed against the pin as one cause; a one-reader miss diagnosed from the render log; the trend broken down by class |
 | 16-class-research | Drafting a class set from claim shapes: defined-not-wired and evaluated-expression classes, an "Is not" line and ok example on every entry, cross-item checks |
 | 17-fix-tactics | A third repeat after two narrowings, a new class wording for 31 sweep hits, what the fix checker checks ("old text held"), and a defect diagnosed by candidate causes with a working sibling |
+| 18-owner-report | A round report with three open owner questions (one settled by a later decision), a reply that picks no option, and a reply that does: headline, decisions needed, ranked questions with ages, and the decision record |
 
 ## 3. Trigger test (the description)
 `triggers.md`: 10 requests that should load this skill and 10 near misses, each run sent in a new shuffled order to a new

@@ -152,6 +152,8 @@ Every fix follows 2 to 4.
      it, subtract, or open the list if softening is allowed.
 4. **One wording per class.** Fix every hit of a class with one wording, reused from an earlier fix of that class
    already found correct (not `S/precedents.md`, which readers read) or the source's own words. Don't write fresh prose for each item.
+   - **A wording no fix of the class has used yet is tried on one item first:** fix that item, re-read it and
+     fix-check it, and only once the check returns 0 apply the wording to the other hits (a follow-up commit).
 
 ## 3. Dependents
 Search for items that cite the changed item or restate its conclusion, in this unit and in others. Fix them
