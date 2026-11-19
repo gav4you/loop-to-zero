@@ -31,13 +31,21 @@ isolate, diagnose, fix), with the fix step changed to "propose": the evidence is
    - **When it came in:** the history of the cited lines up to the pin (`git log -L` or `git blame`): the commit
      that brought the value in, and its date. A recent change is the first suspect, not proof.
 3. **Diagnose.**
-   - **State each hypothesis and test it** against the evidence. Record the ones ruled out, and why.
+   - **List the candidate causes.** For each: the evidence for and against it (file:line at the pin), a test that
+     would confirm it, and a test that would kill it.
+   - **Run the cheapest test that tells the leading candidates apart first.** A working sibling (another
+     environment, version, config or code path where the requirement holds) is usually that test: diff it
+     against the failing one, and the causes that the two share are out.
+   - **"Ruled out" needs a cite or a test's output.** A candidate dropped without one is "set aside", and stays
+     in the entry.
    - **The root cause is the first place the behaviour departs from the requirement,** not the line where the
      symptom shows. When two causes act together, name both.
    - **A cause outside the evidence boundary** (a deploy setting, a vendor default) is recorded as "cause outside
      the boundary: <where>", and the diagnosis stops there. It is a question for the owner, not a finding.
 4. **Propose, don't apply.**
-   - **Proposed fix:** the smallest change to the evidence that meets the requirement, with its side effects.
+   - **Proposed fix:** the smallest change to the evidence that meets the requirement, with its side effects. Name
+     the cause it breaks, so the owner can see why it works. While the root cause is not reached, propose one fix
+     per leading candidate, each naming the cause it breaks.
    - **Items it would change:** sweep for items citing the same lines, or the same subject, and name them in the
      entry. Every read stays at the pin, so the owner's fix to the evidence changes no verdict by itself. These
      items matter only if the owner later moves the pin (a new answer to setup question 5), and the list shows the
@@ -71,8 +79,9 @@ Expected:      <quote> (<cite>)
 Actual:        <quote> (<file:line at the pin>)
 Reproduction:  <probe command and output, or "by reading: ...">
 Isolation:     <each place it is set or overridden>; came in with <commit> (<date>)
-Root cause:    <...>  (ruled out: <...>)
-Proposed fix:  <...>; side effects: <...>; items it would change: <ids>
+Candidates:    <cause>: for <cite>; against <cite>; confirm test <...>; kill test <...>; result <...>  (one line each)
+Root cause:    <...>  (ruled out: <cause, cite or test output>; set aside: <cause, why>)
+Proposed fix:  <...>; breaks: <the cause> (one per leading candidate until the root cause is known); side effects: <...>; items it would change: <ids>
 Prevention:    <test or guard>
 Outside reports: <each, with source and date, or "none">
 Ticket:        <link, or "not filed">

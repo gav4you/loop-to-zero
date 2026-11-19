@@ -170,6 +170,9 @@ For each new clause:
 - Is it true as stated, at every file:line it names?
 - Did the edit break the rest of the item: a lost qualifier, or a mismatch with its other fields?
 
+For each replaced text: was it really wrong at {PIN}? If the old text held, mark the item wrong with a note
+starting "old text held" and the file:line that backs it: the fix removed accurate content.
+
 Write {S}/{UNIT}/r{R}/fixcheck-{K}-{CHUNK}.jsonl, one line per item, in the reader schema.
 Reply with the path, the counts, and one line per wrong.
 ```

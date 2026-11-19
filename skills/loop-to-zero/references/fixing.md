@@ -241,7 +241,8 @@ Anything written in bulk (fields filled in bulk, applied owner answers, mass rel
 a fix, through the fix checker. "Write-checked" is not "judged".
 
 ## After the fix checker
-Fix its real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
+An "old text held" find means the wrong the fix answered was false: confirm it at the pin, then treat it as an
+overturned verdict ("Reverting fixes caused by false wrongs", below) and log a lesson. Fix its other real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two.
 
