@@ -72,6 +72,7 @@ against a baseline copy made before the edit, as in step 1):
 | 17-fix-tactics | A third repeat after two narrowings, a new class wording for 31 sweep hits, what the fix checker checks ("old text held"), and a defect diagnosed by candidate causes with a working sibling |
 | 18-owner-report | A round report with three open owner questions (one settled by a later decision), a reply that picks no option, and a reply that does: headline, decisions needed, ranked questions with ages, and the decision record |
 | 19-change-upkeep | A cheaper reader model and a shorter brief, a pin move, 60 project lessons some now tool-enforced, and a handoff to a new session: side-by-side trial, retired lessons with last-confirmed rounds, a cold-tested handoff |
+| 20-setup-and-method | Setup with no review history and a two-sense term; a new gate check, a new method and a fix batch: owner catches as past errors, warn-only round, keep/drop test written first, expected effect per fix |
 
 ## 3. Trigger test (the description)
 `triggers.md`: 10 requests that should load this skill and 10 near misses, each run sent in a new shuffled order to a new

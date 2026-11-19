@@ -161,6 +161,16 @@ its recall there proves nothing. Run `ltz replay ... --holdout <unit>/r<R>` nami
 from, and judge the rule on the held-out recall and false hits. If no other round holds a wrong of the class,
 say "no held-out history yet" rather than quoting the in-sample recall.
 
+## Trying a new check or a new method
+- **A new mechanical check in the gate** (a project check in `S/checks/`, or a new hook rule) runs warn-only for
+  one round first: it reports what it would have blocked, and you judge each hit, before it is allowed to block.
+  Hits that turn out right are candidate wrongs (confirm checks as usual); false hits mean the check is fixed first.
+  Regression patterns are the exception: they block at once, because their known instances test them.
+- **A new method for a round** (narrow falsifiers, a different sweep, a new reading order): before trying it,
+  write in the round's `retro.md` the test that decides whether to keep it, for example "keep if it confirms at
+  least as many wrongs as the last sweep of the class did, at no more cost". After the round, apply that test and
+  record the result. A test written after seeing the result decides nothing.
+
 ## Changing the reader setup (model, brief, window size)
 Never switch the readers' model, cut or reword the reader brief, or change the window size on a hunch, even to
 save cost. First run the old and the new setup side by side, uncounted, on the same chunk of the last recorded

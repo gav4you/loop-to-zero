@@ -189,7 +189,10 @@ invented mid-pass. Write the research to `S/research.md`, citing each finding.
    - fix and revert commits;
    - review comments;
    - issue and audit findings;
-   - earlier verification reports.
+   - earlier verification reports;
+   - **the owner's own catches:** ask the owner for two or three recent errors they found by hand in the items,
+     and the traps they know of. With little or no review history this is the main past-error source. Record
+     each in `S/research.md`; it seeds a class, and its items become the class pattern's known instances.
 
    Group them by root cause; each recurring cause is a class.
 4. **Rules and rulings.** Read the decision records, approved exceptions and verification rules. The governing

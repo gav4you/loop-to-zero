@@ -154,6 +154,10 @@ Every fix follows 2 to 4.
    already found correct (not `S/precedents.md`, which readers read) or the source's own words. Don't write fresh prose for each item.
    - **A wording no fix of the class has used yet is tried on one item first:** fix that item, re-read it and
      fix-check it, and only once the check returns 0 apply the wording to the other hits (a follow-up commit).
+5. **Write each fix's expected effect before applying a batch:** the ids and fields it changes, and what it
+   should leave unchanged. After the commit, compare the diff and `fixlog.jsonl` with it; a change you didn't
+   expect (another field, another item, a fix that didn't land) is checked before the fix checker, and is a lesson.
+   With two fixes to one field in a batch, the later one wins: merge them into one.
 
 ## 3. Dependents
 Search for items that cite the changed item or restate its conclusion, in this unit and in others. Fix them
