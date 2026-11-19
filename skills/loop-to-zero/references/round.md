@@ -180,6 +180,13 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
   freezing the bar.
 - **If a reader or reviewer becomes unavailable mid-round, wait** (`references/queue-and-outages.md`, "Limits
   and credits"), rather than switch.
+- **Moving the evidence pin** (the owner's decision, setup question 5) is also between rounds only, and even when the owner
+  asks for it, measure it first: with a tool, list the files changed between the two pins inside `boundaryPaths`
+  and count the items that cite them in each unit. Take that reach to the owner with the options (move now, at a
+  unit's close, or not), and move only on their answer. Set it to a commit, never a branch name. Closed units stay closed at the pin they closed at (write it on `loop.md`'s Units
+  line); tell the owner how many of their items cite files the move changed, and ask whether to reopen them.
+  Re-check earlier fixes' bounds at the new pin with `ltz searches <S> --rounds all --at-current`. A wrong only
+  the new evidence refutes has origin "evidence moved" (`references/learning.md`, "The retro").
 
 There are two exceptions mid-round:
 - **A new class on an open bar.** Sweep every unit for it as soon as step 2 lets sweeps run (a count-only

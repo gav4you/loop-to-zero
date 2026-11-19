@@ -165,12 +165,14 @@ queue <S> <unit> <R> status
   is missing, or a "historyFolders" that is not an array, is a PROBLEM. The regex
   runs as written. --count prints only hit counts per pattern and unit, never the hits; a pattern
   without knownInstances is counted and marked as untested.`,
-  searches: `searches <S> [--rounds <unit>,...|all]
+  searches: `searches <S> [--rounds <unit>,...|all] [--at-current]
   Re-run every structured fixlog search of those rounds (default all) at the pin over config
   "boundaryPaths" (every file without it) instead of the logged paths, and report each whose
   boundary-wide count differs from its logged "hits": a scope that was too narrow. Entries with a
   "scopeNote" are listed apart and do not fail. Works for past and closed rounds. Exits non-zero when
-  any differs, or when there is no structured search to re-run.`,
+  any differs, or when there is no structured search to re-run. Each round runs at the pin its
+  pin.json recorded; --at-current runs every round at the current pin instead (after a pin move: do
+  the bounds still hold at the new evidence?).`,
   flips: `flips <S> <unit>
   Across S/<unit>/r*/fixlog.jsonl, report any (id, field) whose value returns to one it held before.
   With config "historyFolders", each folder's <folder>/<unit>/r*/fixlog.jsonl is read first (rounds
@@ -245,7 +247,7 @@ const FLAGS = {
   queue: { pairs: 'multi', opaque: 'bool', 'per-chunk': 'string', chunks: 'string', cap: 'string', agent: 'string', reset: 'string', ruling: 'string', from: 'string', to: 'string', transcript: 'string' },
   diffcheck: { 'verify-searches': 'bool', 'no-verify-searches': 'bool' },
   sweep: { unit: 'string', count: 'bool' },
-  searches: { rounds: 'string' },
+  searches: { rounds: 'string', 'at-current': 'bool' },
   flips: {},
   canary: { from: 'string', 'per-slot': 'string', seed: 'string' },
   cost: { queue: 'bool', timeline: 'string' },
@@ -310,7 +312,7 @@ function run(cmd, argv) {
       return sweep({ S: pos[0], patternFile: pos[1], unit: flags.unit, count: !!flags.count });
     case 'searches':
       need(pos, 1, cmd);
-      return searches({ S: pos[0], rounds: flags.rounds });
+      return searches({ S: pos[0], rounds: flags.rounds, atCurrent: !!flags['at-current'] });
     case 'flips':
       need(pos, 2, cmd);
       return flips({ S: pos[0], unit: pos[1] });

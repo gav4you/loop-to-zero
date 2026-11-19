@@ -69,6 +69,14 @@ known to be there.
 **Accepted forms.** The source's own vocabulary is accepted. So is a context the item states (for example
 "in Postgres"); read the claim in that context.
 
+## When two classes fit (S/classes.md quotes this)
+Readers list every class that applies. The first listed is the class whose claim the refuter falsifies: for a
+universal, the class whose universal it falsifies most directly; for a claim with no universal word (a value, a
+call, a relation), the class whose definition describes the part the refuter shows false. A part that holds names
+no class: "sent via f() in batches of 500", with 500 right and f() never called, lists the call's class and
+not the value's. The order classes are listed in `S/classes.md` decides only a real tie. The writer settles the
+class at confirm.
+
 ## Accepted by ruling (in `S/classes.md`)
 One entry per bar ruling (`R-n`) in the decision log (`ltz rulings` checks that each id appears in this section). Process decisions (`P-n`) never
 appear here. Each entry gives:

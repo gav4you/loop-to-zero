@@ -61,7 +61,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> rerun <slot> --from P --to Q` | Adds a new slot, with an opaque name and its parent recorded, that reads positions P-Q of that slot again. `record` uses its lines there (see "Re-runs and supplementary reads"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status` | Prints each slot's state, result lines, resume position, any dropped range and earlier agents. |
 | `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given (see "The diff check" and "Searches"). |
-| `node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...\|all]` | Re-runs every structured fixlog search of those rounds over `boundaryPaths`, each round at the pin its `pin.json` recorded, and reports each scope that was too narrow (see "Searches"). |
+| `node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...\|all] [--at-current]` | Re-runs every structured fixlog search of those rounds over `boundaryPaths`, each round at the pin its `pin.json` recorded (with `--at-current`, at the current pin), and reports each scope that was too narrow (see "Searches"). |
 | `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share, and flags the families whose items state different numbers. Reports only. |
 | `node <skill>/scripts/ltz.mjs sweep <S> <pattern.json\|classfile> [--unit U] [--count]` | Prints hits; with `--count`, only hit counts per pattern and unit. Refuses a pattern that misses a known instance (see "Sweeps"). |
 | `node <skill>/scripts/ltz.mjs flips <S> <unit>` | Reports an (id, field) whose value returns to one it held earlier, in `S/`'s rounds or a `historyFolders` round. Exits non-zero for an unexplained flip (see "Flips"). |
@@ -306,7 +306,7 @@ With several evidence sources (see "Evidence sources"), the scan covers every so
 found under its source's prefix, and a path goes to the source with the longest matching prefix, as
 in `render`.
 
-**`node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...|all]`** (default all) checks past
+**`node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...|all] [--at-current]`** (default all) checks past
 scopes:
 - It re-runs every structured search logged in those rounds' `fixlog.jsonl` at the pin. It searches
   over `boundaryPaths` (every file without it), not the logged `paths`.
@@ -316,6 +316,9 @@ scopes:
   the last `new` logged for that field in the round. Otherwise they count as differing.
 - Free-text searches are counted but cannot be re-run.
 - Nothing is compared with the current items, so past and closed rounds work.
+- Each round runs at the pin its `pin.json` recorded. `--at-current` runs every round at the current pin
+  instead, after a pin move: it says how many rounds were snapshotted at another pin, and a difference there
+  may be the evidence moving, judged at the new evidence.
 - It exits non-zero when any differs, or when there is no structured search to re-run.
 
 ## Sweeps

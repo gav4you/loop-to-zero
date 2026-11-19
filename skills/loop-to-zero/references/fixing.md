@@ -72,8 +72,11 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
     the others with an unlimited search ("Searches that back a bound", below) before you fix it, and add them.
     Cite in the item only what its new text states.
 - **Classes.** Name every class that applies; an item can carry several. The repeat test matches on any overlap, so
-  a class left off can hide a repeat. The first listed is the class whose universal
-  the refuter falsifies most directly (on a tie, the one listed first in `S/classes.md`). It governs the wording and the regression pattern.
+  a class left off can hide a repeat. The first listed is the class whose claim the refuter
+  falsifies: for a universal, the class whose universal it falsifies most directly; for a claim with no universal
+  word (a value, a call, a relation), the class whose definition describes the part the refuter shows false. List
+  order in `S/classes.md` decides only a real tie (`references/reading-classes.md`, "When two classes fit", which
+  `S/classes.md` quotes for readers). It governs the wording and the regression pattern.
 - **Partly true items** count as one wrong.
 - **Ambiguous wording** ("passes a timeout": the option, or its effect?) is a wrong under the bar's
   ambiguity class (if the bar has none: "A class found mid-pass" on an open bar). Rewrite the item to say one

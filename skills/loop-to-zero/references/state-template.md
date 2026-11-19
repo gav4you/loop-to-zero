@@ -18,7 +18,7 @@ S/
   research.md        the setup research: terms with their repo sources, claim-shape counts, evidence kinds,
                      past-error groups, rulings, proposed classes with examples, tested sweeps, replay results
   classes.md         the bar: the owner-approved classes, "accepted by ruling", and quoted copies of the
-                     three lenses and the universal words
+                     three lenses, the universal words and "When two classes fit"
   precedents.md      optional: worked examples of judged items that the owner approved (never an item a reader
                      or fix checker will judge again, round F included, so reading stays cold)
   lessons.md         project lessons (the format in references/learning.md)
@@ -96,7 +96,7 @@ Evidence: <what the items are judged against>, pinned at <tag/commit/dated expor
 Evidence boundary: <what counts; what is excluded>
 Zero: <what it is for>; `rule-meaning` questions block close: <yes|no>; escalation trigger: <rule>
 Item type: <describes evidence | states requirements>; defects block close: <yes|no>; softening: <yes|no>
-Units: <id: item count, status open|closed|closed-leads-pending|closed-owner-questions-open|closed-known-wrongs|closed-by-stopping-rule|final-check (date, round); for closed-leads-pending and final-check, "was <status>": the closed status it returns to (references/round.md, "Closed statuses"), which final-check carries forward from closed-leads-pending>
+Units: <id: item count, status open|closed|closed-leads-pending|closed-owner-questions-open|closed-known-wrongs|closed-by-stopping-rule|final-check (date, round, and the pin a closed unit closed at); for closed-leads-pending and final-check, "was <status>": the closed status it returns to (references/round.md, "Closed statuses"), which final-check carries forward from closed-leads-pending>
 Unit order: <ids in order>; the next unit waits for the owner's go: <yes|no>
 Rulings: <ids with one-line summaries; the decision log is the master copy>
 Reader mode: <solo | N readers per chunk | external>; chunk ≈ 70 items; concurrency cap <n>; probes <yes|no>

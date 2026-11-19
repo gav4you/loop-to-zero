@@ -100,6 +100,7 @@ to the note of each item it touches."}
 Before citing a refuter you found by searching, show it with {SHOW_CMD}: a cite you never rendered is refused.
 {"unit":"{UNIT}","id":"…","verdict":"ok"|"wrong","class":["<class>", …],"note":"<why; a wrong names the
 refuting file:line at the pin>","cites":["path:line", …]}
+List every class that applies, the first as classes.md's "When two classes fit" says.
 An item its own text refutes (its figures disagree: parts that don't add up to its total, a share that doesn't
 follow from its numbers) is wrong with a note starting "self-contradiction:" that quotes the clashing figures;
 it needs no evidence file:line. Check its figures at the evidence too, and name any that differ.

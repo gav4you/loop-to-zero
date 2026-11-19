@@ -105,7 +105,8 @@ until that check.
    - **Origin:** pre-existing text; your own edit; a new class; a missing ruling (including a reader wrong
      overturned by a ruling given mid-round); evidence moved (the owner moved the pin and only the new evidence
      refutes the item: `record` warns when the pin moved since the round's snapshot; such a wrong adjusts no
-     earlier round's count and is no reader miss). A verdict of yours later overturned is "writer misjudgment"; when
+     earlier round's count, is no reader miss and does not count toward the escalation trigger;
+     `references/round.md`, "Between rounds only"). A verdict of yours later overturned is "writer misjudgment"; when
      a ruling overturns it, it is "missing ruling" if the bar lacked the ruling's point, and "writer misjudgment"
      if the entry covered it and you misread it.
    - **Who found it:** both readers; one reader only; none (the writer's own check (`spot-check`), a sweep, an audit, the fix
@@ -177,7 +178,9 @@ say "no held-out history yet" rather than quoting the in-sample recall.
 Never switch the readers' model, cut or reword the reader brief, or change the window size on a hunch, even to
 save cost. First run the old and the new setup side by side, uncounted, on the same chunk of the last recorded
 round (its snapshot), and compare: the confirmed wrongs each finds, false alarms, canaries if planted, and cost
-(`ltz cost --queue`). Adopt the new setup only if it finds every confirmed wrong the old one found, and take the
+(`ltz cost --queue`). Run the trial in its own state folder (a copy of `config.json` with no `historyFolders`,
+`classes.md` and that chunk's items, snapshotted there), never in a slot of a real round, so `record` and the
+commit guard never see it. Adopt the new setup only if it finds every confirmed wrong the old one found, and take the
 comparison to the owner (it is their mode decision). It takes effect from the next snapshot, never mid-round.
 
 ## Promotion

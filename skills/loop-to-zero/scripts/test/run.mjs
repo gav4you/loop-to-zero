@@ -2458,6 +2458,17 @@ test('searches: a round snapshotted at an earlier pin is re-run at its own pin, 
   const r2 = fails(ltz(['searches', S, '--rounds', 'u1']), /1 differ/, 'control: with no pin.json the current pin is used, and the search no longer hits');
   ok(/1 round\(s\) with no pin\.json, re-run at the current pin/.test(r2.out), r2.out);
 });
+test('searches --at-current: re-runs a round at the moved pin, not its own', () => {
+  const S = makeS();
+  snap(S);
+  wjl(path.join(RD(S), 'fixlog.jsonl'), [fl('A01', 'title', 'a', 'b', { search: { regex: 'V1-LINE' }, hits: 1, blindSpots: 'x' })]);
+  passes(ltz(['searches', S, '--rounds', 'u1', '--at-current']), 'control: the pin has not moved, so the bound holds at the current pin');
+  const cfg = rj(path.join(S, 'config.json'));
+  wj(path.join(S, 'config.json'), { ...cfg, evidence: { ...cfg.evidence, pin: 'HEAD' } });
+  passes(ltz(['searches', S, '--rounds', 'u1']), 'without the flag: its own pin, still 1 hit');
+  const r = fails(ltz(['searches', S, '--rounds', 'u1', '--at-current']), /1 differ/, 'at the moved pin the logged bound no longer holds');
+  ok(/1 snapshotted at another pin/.test(r.out), r.out);
+});
 test('record: warns when the evidence pin moved since the round\'s snapshot', () => {
   const S = baseCopy();
   passes(ltz(['record', S, 'u1', '1', ...READERS]), 'control: same pin');

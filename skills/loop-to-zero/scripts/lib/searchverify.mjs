@@ -43,7 +43,7 @@ const MAX_BUFFER = 1024 * 1024 * 1024;
  * differs from its logged hits: a scope that was too narrow. Past and closed rounds work, since
  * nothing is compared with the current items.
  */
-export function searches({ S, rounds }) {
+export function searches({ S, rounds, atCurrent }) {
   const cfg = loadConfig(S);
   const units = !rounds || rounds === 'all' ? Object.keys(cfg.units) : rounds.split(',').map((u) => requireUnit(cfg, u.trim()));
   const scanner = new PinScanner(cfg);
@@ -53,6 +53,7 @@ export function searches({ S, rounds }) {
   const scanners = new Map();
   let ownPin = 0;
   let noPin = 0;
+  let movedSince = 0;
   const out = [];
   const bounded = [];
   const problems = [];
@@ -66,7 +67,9 @@ export function searches({ S, rounds }) {
       const rows = readJsonl(p, { what: `${unit}/${r.name}/fixlog.jsonl` }).rows;
       const rec = loadPinRecord(r.dir);
       let roundScanner = scanner;
-      if (!rec) noPin++;
+      if (atCurrent) {
+        if (rec && pinDifference(rec, nowPin)) movedSince++;
+      } else if (!rec) noPin++;
       else if (pinDifference(rec, nowPin)) {
         const k = JSON.stringify(rec);
         if (!scanners.has(k)) scanners.set(k, new PinScanner(configAtPin(cfg, rec)));
@@ -118,7 +121,8 @@ export function searches({ S, rounds }) {
       `searches: ${structured} structured search(es) re-run over ${scanner.boundary ? 'boundaryPaths' : 'every file (no boundaryPaths)'} at ${scanner.describe()}; ` +
       `${differ} differ from their logged hits, ${bounded.length} bounded by a scopeNote, ${freeText} free-text not re-runnable` +
       (ownPin ? `; ${ownPin} round(s) re-run at their own snapshot pin (the pin has moved since)` : '') +
-      (noPin ? `; ${noPin} round(s) with no pin.json, re-run at the current pin` : ''),
+      (noPin ? `; ${noPin} round(s) with no pin.json, re-run at the current pin` : '') +
+      (atCurrent ? `; --at-current: every round re-run at the current pin (${movedSince} snapshotted at another pin; a difference there may be the evidence moving, judge it at the new evidence)` : ''),
   };
 }
 
