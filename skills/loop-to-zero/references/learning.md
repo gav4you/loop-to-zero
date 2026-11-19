@@ -46,6 +46,13 @@ The same format is used in `S/lessons.md` and in the global `lessons.md`:
 - **Change:** the file or step it changed, named only once that text carries the lesson; until then, "none yet";
 - **Seen:** the count. Project names go only in `S/lessons.md`.
 
+**Keeping `S/lessons.md` live.** Each project lesson also carries **Last confirmed:** the round it last recurred or
+was applied; update it at every retro. A lesson a tool now refuses mechanically (shown with a negative test, such
+as `ltz diffcheck` refusing an unlogged universal) is marked "Retired: enforced by <check>, <date>" and moved under
+a "Retired" heading at the end of the file: it is not deleted (back-propagation and `judgments.jsonl` still name
+it), but it no longer counts among the lessons re-read at each round start. At each retro, list the live lessons
+not confirmed for 5 or more rounds, for review; quiet is not a reason to delete one.
+
 ## Counting
 - **A wrong that an earlier pass missed counts in the round that finds it.** The latest full pass that marked
   it ok is shown as adjusted (`n (adj n+1, reason, date)`), never added into the trend a second time. Skip the
@@ -153,6 +160,13 @@ numbers in the lesson's **Replay** field.
 its recall there proves nothing. Run `ltz replay ... --holdout <unit>/r<R>` naming the round(s) it was written
 from, and judge the rule on the held-out recall and false hits. If no other round holds a wrong of the class,
 say "no held-out history yet" rather than quoting the in-sample recall.
+
+## Changing the reader setup (model, brief, window size)
+Never switch the readers' model, cut or reword the reader brief, or change the window size on a hunch, even to
+save cost. First run the old and the new setup side by side, uncounted, on the same chunk of the last recorded
+round (its snapshot), and compare: the confirmed wrongs each finds, false alarms, canaries if planted, and cost
+(`ltz cost --queue`). Adopt the new setup only if it finds every confirmed wrong the old one found, and take the
+comparison to the owner (it is their mode decision). It takes effect from the next snapshot, never mid-round.
 
 ## Promotion
 - **Moving a lesson up.** A project lesson goes into the skill's `lessons.md`, as a new lesson or merged into one

@@ -110,6 +110,11 @@ marked there that the re-run doesn't (`references/briefs.md`).
   2. take over the writer's lock (`ltz lock release` with the old session id, then `acquire`);
   3. run `ltz queue <S> <unit> <R> status` for each open round;
   4. re-read both lessons files and `S/classes.md` (in solo mode, only once the round's reading is done).
+- **Test the handoff cold before a new session relies on it.** Before the first resume from it, and again after its
+  steps change, have a fresh session (an agent) given only `S/HANDOFF.md` say what it would do next, without
+  acting; fix any gap it hits. A handoff written at setup and never resumed from has not been tested. A resuming session re-reads
+  decisions and rulings from the decision log and `S/classes.md`, never from a summary in the handoff, `loop.md`
+  or memory: a summary drops the scope and the exceptions.
 
 ## Tool gotchas
 - **Never SendMessage a running Workflow subagent.** It starts a duplicate that fights the original.
