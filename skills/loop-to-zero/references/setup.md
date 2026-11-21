@@ -362,7 +362,8 @@ applies only when the item cites both, or a ruling says the config implements th
   softening, any scope or definition ruling, and any ruling that changes the behaviour items describe (carried
   into the items: `references/fixing.md`). They are quoted in `classes.md`.
 - **Process decisions** (`P-n`) cover how the loop runs: the zero definition, the close rules, readers,
-  concurrency, canaries, probes, hooks, masking, granularity, the bar's open or frozen state, the branch and
+  concurrency, canaries, probes, hooks, masking, granularity, the evidence pin and any move of it (the boundary
+  stays a bar ruling), the bar's open or frozen state, the branch and
   approver, overrides and drops. Readers never see them (the brief states the probe and bar settings as
   instructions).
 - **Approving the names, classes and rules** (question 1) is a process decision: its content is `classes.md` and

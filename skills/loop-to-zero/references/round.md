@@ -144,12 +144,12 @@ owner's OK, for the final targeted check. The check runs as the unit's next roun
 before any edit, then the fixes, `diffcheck` and the fix checker as usual. Afterwards, take a new baseline with
 `ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
-`closed-leads-pending` itself). If round F confirmed any wrong, the unit is reported with its adjusted closing
-count (`0 (adj n, ...)`, fixed in the final check), never as a clean zero. A `closed-known-wrongs` unit whose
+`closed-leads-pending` itself). If round F confirmed any wrong (other than an "evidence moved" one), the unit is reported with its adjusted closing
+count (`0 (adj n, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
-- **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`: queue just the chunks that cover
-  it, read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with no dropped range, `init` alone writes an empty
+- **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`, or for `evidence-moved` leads: queue just the chunks that cover
+  them, read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with no dropped range, `init` alone writes an empty
   queue). Leads are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
@@ -187,6 +187,20 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
   line); tell the owner how many of their items cite files the move changed, and ask whether to reopen them.
   Re-check earlier fixes' bounds at the new pin with `ltz searches <S> --rounds all --at-current`. A wrong only
   the new evidence refutes has origin "evidence moved" (`references/learning.md`, "The retro").
+  - **The move is a process decision** (`P-n`; `references/setup.md`, "Which answers are bar rulings"): record it in
+    `config.json` and `loop.md`'s Evidence line, never in `classes.md`. It doesn't touch a frozen bar.
+  - **Don't wait for the answer.** The next round runs at the current pin. The ask, in `S/owner-questions.md`, states
+    what waiting costs: the items citing changed files that this round reads at the old pin and will read again
+    after the move. Wait only if the owner says so (recommend it when that reach is over a third of the open unit).
+  - **Reopening a closed unit for the move uses the final targeted check**, never a full re-read. Log each of its
+    items that cites a changed file in `closed-unit-leads.txt` (kind `evidence-moved`, the changed file and the
+    decision id in place of a refuter), which makes the unit `closed-leads-pending`. Round F queues readers only for
+    the chunks holding those items (`--chunks`), read at the new pin. A wrong it confirms that only the new pin refutes
+    is fixed with origin "evidence moved" and does not adjust the unit's closing count: that count was true at its
+    pin. A wrong the old pin also refutes (as any in an item citing no changed file) is an earlier miss, which does. The
+    check runs when leads' final targeted check does (after every unit closes) unless the owner asks for it
+    sooner, and then only between rounds of the open units. The Units line keeps the old pin and adds "checked at
+    <new pin>, round F".
 
 There are two exceptions mid-round:
 - **A new class on an open bar.** Sweep every unit for it as soon as step 2 lets sweeps run (a count-only

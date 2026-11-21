@@ -97,7 +97,7 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
   - in closed units, as leads.
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
-the final targeted check confirms a wrong in it. Its status is `closed-leads-pending` from when the first lead is logged
+the final targeted check confirms a wrong in it, never for an "evidence moved" wrong. Its status is `closed-leads-pending` from when the first lead is logged
 until that check.
 
 ## The retro (`r<R>/retro.md`)

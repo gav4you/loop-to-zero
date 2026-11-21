@@ -427,7 +427,7 @@ slot name that another reader shares its range.
 ### Final-check rounds
 A unit whose `status` in `config.json` is `final-check` (a closed unit reopened for the final targeted
 check) runs round F with readers only for the chunks covering a dropped range from
-`S/known-wrongs.txt` (even one another reader read). The writer chooses those chunks; the tool does not
+`S/known-wrongs.txt` (even one another reader read), or holding `evidence-moved` leads after a pin move. The writer chooses those chunks; the tool does not
 read that file. Leads are confirmed by the writer, with a `foundBy`.
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
@@ -604,7 +604,8 @@ Notes on these fields:
   - `open`;
   - `final-check`: a closed unit reopened, with the owner's OK, for the final targeted check of its
     leads. The check runs as the unit's next round F, snapshotted before any edit; it needs readers only
-    for the chunks covering a dropped range from `S/known-wrongs.txt` (even one another reader read),
+    for the chunks covering a dropped range from `S/known-wrongs.txt` (even one another reader read)
+    or holding `evidence-moved` leads,
     and `queue init` and `record` accept the others left unread (see "Final-check rounds"). When that check is
     done, the unit is set back to the closed status `loop.md` kept for it ("was <status>"). **Before setting it
     back**, take a new baseline with `node <skill>/scripts/ltz.mjs snapshot <S> <unit> <F+1>`. Otherwise
