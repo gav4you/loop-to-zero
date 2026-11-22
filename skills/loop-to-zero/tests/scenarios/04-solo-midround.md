@@ -18,7 +18,7 @@ Pass if:
   from round 4;
 - no item edits are committed before the reading ends;
 - module 6 is edited and logged, and module 1 gets leads only;
-- the R-7 lead goes to the owner at once, and the open-unit items that depend on it (the seed) are `pending-owner`;
+- the R-7 lead goes to the owner at once (in solo mode, during the reading session, not after the hand-back), and any open-unit item whose wording R-7 approved and the evidence refutes is `pending-owner` (`ruled-wording`);
 - the round-2 miss gets a judgments line and a widened, tested sweep pattern;
 - it says what solo mode gives up;
 - the fix check runs in a fresh session, or as a reported self-check with the owner's OK.

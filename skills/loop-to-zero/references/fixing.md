@@ -233,6 +233,11 @@ or a fix.
   State in the note what the search cannot see.
 - **When an item states a rule and its exceptions,** read the whole implementation once and list every
   case. Patching one exception per round kept the same item wrong for three rounds.
+- **After two fixes of the same universal have failed** (the id is confirmed wrong a third time, and each earlier
+  fix narrowed the claim), don't narrow it a third time, and say so in the `repeatNote`. Adding an exception
+  ("every X except Y") or another qualifier is a narrowing too, proven or not. Subtract the universal, or
+  replace it with a claim with no universal that the cited lines show (what the code does there, not what it
+  does everywhere).
 
 ## Carrying a ruling into the items
 When the owner rules, or a ruling is amended, and it changes behaviour, search every item for the old
