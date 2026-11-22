@@ -181,23 +181,32 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
 - **If a reader or reviewer becomes unavailable mid-round, wait** (`references/queue-and-outages.md`, "Limits
   and credits"), rather than switch.
 - **Moving the evidence pin** (the owner's decision, setup question 5) is also between rounds only, and even when the owner
-  asks for it, measure it first: with a tool, list the files changed between the two pins inside `boundaryPaths`
-  and count the items that cite them in each unit. Take that reach to the owner with the options (move now, at a
+  asks for it, measure it first with `ltz reach <S> --to <commit>` (`scripts/README.md`). The reach is three
+  groups per unit, never only the first: the items that cite a changed file; the universal items ("no caller does
+  X") that cite none but whose last search finds different hits at the new commit; and the universal items with
+  no search to re-run, which you check against the changed files by hand or count in. A hand clearance needs a
+  cite or a structured search at the new commit, listed with the item's id in the ask, so the owner sees which
+  items you cleared and how. A changed file can break a universal claim it was never cited for. The groups are a
+  floor: a logged search can miss new code (a path built at run time), so read the diff itself and add any item
+  whose claim it touches. Take that reach to the owner with the options (move now, at a
   unit's close, or not), and move only on their answer. Set it to a commit, never a branch name. Closed units stay closed at the pin they closed at (write it on `loop.md`'s Units
-  line); tell the owner how many of their items cite files the move changed, and ask whether to reopen them.
+  line); tell the owner how many of their items the move reaches, and ask whether to reopen them.
   Re-check earlier fixes' bounds at the new pin with `ltz searches <S> --rounds all --at-current`. A wrong only
   the new evidence refutes has origin "evidence moved" (`references/learning.md`, "The retro").
   - **The move is a process decision** (`P-n`; `references/setup.md`, "Which answers are bar rulings"): record it in
-    `config.json` and `loop.md`'s Evidence line, never in `classes.md`. It doesn't touch a frozen bar.
+    `config.json` and `loop.md`'s Evidence line, never in `classes.md`. It doesn't touch a frozen bar. An answer
+    that also says whether to reopen closed units is the same decision (one id).
   - **Don't wait for the answer.** The next round runs at the current pin. The ask, in `S/owner-questions.md`, states
-    what waiting costs: the items citing changed files that this round reads at the old pin and will read again
-    after the move. Wait only if the owner says so (recommend it when that reach is over a third of the open unit).
+    what waiting costs: the reached items that this round reads at the old pin and will read again after the move. Wait only if the owner says so (recommend it when that reach is over a third of the open unit).
+  - **A unit that reaches zero while the move is still asked closes at the current pin.** Its close report names that
+    pin and the open ask, and if the owner then moves and wants it reopened, the next bullet applies. Don't hold a
+    close for the answer, and don't close it "at the new pin" before the move.
   - **Reopening a closed unit for the move uses the final targeted check**, never a full re-read. Log each of its
-    items that cites a changed file in `closed-unit-leads.txt` (kind `evidence-moved`, the changed file and the
-    decision id in place of a refuter), which makes the unit `closed-leads-pending`. Round F queues readers only for
+    reached items in `closed-unit-leads.txt` (kind `evidence-moved`, the changed file, or the search whose hits
+    changed, and the decision id in place of a refuter; a universal item you cleared by hand is not logged), which makes the unit `closed-leads-pending`. Round F queues readers only for
     the chunks holding those items (`--chunks`), read at the new pin. A wrong it confirms that only the new pin refutes
     is fixed with origin "evidence moved" and does not adjust the unit's closing count: that count was true at its
-    pin. A wrong the old pin also refutes (as any in an item citing no changed file) is an earlier miss, which does. The
+    pin. A wrong the old pin also refutes is an earlier miss, which does. The
     check runs when leads' final targeted check does (after every unit closes) unless the owner asks for it
     sooner, and then only between rounds of the open units. The Units line keeps the old pin and adds "checked at
     <new pin>, round F".

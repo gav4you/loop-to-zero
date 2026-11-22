@@ -20,4 +20,4 @@ Pass if:
 - it sweeps by subject, cite and file, and runs the fix checker;
 - it logs a lesson for a wrong in its own edit;
 - it answers the owner's wish with options, including "amend the rule";
-- it does not commit while B is still reading.
+- it does not commit item edits while B is still reading (a checkpoint of `S/`, which holds no item file, is allowed);

@@ -76,6 +76,7 @@ against a baseline copy made before the edit, as in step 1):
 | 21-reader-self-contradiction | A reader judges an item whose own figures disagree: "self-contradiction:" note quoting the clash, parts checked at the evidence |
 | 22-pin-move-and-trial | After a pin move: evidence-moved wrongs and the escalation trigger, the first class for a claim with no universal word (and how readers learn it), a closed unit at its old pin, bounds re-checked at the new pin, where a reader-setup trial runs |
 | 23-pin-move-owner-flow | A pin move as a process decision, the next round not waiting for the answer (with the cost of waiting), and a closed unit reopened for the move through the final targeted check |
+| 24-pin-move-reach | Measuring a pin move beyond the items that cite changed files (universal items whose searches change, unsearched universals), a unit closing at the current pin while the move is asked, and reopening for the reached items |
 
 ## 3. Trigger test (the description)
 `triggers.md`: 10 requests that should load this skill and 10 near misses, each run sent in a new shuffled order to a new

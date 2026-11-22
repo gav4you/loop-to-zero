@@ -11,7 +11,7 @@ The pin is tag v3.2. `S/owner-questions.md` holds three open questions:
 - Q-c (asked 2 days ago): may fixes hedge with "such as"? Since then, the owner's decision P-6 (recorded
   yesterday, on another topic) states "no hedging in any fix, ever".
 
-Last round you asked the owner: "For the 3 items that cite the retired v2 API, should I (A) delete the v2
+Last round (4 days ago) you asked the owner: "For the 3 items that cite the retired v2 API, should I (A) delete the v2
 sentences, (B) keep them marked 'legacy', or (C) leave them for the final check?" The owner replied: "sounds
 good, keep going".
 

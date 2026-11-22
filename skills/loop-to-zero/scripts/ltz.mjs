@@ -12,6 +12,7 @@ import { diffcheck } from './lib/diffcheck.mjs';
 import { sweep, replay } from './lib/patterns.mjs';
 import { spotcheck } from './lib/spotcheck.mjs';
 import { crosscheck } from './lib/crosscheck.mjs';
+import { reach } from './lib/reach.mjs';
 import { flips } from './lib/flips.mjs';
 import * as canary from './lib/canary.mjs';
 import { cost, costQueue, timeline } from './lib/cost.mjs';
@@ -218,6 +219,12 @@ cost --timeline <transcript.jsonl>
   List every cite two or more items share (a family to judge together: readers see one window at a
   time and never compare items), and flag the families whose items state different numbers. Reports
   only; never fails or judges.`,
+  reach: `reach <S> --to <rev> [--unit <unit>]
+  Before a pin move: list the files changed between the pin and <rev> inside boundaryPaths (renames
+  under both paths), then per unit the items that cite one; the items that hold a universal word, cite
+  none, and whose last structured fixlog search finds different hits at <rev> than at the pin; and the
+  universal items with no search to re-run (check those by hand, or count them in). One git source
+  only. Reports only; never judges.`,
   spotcheck: `spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K> ...]
   Draw each reader's random spot-checks: K (default 5) of the items its result file marked ok (canaries
   excluded), half from the early half of its positions and half from the late half, reproducibly from the
@@ -254,6 +261,7 @@ const FLAGS = {
   replay: { rounds: 'string', holdout: 'string' },
   spotcheck: { seed: 'string', 'per-slot': 'string', extra: 'multi' },
   crosscheck: { unit: 'string' },
+  reach: { to: 'string', unit: 'string' },
   lock: { session: 'string' },
   rulings: {},
 };
@@ -350,6 +358,9 @@ function run(cmd, argv) {
     case 'crosscheck':
       need(pos, 1, cmd);
       return crosscheck({ S: pos[0], unit: flags.unit });
+    case 'reach':
+      need(pos, 1, cmd);
+      return reach({ S: pos[0], to: flags.to, unit: flags.unit });
     case 'lock':
       need(pos, 2, cmd);
       return lock({ S: pos[0], action: pos[1], session: flags.session });

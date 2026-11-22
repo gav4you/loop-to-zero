@@ -31,7 +31,7 @@ S/
                           (unit, id, verdict, refuter, source unit+round, commit); a "deferred" line instead
                           has status open|settled (round, date)
   closed-unit-leads.txt   matches in closed units (unit, id, kind wrong|revert|evidence-moved, class, refuting file:line or
-                          ruling id (evidence-moved: the changed file and the pin decision id; class none; source the pin decision), source unit+round (or an outside review and its date), ruling-level: yes|no,
+                          ruling id (evidence-moved: the changed file or the search whose hits changed, and the pin decision id; class none; source the pin decision), source unit+round (or an outside review and its date), ruling-level: yes|no,
                           status open|settled (round F, date))
   defects.md         `defect` verdicts (behaviour defects and unmet requirements), in the entry form of
                      references/debugging.md (expected, actual, reproduction, root cause, proposed fix,

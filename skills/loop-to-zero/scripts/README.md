@@ -62,6 +62,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status` | Prints each slot's state, result lines, resume position, any dropped range and earlier agents. |
 | `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given (see "The diff check" and "Searches"). |
 | `node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...\|all] [--at-current]` | Re-runs every structured fixlog search of those rounds over `boundaryPaths`, each round at the pin its `pin.json` recorded (with `--at-current`, at the current pin), and reports each scope that was too narrow (see "Searches"). |
+| `node <skill>/scripts/ltz.mjs reach <S> --to <rev> [--unit <unit>]` | Before a pin move, lists the files changed between the pin and <rev> inside `boundaryPaths` and, per unit, the items that cite one, the universal items whose last structured search finds different hits at <rev>, and the universal items with no search to re-run (see "Reach"). |
 | `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share, and flags the families whose items state different numbers. Reports only. |
 | `node <skill>/scripts/ltz.mjs sweep <S> <pattern.json\|classfile> [--unit U] [--count]` | Prints hits; with `--count`, only hit counts per pattern and unit. Refuses a pattern that misses a known instance (see "Sweeps"). |
 | `node <skill>/scripts/ltz.mjs flips <S> <unit>` | Reports an (id, field) whose value returns to one it held earlier, in `S/`'s rounds or a `historyFolders` round. Exits non-zero for an unexplained flip (see "Flips"). |
@@ -320,6 +321,21 @@ scopes:
   instead, after a pin move: it says how many rounds were snapshotted at another pin, and a difference there
   may be the evidence moving, judged at the new evidence.
 - It exits non-zero when any differs, or when there is no structured search to re-run.
+
+### Reach
+
+**`node <skill>/scripts/ltz.mjs reach <S> --to <rev> [--unit <unit>]`** measures a pin move before the
+owner decides (`references/round.md`, "Between rounds only"):
+- It lists the files changed between the pin and `<rev>` (`git diff --no-renames`, so a renamed file
+  counts under both paths), kept to `boundaryPaths`.
+- Per unit, it puts the items in three groups: those that cite a changed file; those that hold a
+  universal word (config `universalWords`), cite no changed file, and whose last structured fixlog
+  search (any round), re-run over `boundaryPaths` (not its logged `paths`, as `searches` does), finds
+  different hits at `<rev>` than at the pin; and the universal items with no
+  structured search to re-run, each with the words it holds. The writer checks the third group by
+  hand or counts it in.
+- It needs a single git evidence source, reports only, and exits non-zero only on a problem (a bad
+  `<rev>`, or a logged search that cannot run, which is then counted in the third group).
 
 ## Sweeps
 `node <skill>/scripts/ltz.mjs sweep <S> <pattern.json|classfile> [--unit U] [--count]` runs one pattern,

@@ -2510,6 +2510,33 @@ test('crosscheck: groups items that cite the same line and flags differing numbe
   const r2 = passes(ltz(['crosscheck', S, '--unit', 'u2']));
   ok(/0 shared cite/.test(r2.out), r2.out);
 });
+test('reach: items citing changed files, universal items whose search hits change, and universal items with no search', () => {
+  // Between v1 and HEAD only src/auth.js changes (line 3: V1-LINE-3 -> HEAD-LINE-3).
+  const S = makeS();
+  snap(S);
+  fixlog(S, [
+    fl('A07', 'title', 'positive amounts are charged', 'only positive amounts are charged', { search: { regex: 'HEAD-LINE|charge' } }),
+    fl('A05', 'title', 'admins approve refunds', 'Refunds: Only admins approve refunds', { search: { regex: 'admins' } }),
+  ]);
+  const r = passes(ltz(['reach', S, '--to', 'HEAD']));
+  ok(/between v1 and HEAD: 1 file\(s\) \(src\/auth\.js\)/.test(r.out), r.out);
+  ok(/u1 \(12 items, open\): cite a changed file 4; universal, search hits change 1; universal, no search to re-run 0/.test(r.out), r.out);
+  ok(/cites: A01, A02, A03, A12/.test(r.out), r.out);
+  ok(r.out.includes('search: A07 /HEAD-LINE|charge/ (u1/r1): 1 -> 2 matches'), r.out);
+  ok(!/A05/.test(r.out), 'a universal item whose search finds the same hits is not reached');
+  ok(/u2 \(2 items, closed\): cite a changed file 0/.test(r.out), r.out);
+  ok(/reach: 4 item\(s\) cite a changed file, 1 universal item\(s\) whose search hits change, 0 universal/.test(r.out), r.out);
+  fixlog(S, []);
+  const r2 = passes(ltz(['reach', S, '--to', 'HEAD', '--unit', 'u1']));
+  ok(/universal, no search to re-run 2/.test(r2.out) && /unsearched: A05 \[only\], A07 \[only\]/.test(r2.out), r2.out);
+  ok(!/A06/.test(r2.out), '"onlyx" holds no universal word');
+  ok(!/u2 \(/.test(r2.out), '--unit limits the report');
+  const S3 = makeS({ config: { boundaryPaths: ['docs/**', 'config/**'] } });
+  const r3 = passes(ltz(['reach', S3, '--to', 'HEAD']));
+  ok(/0 file\(s\)/.test(r3.out) && /cite a changed file 0/.test(r3.out), 'a change outside boundaryPaths reaches nothing it cites');
+  fails(ltz(['reach', S3]), /needs --to/);
+  fails(ltz(['reach', S3, '--to', 'no-such-rev']), /git diff v1 no-such-rev failed/);
+});
 test('sweep --count: only counts per pattern and unit, never the hits; known instances still checked', () => {
   const S = makeS();
   const f = patFile(S, ONLY);

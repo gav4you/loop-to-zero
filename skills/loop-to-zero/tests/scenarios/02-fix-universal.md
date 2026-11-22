@@ -11,7 +11,7 @@ that was unclear for this case.
 Pass if:
 - the history, ruling and refuter checks come first;
 - the item text is not a new closed list;
-- the search for callers is unlimited at every layer and covers aliases and wrappers;
+- the search for callers has no output limit at any layer (no `head`, no tool result cap) and covers aliases and wrappers;
 - the sweep is by subject, cite and file, and the pattern is tested on known instances;
 - it opens every item the new text names, and every field of the changed item;
 - it runs the diff check;

@@ -5,7 +5,7 @@ A loop over 6 sections of an operations runbook is near its end. Agents are allo
 block a close (`rule-meaning` only).
 - Sections 1 and 3 are `closed`. Section 2 is `closed-by-stopping-rule`. Section 5 is `closed-known-wrongs`
   (one known wrong, 5.08, with a drafted fix).
-- Section 4 is `closed-leads-pending`: three leads, two `wrong` leads (4.11 and 4.30, each with a refuting
+- Section 4 is `closed-leads-pending` (was `closed`): three leads, two `wrong` leads (4.11 and 4.30, each with a refuting
   file:line) and one `revert` lead (4.19, from a ruling given after section 4 closed).
 - Section 6's round 9 has just finished reading. Both readers marked every item ok, so there are 0 wrongs. One
   reader's note on item 6.12 reads: "ruled: R-3; differs at deploy/app.yaml:8".
