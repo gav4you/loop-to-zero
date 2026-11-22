@@ -2,7 +2,8 @@ First read these files under <SKILL> in full, read-only: SKILL.md, lessons.md, e
 Answer in text only.
 
 A Python-to-Rust port keeps a parity table of 1,200 items in 9 modules. The owner's standing rule is no
-subagents, so you work alone. Module 4 (140 items) is on round 3, and modules 1 and 2 are closed. You have read
+subagents, so you work alone. Module 4 (140 items) is on round 3, and modules 1 and 2 are closed. The cross-unit
+policy (ruled at setup) lets a round edit items in open modules. You have read
 90 items and found 2 wrong when:
 - the owner says: "items about retry counts are fine as long as they match config/defaults.toml, don't flag
   those";
