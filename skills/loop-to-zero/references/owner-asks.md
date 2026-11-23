@@ -159,6 +159,10 @@ Open with two things, before item 1:
 Then report, in this order:
 1. **The trend:** wrongs per round, with adjusted counts shown, and per class (`references/learning.md`, "The
    retro", step 2), naming any class that is not falling.
+   - **Bridge each count from the last round's; never give it alone.** Say what became of the last round's
+     wrongs and where this round's came from: "round 4 found 7, all fixed (fix check returned 0); round 5 found
+     4, all new: none is a repeat or in text I edited". Split the new ones into repeats, finds in your own edits
+     and the rest, from `record`'s output.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
    your own edit, a new class, a missing ruling, writer misjudgment) and by who found them (both readers, one only, none), plus
    reader false alarms. A round still being read is reported as "at least n (reading incomplete)".
