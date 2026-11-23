@@ -85,12 +85,16 @@ There are five cases:
 - **evidence trimmed, unrendered or failed** in a reader's file (`references/briefs.md`, "When a check
   fails"): that range is re-run with a fresh agent. A range that is only incomplete is continued, not
   re-run;
-- **a reader that skims** (it misses a canary, or admits shortcuts): a fresh agent gives its range a
+- **a reader that skims** (it misses a canary, admits shortcuts, or `record` flags its ok notes as templated): a fresh agent gives its range a
   supplementary read;
 - **a rerun of an owner-dropped tail**, with the owner's OK (`references/round.md`, step 8);
 - **a reader whose context is full**, so a continue fails: a fresh agent with its brief continues from its resume
   position (`queue replace`, below);
 - **an account change or a new session** (below).
+
+A fix checker has no queue slot: in either of the last two cases, relaunch it from the same
+`briefs/fixcheck-<K>-<part>.md` plus "continue from position P", where P is the first input position its result
+file lacks.
 
 **Recording re-runs and supplementary reads:** `ltz queue <S> <unit> <R> rerun <slot> --from P --to Q` makes a
 new slot for the range; `record` uses its lines in place of the parent's. Confirm yourself any wrong the parent
@@ -111,7 +115,7 @@ marked there that the re-run doesn't (`references/briefs.md`).
   3. run `ltz queue <S> <unit> <R> status` for each open round;
   4. re-read both lessons files and `S/classes.md` (in solo mode, only once the round's reading is done).
 - **Test the handoff cold before a new session relies on it.** Before the first resume from it, and again after its
-  steps change, have a fresh session (an agent) given only `S/HANDOFF.md` say what it would do next, without
+  steps change, have a fresh session (an agent; in solo mode, a session after a context reset, or one the owner opens) given only `S/HANDOFF.md` say what it would do next, without
   acting; fix any gap it hits. A handoff written at setup and never resumed from has not been tested. A resuming session re-reads
   decisions and rulings from the decision log and `S/classes.md`, never from a summary in the handoff, `loop.md`
   or memory: a summary drops the scope and the exceptions.

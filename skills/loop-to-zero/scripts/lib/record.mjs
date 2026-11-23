@@ -279,8 +279,8 @@ export function repeatProblems(S, unit, R, wrongs, curReaderClasses, cfg = {}, i
 }
 
 /**
- * The fix checker's results in a round folder: fixcheck-<K>-<chunk>.jsonl (reader schema), with the
- * matching fixcheck-<K>-<chunk>-input.jsonl when it exists. Per iteration K: the items checked, the
+ * The fix checker's results in a round folder: fixcheck-<K>-<part>.jsonl (reader schema), with the
+ * matching fixcheck-<K>-<part>-input.jsonl when it exists. Per iteration K: the items checked, the
  * wrongs, and any input item left unjudged. It never affects countsAsZero.
  */
 export function fixCheckerSummary(rd, problems, warnings) {
@@ -288,7 +288,7 @@ export function fixCheckerSummary(rd, problems, warnings) {
   for (const f of fs.readdirSync(rd).filter((x) => /^fixcheck-.*\.jsonl$/.test(x)).sort()) {
     const m = /^fixcheck-(\d+)-([A-Za-z0-9._-]+?)(-input)?\.jsonl$/.exec(f);
     if (!m) {
-      problems.push(`${f}: a fix-checker file is named fixcheck-<K>-<chunk>.jsonl (or fixcheck-<K>-<chunk>-input.jsonl), where <K> is the iteration number`);
+      problems.push(`${f}: a fix-checker file is named fixcheck-<K>-<part>.jsonl (or fixcheck-<K>-<part>-input.jsonl), where <K> is the iteration number`);
       continue;
     }
     const K = Number(m[1]);
@@ -332,7 +332,7 @@ export function fixCheckerSummary(rd, problems, warnings) {
       else if (c.input) {
         entry.notJudged = c.input.filter((id) => !checked.has(id));
         notJudgedAll.push(...entry.notJudged);
-        if (entry.notJudged.length) warnings.push(`fix checker ${K}, chunk ${name}: ${entry.notJudged.length} input item(s) not judged (${entry.notJudged.join(', ')})`);
+        if (entry.notJudged.length) warnings.push(`fix checker ${K}, part ${name}: ${entry.notJudged.length} input item(s) not judged (${entry.notJudged.join(', ')})`);
       }
       chunks[name] = entry;
       for (const id of checked) checkedAll.add(id);
@@ -587,7 +587,7 @@ export function record({ S, unit, R, chunkReaders }) {
           }
           // A wrong refuted by the item's own text (its figures disagree with each other) has no evidence
           // line to name: its note starts "self-contradiction:" and quotes the clash instead.
-          if (o.verdict === 'wrong' && !/^s*self-contradiction:/i.test(String(o.note ?? ''))) {
+          if (o.verdict === 'wrong' && !/^\s*self-contradiction:/i.test(String(o.note ?? ''))) {
             const refs = noteRefs(o.note);
             if (!refs.length) problems.push(`${where}: wrong, but its note names no file:line`);
             else if (!refs.some((ref) => refInLog(log, ref))) {

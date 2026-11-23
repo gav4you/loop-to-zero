@@ -10,6 +10,8 @@ test reader may run. The steps match SKILL.md's Setup.
    `--session <id>` with an id of your own, such as the date and a letter; `S/writer.lock` keeps it, so a later
    session can release it.
    Create the decision log at `S/decisions.md` provisionally; if question 9 picks the project's own log, move it.
+   Also write a provisional `S/loop.md` (with its Next step) and `S/HANDOFF.md`, and update both before r0 and
+   before any setup-time context reset or likely cut-off; step 8 completes them.
 3. **Explore read-only.**
    - Find the items' format, numbering and citation form: a line, section, file or config key.
    - Find where the evidence lives (files at a commit, or live systems) and the HEAD commit.
@@ -18,7 +20,7 @@ test reader may run. The steps match SKILL.md's Setup.
    - Write `S/config.json`: the evidence (git repo and pin, or a folder), the window size, the item fields,
      and each unit's item files (every file that holds its items, shared files included) and status.
    - The skill's `scripts/ltz.mjs` provides snapshot, render (with `show`, and `--list <file>` for a fix
-     checker's input), show, sweep, record, queue, diffcheck, searches, flips, canary, cost, replay, rulings and lock (`scripts/README.md`).
+     checker's input), show, sweep, record, queue, diffcheck, searches, reach, flips, canary, spotcheck, crosscheck, cost, replay, rulings and lock (`scripts/README.md`).
    - **The one script the project must write is extract:** items into `S/items.jsonl` (id, unit, the item
      fields, and cites in the forms step 8 lists), because every project's item format differs. Put it in `S/checks/`.
 
@@ -34,7 +36,9 @@ test reader may run. The steps match SKILL.md's Setup.
      aren't guarded by the hook; `diffcheck` still flags changes to closed units.
    - **Items flagged at extract** (no cite, or one that can't be parsed) enter the first pass that reads them
      (discovery's first pass, or round 1 if there is no discovery) as candidate wrongs of the project's
-     cite-resolution class, which the writer confirms (`foundBy: "extract"`).
+     cite-resolution class, which the writer confirms (`foundBy: "extract"`). If the bar has no such class, follow
+     "A class found mid-pass" on an open bar (`references/reading-classes.md`), or record them `outsideBar` on a
+     frozen one.
    - **Run extract after any granularity answer,** so ids are stable from the start; otherwise re-key once, with
      every id already written (such as `research.md`, the patterns' `knownInstances`, r0, `S/inputs/audit-map.json`
      and an adopted loop's rebuilt rounds).
@@ -52,9 +56,10 @@ test reader may run. The steps match SKILL.md's Setup.
    mode: its reader is an
    agent only if the owner has
    already allowed agents (otherwise ask that first). With agents ruled out, its reader is a fresh session the owner
-   opens with the reader brief filled for r0 (if the owner rules that out too, ask the owner how r0 may
-   be read: it needs a session that has not seen the research), and that session's transcript is the one measured. Queue its one reader with `ltz queue <S> <unit> 0 init --opaque
-   --per-chunk 1`. r0 writes `confirmed.json` as `{}`. A real wrong r0 surfaces is noted in r0's `retro.md`,
+   opens with the reader brief filled for r0 (if the owner rules that out too, it is read after a context reset, as a solo
+   reading session is: `references/modes.md`; it needs a session that has not seen the research), and that session's transcript is the one measured. Queue its one reader with `ltz queue <S> <unit> 0 init --opaque
+   --per-chunk 1`. r0 writes `confirmed.json` as `{}`, so a `record` run on r0 reports one PROBLEM per reader wrong; run it only
+   for the coverage lines, and take r0's cost from `ltz cost`. A real wrong r0 surfaces is noted in r0's `retro.md`,
    confirmed by the writer in the first pass that reads that window (discovery's first pass, or round 1 if there
    is no discovery) if none of that pass's readers finds it (`foundBy: "spot-check"`), and never hinted to its
    readers. Afterwards, mark its job `done` in the queue: an open job in any
@@ -128,7 +133,8 @@ test reader may run. The steps match SKILL.md's Setup.
    `S/discovery/classes.md` there. Discovery writes its own `S/discovery/judgments.jsonl`, since
    its pass numbers would clash with the units' round numbers. Readers judge every item under the three lenses
    (`references/reading-classes.md`). Cross-unit edits are allowed, because no unit is
-   closed yet. Then round 1 of the first unit. Discovery's fixes don't count as a unit's first fix round:
+   closed yet. A discovery pass never closes a unit, even at zero: units close only through their own rounds.
+   Then round 1 of the first unit. Discovery's fixes don't count as a unit's first fix round:
    round 1's fix still re-reads the whole unit.
    - **Change the reading order each pass.** Use orders such as reverse, by area, by cited file, by
      ruling, by fix history, or middle-out, so that families split by one order come together in another.
@@ -229,8 +235,8 @@ another.
 
 **The draft bar.** Each proposed class's name, definition, what makes it wrong, what it is not, its ok example and fix form go into a draft
 `S/classes.md` for the r0 test reader (its example ids, pattern, source and replay result stay in `research.md`),
-together with quoted copies of the three lenses from `references/reading-classes.md` and the universal words
-(config `universalWords` when set, otherwise that file's list). Readers can
+together with quoted copies of the three lenses from `references/reading-classes.md`, the universal words
+(config `universalWords` when set, otherwise that file's list) and its "When two classes fit". Readers can
 not open this skill's files, so `classes.md` has to carry them. Once the owner
 approves, amends or adds, it becomes round 1's bar.
 
@@ -244,7 +250,7 @@ the skill's maintainer).
   items' own fields: spec open-item tables, decision records, plans, and "owner" or "TBD" markers.
 - **Before closing setup, check that each "answer now" question has a decision** (a bar ruling or a process
   decision), and each deferred one has its
-  stated default recorded. A census keyed only on the items missed spec-level owner items twice.
+  stated default recorded in `S/owner-questions.md`, labelled as the default, not a decision. A census keyed only on the items missed spec-level owner items twice.
 - **Dedupe them.** Identical questions become one ask, naming every item it covers. Check the decision log
   first, and never re-ask a settled question, unless a later owner rule conflicts with it.
 - **Order them by when an answer is due and what a late answer costs.** Ask early where a late "no" is
@@ -269,8 +275,10 @@ the skill's maintainer).
      defects, only the round's `confirmed.json` list; the close also checks `S/defects.md`, where a defect the owner
      closed by decision no longer blocks; `references/round.md` step 8).
    - A loop on a reference that keeps exposing deeper flaws (4, 6, 13, 18 findings, about 3 hours a round)
-     may need a freeze instead: it may only need to be fixed, not perfect. Offer that option: the items are kept
-     as the reference and the loop ends by a stopping rule (not a frozen bar, question 7).
+     may need a freeze instead: it may only need to be frozen as it stands, not perfect. Offer that option: the items
+     are kept as the reference and the loop ends by a stopping rule (not a frozen bar, question 7). The stopping
+     round's confirmed wrongs are still fixed and fix-checked before the unit closes; any the owner leaves unfixed
+     make it `closed-known-wrongs` (`references/round.md`, "Closed statuses").
    - **Agree an escalation trigger up front,** for example "more than about 3 new wrongs in items an earlier
      pass accepted and nobody has changed since, or any repeat on a fixed item". Without discovery, it can't fire in
      round 1, because no earlier pass has accepted anything. When it fires, take the owner the trend, the classes and the
@@ -318,8 +326,8 @@ the skill's maintainer).
    parsing), and read only otherwise. Probes also let the writer reproduce a `defect`
    (`references/debugging.md`). If a project tracker is connected, also ask whether defects may be filed as
    tickets, each with the owner's OK or under a standing process decision.
-   - **Canaries** (planted test items, `references/round.md`). Recommend one or two per reader per round,
-     and never in solo mode (the writer is the only reader). They measure each reader's catch rate and false alarms, and they never enter the
+   - **Canaries** (planted test items, `references/round.md`). Recommend one or two per reader per round.
+     They are not offered in solo mode (the writer is the only reader, and planted them). They measure each reader's catch rate and false alarms, and they never enter the
      items.
    - **Hooks** (`scripts/hooks/README.md`). Recommend enabling the guard in the project's settings. It
      refuses item commits while any reader job is still open, edits to item files whose units are all closed, a second writer,
@@ -340,7 +348,8 @@ the skill's maintainer).
 
    With many units not yet started, also offer this: hits in a unit whose round 1 hasn't started are logged
    for that unit (`cross-unit-edits.txt`, verdict "deferred") instead of edited now. Its own round 1 reads and
-   sweeps them, and each round's fix check stays small.
+   sweeps them, and each round's fix check stays small. It applies only after discovery: discovery's fixes edit
+   every unit.
 9. **Where things go:**
    - the decision log (recommend `S/decisions.md`, unless the project already has one). Number bar rulings `R-n`
      and process decisions `P-n`. Only bar rulings enter `classes.md`;
@@ -383,16 +392,16 @@ readers per chunk or concurrency.
 - **They are not verdicts.** They do not count in the history check, and they don't replace discovery unless
   the owner says so.
 - **Map them to item ids** at setup, in `S/inputs/audit-map.json`.
-- **Measure recall** each round: how many of this unit's outside findings the round caught. Each miss
-  points to a missing class, so log a lesson. A mapped wrong that no reader finds is confirmed by the writer
+- **Measure recall** each round over this unit's outside findings still present in the round's snapshot (not
+  fixed in an earlier round): how many the round caught. Each one no reader caught points to a missing class, so log a lesson. A mapped wrong that no reader finds is confirmed by the writer
   with `foundBy: "audit"`, counted as found by none.
 - **A finding that maps to no item** (a missing control, a gap no item covers) is not a wrong. Put it in
   `S/defects.md` if the evidence falls short, or in `S/owner-questions.md` if it asks for a new item. Never add
   items unasked.
 
 ## The decision log (the master copy of rulings)
-- Use the project's own log if it has one. Otherwise create `S/decisions.md`, or a log in the repo if the
-  owner agrees.
+- Put the log where question 9 decided (the recommendation: the project's own log if it has one, otherwise
+  `S/decisions.md`).
 - Each ruling is recorded verbatim, dated and numbered.
 - `S/loop.md` lists the ruling ids with one-line summaries. `S/classes.md` quotes, under accepted by ruling,
   the text readers need. If they disagree, the log wins.

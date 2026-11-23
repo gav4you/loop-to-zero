@@ -40,7 +40,7 @@ S/
                      its unit and item ids ("none" for a gap no item covers), and is open or closed (with the
                      owner's decision id)
   owner-questions.md the open owner questions: the setup census from every governing document, and each ask
-                     made since (with the unit and item ids that wait on it), each with its decision
+                     made since (with the date asked and the unit and item ids that wait on it), each with its decision
                      id (R-n or P-n) once answered
   owed-rechecks.txt  items owed to an external reviewer: every item a stand-in judged, every fix made on its
                      finds (references/modes.md), and categorical value changes (references/fixing.md, section 5),
@@ -76,9 +76,9 @@ S/
                      confirmed.json (the find list), report.json (per item: verdict, note, cites_read),
                      spotchecks.json (the random spot-check picks and their seed, from ltz spotcheck),
                      measure.json, fixlog.jsonl (id, unit for a cross-unit edit, field, old, new, search, hits, judged, blindSpots, scopeNote, scopeText, ruling, basis and source for a requirement item),
-                     fixcheck-<K>-<chunk>-input.jsonl, fixcheck-<K>-<chunk>.jsonl, retro.md,
+                     fixcheck-<K>-<part>-input.jsonl, fixcheck-<K>-<part>.jsonl, retro.md,
                      drafts/<id>.md (fixes drafted before they may be applied), briefs/<slot>.md (each filled
-                     brief as sent; a fix checker's is briefs/fixcheck-<K>-<chunk>.md), scratch/<slot>/ (one per agent; never committed)
+                     brief as sent; a fix checker's is briefs/fixcheck-<K>-<part>.md), scratch/<slot>/ (one per agent; never committed)
 ```
 
 **Verdicts:**

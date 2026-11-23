@@ -28,7 +28,7 @@ Fill the `{…}` slots:
 | `{SOLO_RULING}` | In solo mode, the owner-ruling clause shown in the reader brief (both briefs use it); otherwise left empty |
 | `{C}` / `{n}` | The fix commit, and how many changed items this checker's input holds (fix checker) |
 | `{K}` | The fix-check iteration (fix checker) |
-| `{CHUNK}` | The fix-check part: a split of the fix set into about 70 changed items each, named `p1`, `p2`, ... (not a round chunk id) |
+| `{PART}` | The fix-check part: a split of the fix set into about 70 changed items each, named `p1`, `p2`, ... |
 
 The two readers of a chunk get the same brief apart from their slot. Keep each filled brief, as sent, in
 `r<R>/briefs/<slot>.md`: a replacement agent gets that text, followed by "continue from position FROM" (the
@@ -93,7 +93,9 @@ config", which the writer records as a defect.
 "Do not run code; read only."}
 {SOLO_RULING: in solo mode only: "If the owner gives you a ruling while you read, write the owner's words,
 verbatim and dated, to {SCRATCH}rulings.md, keep judging under classes.md as it stands, and add the ruling
-to the note of each item it touches."}
+to the note of each item it touches. If evidence that a ruling's approved wording is false reaches you while you
+read (the owner or an outside finding brings it), finish the current window, send the owner one line (the ruling, the item, what
+refutes its wording), note it in {SCRATCH}rulings.md, and go back to reading."}
 
 ## Write: one result file, as you go
 {S}/{UNIT}/r{R}/agent-{SLOT}.jsonl. After each window, APPEND one JSON line per item, in list order:
@@ -116,11 +118,11 @@ refuting file:line), and the paths of any helper scripts.
 
 ## Fix-checker brief (after every fix commit, including follow-ups)
 
-Split large fix sets into parts of about 70 changed items, one checker per part, named `p1`, `p2`, ... (the `{CHUNK}`
+Split large fix sets into parts of about 70 changed items, one checker per part, named `p1`, `p2`, ... (the `{PART}`
 value; not a round chunk). Name the files by check iteration `{K}` (1 for the fix commit, 2 for its first
 follow-up, and so on) and by part. A fix checker is not queued, but it counts toward the concurrency cap, and the
 limit rules in `references/queue-and-outages.md` cover it (wait, then continue it). Keep each filled brief, as
-sent, in `r<R>/briefs/fixcheck-<K>-<chunk>.md`.
+sent, in `r<R>/briefs/fixcheck-<K>-<part>.md`.
 
 ```text
 You are the FIX CHECKER for {PROJECT}. Commit {C} just changed items, and {n} of them are in your input. Read those cold and judge each
@@ -135,11 +137,11 @@ loop-to-zero; follow this brief only.
 {ENV}
 
 ## Input
-{S}/{UNIT}/r{R}/fixcheck-{K}-{CHUNK}-input.jsonl. Each changed item's line holds the item in full plus
+{S}/{UNIT}/r{R}/fixcheck-{K}-{PART}-input.jsonl. Each changed item's line holds the item in full plus
 `changed`: the field or fields the fix edited (one object or a list), each with its new text and the text it
 replaced.
-Render with {RENDER_CMD} fixcheck-{K}-{CHUNK} <from> <count> --list <input file> (positions counted from 1),
-and use {SHOW_CMD} fixcheck-{K}-{CHUNK} <path:lines> for extra reading, so that every line you read is logged.
+Render with {RENDER_CMD} fixcheck-{K}-{PART} <from> <count> --list <input file> (positions counted from 1),
+and use {SHOW_CMD} fixcheck-{K}-{PART} <path:lines> for extra reading, so that every line you read is logged.
 
 ## Read first
 1. {RULES: quoted word for word with their source}
@@ -177,18 +179,25 @@ For each new clause:
 For each replaced text: was it really wrong at {PIN}? If the old text held, mark the item wrong with a note
 starting "old text held" and the file:line that backs it: the fix removed accurate content.
 
-Write {S}/{UNIT}/r{R}/fixcheck-{K}-{CHUNK}.jsonl, one line per item, in the reader schema.
+Report every wrong you find; one that fits no class gets the class 'new' (open bar) or 'outside-bar' (frozen
+bar).
+
+Write {S}/{UNIT}/r{R}/fixcheck-{K}-{PART}.jsonl, one line per item, in the reader schema, appending each item's
+line as you finish it. If your context runs low, stop after an item and reply with the next input position. If
+you are sent "continue from position P", carry on from P.
 Reply with the path, the counts, and one line per wrong.
 ```
 
 ## Verifying the readers' work (the writer)
 1. **Coverage.** `ltz record` runs the file checks below: once the reading is done, run it with `confirmed.json`
-   as `{}` (or as drafted so far), and again at step 3.
+   as `{}` (or as drafted so far), and again at step 3. On that first run, expect one PROBLEM for each reader wrong
+   not yet in a list; judge coverage from the coverage lines only.
    - Every item appears once in each reader's file (a re-run's file counts for the re-run's range), except in a
      tail the owner dropped. Verdicts come only from the result files; reconcile each final reply with its file
      (`references/queue-and-outages.md`).
    - Every cite a reader lists appears in that reader's render log.
-   - Every wrong names a refuting file:line.
+   - Every wrong names a refuting file:line, except one whose note starts "self-contradiction:" (it quotes the
+     clashing figures instead).
 
    **When a check fails** (one rule; never fill an item by hand):
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
@@ -226,11 +235,12 @@ Reply with the path, the counts, and one line per wrong.
    - `confirmed.json` may be drafted while readers are still reading; run `record` only after the reading is done.
      A wrong confirmed before every reader of its chunk is done stays provisional: re-run the history check
      against the other reader's line when it arrives.
-   - Spot-check 10 ok items per reader by the rule in `references/round.md`, step 3 (5 random, drawn with
-     `ltz spotcheck`; 5 weighted).
    - List every reader wrong you don't confirm in `rejected`, with its reason and the file:line that answers it
      (`references/fixing.md`, "The confirm checks").
-   - Write `confirmed.json`.
+   - Write `confirmed.json` and run `ltz record`: once its checks pass it scores the canaries. Give a reader that
+     missed one its supplementary read.
+   - Then spot-check 10 ok items per reader by the rule in `references/round.md`, step 3 (5 random, drawn with
+     `ltz spotcheck`; 5 weighted), add their finds (`foundBy: "spot-check"`) and run `record` again.
 3. **Write `report.json`** (`ltz record`): one check per item, with its verdict, note and `cites_read`.
    - `cites_read` comes only from the render logs, never copied from the item's own cites.
    - Never add an entry to a reader's render log yourself: it would hide an item the reader skipped.

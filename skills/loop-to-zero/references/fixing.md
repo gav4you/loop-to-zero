@@ -28,7 +28,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    you, confirming, state in the note why that reasoning fails. One such reason is that the reader and the
    earlier ok read the item in two ways that the evidence judges differently (ambiguous wording, below); where it is
    a rule they read differently, and the item's truth turns on that, it is check 1's dispute (`pending-owner`,
-   `rule-meaning`). If you can't, the item is not plainly refuted:
+   `rule-meaning`). Test both afresh (is it a dispute over a rule's meaning, and does the item read two ways?)
+   before you let the earlier ok stand, and give each result in the note, a `rejected` note included ("history:
+   <the ok>; rule-meaning: no, <why>; ambiguity: no, <why>"). If you can't show the reasoning fails, the item is not plainly refuted:
    don't confirm it, so it counts as that reader's false alarm (readers', fix checkers' and the writer's oks all
    count, and so does this round's other reader's reasoned ok). `confirmed.json`'s `withdrawn` list is only for
    wrongs a ruling given mid-round overturns.
@@ -63,7 +65,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   - Items you rewrote only as dependents or cross-unit edits aren't flagged as repeats by the tool. The trigger
     for a wrong found in an item you edited covers them (`references/learning.md`, "Triggers").
 - **Rulings again** before editing any sibling the sweep finds.
-- **The refuter.** Confirm it at the pin, reading its whole context.
+- **The refuter.** Confirm it at the pin, reading its whole context. A "self-contradiction:" wrong has no refuter
+  line: confirm that the quoted figures are the item's own and really clash, then check its parts at the evidence.
   - If it is a different symbol with the same name, or dead text, the wrong is a false alarm. Dead text can't
     run: it is commented out, placed where it can never execute (after an unconditional return, say), or in a
     file outside the boundary. Code that nothing calls or runs, but inside the boundary, is live evidence.
@@ -92,8 +95,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   above). It is never counted wrong and never decided by the loop. Any other item the evidence plainly refutes
   stays `wrong` while questions are open, an override question included.
 - **A reader wrong you don't confirm** (a false alarm: check 3's reasoned ok, a different symbol, dead text)
-  goes in `confirmed.json`'s `rejected` list, with the reason and the file:line that answers the refuter, or a
-  note starting "history:" that names the earlier reasoned ok. A dismissal needs the same grounding as a
+  goes in `confirmed.json`'s `rejected` list, with the reason and the file:line that answers the refuter (for an item a ruling covers, the ruling id and its
+  accepted-by-ruling entry as `S/classes.md:<line>`), or a note starting "history:" that names the earlier
+  reasoned ok. A dismissal needs the same grounding as a
   confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
   is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5).
 
@@ -157,14 +161,16 @@ Every fix follows 2 to 4.
    already found correct (not `S/precedents.md`, which readers read) or the source's own words. Don't write fresh prose for each item.
    - **A wording no fix of the class has used yet is tried on one item first:** fix that item, re-read it and
      fix-check it, and only once the check returns 0 apply the wording to the other hits (a follow-up commit).
-5. **Write each fix's expected effect before applying a batch:** the ids and fields it changes, and what it
-   should leave unchanged. After the commit, compare the diff and `fixlog.jsonl` with it; a change you didn't
+5. **Write each fix's expected effect before applying a batch,** in the round's `retro.md` under that batch: the
+   ids and fields it changes, and what it should leave unchanged. After the commit, compare the diff and `fixlog.jsonl` with it; a change you didn't
    expect (another field, another item, a fix that didn't land) is checked before the fix checker, and is a lesson.
    With two fixes to one field in a batch, the later one wins: merge them into one.
 
 ## 3. Dependents
 Search for items that cite the changed item or restate its conclusion, in this unit and in others. Fix them
-the same way. Those outside the unit follow the cross-unit rules.
+the same way. Those outside the unit follow the cross-unit rules. A dependent in this unit that the evidence
+refutes at the snapshot is a wrong of the round: confirm it (the confirm checks) and add it to `confirmed.json`
+with `foundBy: "sweep"` before its fix. One made stale only by the fix's new text is logged in `fixlog.jsonl` only.
 
 ## 4. Re-read
 Re-read the whole of every changed item:
@@ -237,7 +243,9 @@ or a fix.
   fix narrowed the claim), don't narrow it a third time, and say so in the `repeatNote`. Adding an exception
   ("every X except Y") or another qualifier is a narrowing too, proven or not. Subtract the universal, or
   replace it with a claim with no universal that the cited lines show (what the code does there, not what it
-  does everywhere).
+  does everywhere). This wins over section 2's "keep the claim, state its scope" even where exclusivity is the
+  item's point: after two failed scopes the exclusivity is not established, so subtract it and say in the report
+  that the item lost that point.
 
 ## Carrying a ruling into the items
 When the owner rules, or a ruling is amended, and it changes behaviour, search every item for the old
@@ -261,7 +269,11 @@ checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two.
 
 ## Reverting fixes caused by false wrongs
-When a verdict is overturned (by the owner, a spot-check or a ruling):
+When a verdict is overturned (by the owner, your own re-check (recorded as `spot-check`), a fix checker's "old text held" or a ruling):
+0. If the wrong is in the current round's `confirmed.json`, take it out of the wrongs: a ruling's goes in
+   `withdrawn`, and so does the owner's (an owner's overturn is recorded as a bar ruling: `references/owner-asks.md`);
+   any other that a reader marked (your re-check's, an "old text held") goes in `rejected`, with the file:line that backs the old text.
+   Re-run `record`.
 1. Re-read every edit it caused, siblings included.
 2. Revert the edits that removed accurate content or now contradict the ruling, after the round's reading: in
    this unit, and in units not yet closed where this unit's false wrongs caused cross-unit edits (log those as

@@ -22,7 +22,7 @@ Each file in `scenarios/` is a prompt for a fresh, cold agent.
    alone. Note anything the answer does that no criterion covers, good or bad: it is a candidate criterion.
 
 A scenario that fails means the skill's wording isn't binding. The skill's maintainer fixes the wording, not the
-scenario (a scenario changes only before the edit, under step 4 below), and re-runs it, and adds a new scenario whenever a real loop exposes a failure the current ones would
+scenario (a scenario changes only before the edit, under step 4 of "One run proves little" below), and re-runs it, and adds a new scenario whenever a real loop exposes a failure the current ones would
 not catch; a loop's writer proposes these (`references/learning.md`, "Promotion").
 
 **One run proves little.** Agents vary from run to run, so a single pass can be luck. For a change meant to alter what an agent following the skill does (a change made only to clear a test 0, 1 or
@@ -30,7 +30,8 @@ not catch; a loop's writer proposes these (`references/learning.md`, "Promotion"
 against a baseline copy made before the edit, as in step 1):
 1. **Before editing, keep the baseline:** a copy of the repo as last committed (`git worktree add <dir> HEAD`,
    with `<dir>` outside the repo). For baseline runs, fill `<SKILL>` with the skill folder inside it
-   (in this repo, `<dir>/skills/loop-to-zero`). Always send the working copy's scenario files: only `<SKILL>` points at the
+   (the same relative path as in your working copy: `<dir>/skills/loop-to-zero` when the skill lives in
+   `skills/loop-to-zero/`). Always send the working copy's scenario files: only `<SKILL>` points at the
    baseline.
 2. **Name the target criterion:** the one criterion the change is meant to make pass (a new scenario's, or an
    existing one's). The target scenario holds it. A scenario is touched when any of its criteria depends on a rule
@@ -48,7 +49,8 @@ against a baseline copy made before the edit, as in step 1):
    and 6 baseline runs, so each side has 6. It is a regression to fix when the edited runs pass at least 2
    fewer times than the baseline runs, or when the edit changes a sentence the criterion depends on and the
    edited runs pass fewer times at all. Otherwise note it as variance, with both counts, in the commit message.
-   One run's difference in 3 is normal: agents vary.
+   For these other scenarios one run's difference is normal: agents vary. Step 5's rule for the target and
+   touched scenarios still holds.
 7. **Put the pass counts in the commit message.**
 
 | Scenario | What it tests |
@@ -69,7 +71,7 @@ against a baseline copy made before the edit, as in step 1):
 | 14-reader-ok-notes | A reader whose ok notes for a range share one templated text: the writer flags it and gives that range a supplementary read |
 | 15-retro-diagnosis | 14 wrongs from one reformatted file confirmed against the pin as one cause; a one-reader miss diagnosed from the render log; the trend broken down by class |
 | 16-class-research | Drafting a class set from claim shapes: defined-not-wired and evaluated-expression classes, an "Is not" line and ok example on every entry, cross-item checks |
-| 17-fix-tactics | A third repeat after two narrowings, a new class wording for 31 sweep hits, what the fix checker checks ("old text held"), and a defect diagnosed by candidate causes with a working sibling |
+| 17-fix-tactics | A third repeat after two narrowings, a new fix wording for a class's 31 sweep hits, what the fix checker checks ("old text held"), and a defect diagnosed by candidate causes with a working sibling |
 | 18-owner-report | A round report with three open owner questions (one settled by a later decision), a reply that picks no option, and a reply that does: headline, decisions needed, ranked questions with ages, and the decision record |
 | 19-change-upkeep | A cheaper reader model and a shorter brief, a pin move, 60 project lessons some now tool-enforced, and a handoff to a new session: side-by-side trial, retired lessons with last-confirmed rounds, a cold-tested handoff |
 | 20-setup-and-method | Setup with no review history and a two-sense term; a new gate check, a new method and a fix batch: owner catches as past errors, warn-only round, keep/drop test written first, expected effect per fix |

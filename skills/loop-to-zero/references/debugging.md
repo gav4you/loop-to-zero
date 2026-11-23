@@ -2,7 +2,7 @@
 
 A `defect` is a fault in the evidence, or a requirement the evidence doesn't meet, not a fault in the items. The
 loop never fixes it. Instead it hands the owner a diagnosis they can act on: what is wrong, how to see it, where
-it comes from, and what would fix it. The steps follow the engineering plugin's `/debug` skill (reproduce,
+it comes from, and what would fix it. The steps are the usual debugging steps (reproduce,
 isolate, diagnose, fix), with the fix step changed to "propose": the evidence is not the loop's to edit.
 
 ## When
@@ -11,7 +11,8 @@ isolate, diagnose, fix), with the fix step changed to "propose": the evidence is
   wishes") gets the same steps.
 - **It is read-only work.** In agent mode it may run while readers are still reading, like the other read-only
   work in `references/round.md` ("2. Read"). In solo mode it runs after the hand-back, never in a reading session.
-- **Never edit the evidence, the pin or the item.** Probes run only in a scratch copy, and only if the owner
+- **Never edit the evidence or the pin, and never change a defect's item to match the evidence.** A wrong item
+  the fault was found with is still fixed as a wrong (round step 4). Probes run only in a scratch copy, and only if the owner
   allowed probes at setup.
 - **It never holds up the round.** A step that can't finish is recorded as "not reached", with the reason.
 
@@ -63,8 +64,8 @@ admits that kind of evidence. A defect stands on the pinned evidence alone. Quot
 "Outside reports" field, with its source and date.
 
 ## Connected tools
-Tools are named by category (`~~source control`, `~~monitoring`, `~~project tracker`), as in the engineering
-plugin. Any server of that category works. Without one, use the local repo and say so.
+Tools are named by category: `~~<category>` (`~~source control`, `~~monitoring`, `~~project tracker`) means any
+connected tool or server of that kind. Without one, use the local repo and say so.
 
 | Category | Use | Limit |
 |---|---|---|

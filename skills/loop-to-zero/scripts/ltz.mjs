@@ -74,7 +74,7 @@ render <S> <unit> <R> <slot> show <cite>...
   listed for the owner and not counted: not a false alarm (outsideBar.<slot>, outsideBarItems), not
   confirmed, reported "outside-bar" when a reader read it, named in the summary; it never blocks a
   zero. Every ok whose note starts
-  "ruled: <ruling id>", in a reader's lines or a fix checker's fixcheck-<K>-<chunk>.jsonl, is listed
+  "ruled: <ruling id>", in a reader's lines or a fix checker's fixcheck-<K>-<part>.jsonl, is listed
   in measure.json ruledOks, with a warning unless the id is pending
   as ruled-wording or listed in "ruledKept" with the same ruling (the writer checked it and the owner
   kept the ruling). A ruledKept entry whose id is not a ruled ok of the round, whose ruling differs
@@ -91,7 +91,7 @@ render <S> <unit> <R> <slot> show <cite>...
   that does not compile, or a log that is missing, unreadable or has no ruling id, is a PROBLEM. A
   foundBy wrong no reader marked counts as found by none. Writes report.json (verdict ok, wrong, pending-owner, defect, unread or outside-bar; cites_read
   only from render logs) and measure.json (finds per reader, false alarms, Chapman estimate, canary
-  scores, reruns, fixChecker: the fixcheck-<K>-<chunk>.jsonl items checked and wrongs per iteration,
+  scores, reruns, fixChecker: the fixcheck-<K>-<part>.jsonl items checked and wrongs per iteration,
   fullDepth, countsAsZero, zeroBlockers). countsAsZero needs full depth, no wrong and nothing unread;
   boundary-silent and ruled-wording pending items always block it, rule-meaning ones when config
   "ownerQuestionsBlock" is true (the default), defects when "defectsBlock" is true (default false).

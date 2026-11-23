@@ -12,7 +12,7 @@ The owner decides on substance, not on citations. Each ask, using AskUserQuestio
 Then record the answer verbatim, with the date, in the decision log (`references/setup.md`), and commit it
 if the log is in git. Mirror how the previous decision was recorded. The log holds every owner decision,
 including "knowingly amends" overrides, not only rulings. List each ask in `S/owner-questions.md` when you make it,
-with the unit and item ids that wait on it, and add its decision id once it is answered, so a later session can
+with the date asked and the unit and item ids that wait on it, and add its decision id once it is answered, so a later session can
 see what is still open.
 
 **Each decision-log entry records** the question as asked, the options offered, the owner's words verbatim, the
@@ -25,7 +25,8 @@ with that decision id and the date, report it as withdrawn (with your reading of
 labelled for the owner to correct), and stop asking it.
 
 **Unprompted rulings** are recorded the same way, for example "stop flagging those" or "that's covered by
-R-12".
+R-12". An owner's overturn of a verdict ("that item is fine") is recorded as a bar ruling (`R-n`) with its
+accepted-by-ruling entry, so the overturned wrong can go in `withdrawn`.
 - Add each bar ruling to `S/classes.md` under accepted by ruling (`references/reading-classes.md`). The entry's
   wording is yours, so quote the ruling verbatim, replay a pattern that encodes its point (or write n/a), and show the entry's text to the owner
   in the report.
@@ -89,7 +90,8 @@ R-12".
   pass for the owner's words, and test each recommendation hard before recording it.
   - Still send the owner anything that needs the owner's facts or authority, or that reads or extends the
     owner's own rulings.
-  - List the working assumptions only the owner can confirm, each with a due date.
+  - List the working assumptions only the owner can confirm, each with a due date, in `S/owner-questions.md`
+    (marked as assumptions) and in the next report.
 - **A standing instruction inside an answer gets its own record.**
   - A "from now on" instruction becomes its own decision, applied at every later step: a bar ruling only if it
     changes how items are judged, otherwise a process decision (`references/setup.md`).
@@ -164,7 +166,7 @@ Then report, in this order:
      4, all new: none is a repeat or in text I edited". Split the new ones into repeats, finds in your own edits
      and the rest, from `record`'s output.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
-   your own edit, a new class, a missing ruling, writer misjudgment) and by who found them (both readers, one only, none), plus
+   your own edit, a new class, a missing ruling, writer misjudgment, evidence moved) and by who found them (both readers, one only, none), plus
    reader false alarms. A round still being read is reported as "at least n (reading incomplete)".
 3. **How much is likely still unfound:**
    - the remaining-wrongs estimate, with its caveat, its range and any low-confidence flag from `measure.json`;

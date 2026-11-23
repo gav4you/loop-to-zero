@@ -6,7 +6,8 @@ This file is the global starter set. It is research source 5 in `references/setu
 - The owner approves the set before any counted reading. The project's own set lives in `S/classes.md`; never
   edit this file for one project.
 
-The U classes are for claims about code. The C classes are for claims about config, policy and values.
+U1 to U5, U7 to U9 and U12 are mainly for claims about code; U6, U10, U11 and U13 apply to any item. The C classes
+are for claims about config, policy and values.
 
 ## The three lenses (every reader applies all three; S/classes.md quotes them)
 - **Claim vs source.** The item's claim must hold at the pin, and each citation must point at the right
@@ -87,18 +88,22 @@ appear here. Each entry gives:
 - what readers still judge: the item's other claims and citations;
 - any "kept after 'amend?'" note, with the owner's words (`references/owner-asks.md`).
 
+A superseded or withdrawn ruling keeps its id here with the line "superseded by <id>, <date>: approves nothing"
+(or "withdrawn, <date>: approves nothing"), and no verbatim approval text.
+
 An item that a ruling covers is not wrong for the ruled point. Readers read this section first.
 
 ## Reader guidance (in `S/classes.md`)
 Notes for readers go only here: what to bound. Never new facts, and never a
-paraphrase of a rule. Re-check every line against later rulings before each round, and replay any change
-(`references/learning.md`).
+paraphrase of a rule. Re-check every line against later rulings before each round. Propose any change to the owner with its replay
+(`references/learning.md`, "Changing the bar's wording"); once approved, it enters the next round's copy on the same timing.
 
 ## A class found mid-pass (open bar)
 The writer:
 1. sweeps every item, in every unit, for it as soon as `references/round.md`, step 2, lets sweeps run (a count-only
    `ltz sweep --count` may run now);
 2. confirms its hits as any sweep's (`references/round.md`, step 4);
-3. replays it (`ltz replay`) if there is history, adds its name, definition, what makes it wrong and fix form to
-   `S/classes.md`, and its sweep patterns to `S/checks/patterns/`;
+3. replays it (`ltz replay`) if there is history, adds its name, definition, what makes it wrong, fix form, "Is not" line and "Ok
+   example" line to `S/classes.md` once the current round's last fix check is done (like a wording change:
+   `references/learning.md`), and its sweep patterns to `S/checks/patterns/`;
 4. logs a lesson in `S/lessons.md` ("the research missed a class").

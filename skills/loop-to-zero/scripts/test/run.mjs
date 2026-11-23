@@ -1590,7 +1590,7 @@ test('record: measure.json.fixChecker reports the items checked and the wrongs p
   wjl(path.join(rd, 'fixcheck-2-c2-input.jsonl'), [ITEMS[6]]);
   const r = passes(rec());
   ok(/fix checker #1: 3 checked, 2 wrong, #2: 1 checked, 0 wrong/.test(r.out), r.out);
-  ok(/WARNING: fix checker 1, chunk c1: 1 input item\(s\) not judged \(A03\)/.test(r.out), r.out);
+  ok(/WARNING: fix checker 1, part c1: 1 input item\(s\) not judged \(A03\)/.test(r.out), r.out);
   const fc = rj(path.join(rd, 'measure.json')).fixChecker;
   eq(fc.map((x) => [x.iteration, x.itemsChecked, x.wrongs, x.wrongIds, x.notJudged]), [[1, 3, 2, ['A02', 'A07'], ['A03']], [2, 1, 0, [], []]], 'per iteration');
   eq(fc[0].chunks.c1, { itemsChecked: 2, wrongs: 1, wrongIds: ['A02'], inputItems: 3, notJudged: ['A03'] }, 'per chunk, with its input');
@@ -1605,7 +1605,7 @@ test('record: measure.json.fixChecker reports the items checked and the wrongs p
   fails(rec(), /fixcheck-2-c1\.jsonl: line 1 has no "id"/);
   wjl(path.join(rd, 'fixcheck-2-c1.jsonl'), [{ id: 'A02', verdict: 'ok' }]);
   fs.writeFileSync(path.join(rd, 'fixcheck-x.jsonl'), '');
-  fails(rec(), /fixcheck-x\.jsonl: a fix-checker file is named fixcheck-<K>-<chunk>\.jsonl/);
+  fails(rec(), /fixcheck-x\.jsonl: a fix-checker file is named fixcheck-<K>-<part>\.jsonl/);
 });
 
 const rerunsOf = (S, parent) => rj(path.join(RD(S), 'queue.json')).slots.filter((s) => s.parent === parent);
@@ -2491,6 +2491,10 @@ test('record: a wrong whose note starts "self-contradiction:" needs no evidence 
   ok(!/A04.*names no file:line/.test(r.out), r.out);
   reader(S, 'c1-b', 1, 6, { A04: { verdict: 'wrong', note: 'the sum is off', class: ['C2'] } });
   ok(/A04.*wrong, but its note names no file:line/.test(ltz(['record', S, 'u1', '1', ...READERS]).out), 'control: without the prefix a file:line is still required');
+  reader(S, 'c1-b', 1, 6, { A04: { verdict: 'wrong', note: '  self-contradiction: 2 + 2 is not 5', class: ['C2'] } });
+  ok(!/A04.*names no file:line/.test(ltz(['record', S, 'u1', '1', ...READERS]).out), 'leading spaces before the prefix are allowed');
+  reader(S, 'c1-b', 1, 6, { A04: { verdict: 'wrong', note: 'sssself-contradiction: 2 + 2 is not 5', class: ['C2'] } });
+  ok(/A04.*wrong, but its note names no file:line/.test(ltz(['record', S, 'u1', '1', ...READERS]).out), 'a mangled prefix is not the prefix');
 });
 test('crosscheck: groups items that cite the same line and flags differing numbers among them', () => {
   const its = [

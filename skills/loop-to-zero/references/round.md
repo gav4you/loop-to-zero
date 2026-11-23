@@ -26,7 +26,7 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
 - No item edits are committed in any unit until the round's reading is done. Decision-log entries may be
   committed at any time; the guard allows a commit that holds no item files.
 - **Read-only work may run during the reading,** in agent mode: confirming wrongs already reported,
-  spot-checks, sweeps to find hits, and drafting fixes in the round's `drafts/<id>.md` (applied after the
+  weighted spot-checks of readers already done (the random draw waits for step 3), sweeps to find hits, and drafting fixes in the round's `drafts/<id>.md` (applied after the
   reading). No item file is edited or committed. During a known limit wait this work spends the same limit: save
   state first, then only confirm the wrongs already reported (reading the files the confirm checks need, such as
   earlier fixlogs, is part of that). Spot-checks, sweeps, drafts and the search for a refuted universal's other refuters (`references/fixing.md`, "The
@@ -50,9 +50,11 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
 - spot-check 10 ok items per reader: 5 at random, and 5 weighted toward items an earlier fix changed and
   toward classes that produced wrongs. Draw the random 5 with `ltz spotcheck <S> <unit> <R> --seed <N>`: it
   spreads them over each reader's early and late positions and records the picks and seed in
-  `spotchecks.json`. A reader that missed a canary or reads less deeply late gets more random picks
-  (`--extra <slot>=5` adds 5 to its 5; its 5 weighted picks still apply). Draw them once any supplementary
-  read is done: a rerun slot's file gets picks of its own. Note the weighted picks and why in `retro.md`;
+  `spotchecks.json`. Score the canaries first: `record` prints their scores only once its checks pass, so run it as soon as
+  `confirmed.json` lists every reader wrong, before the draw. A reader that missed a canary gets its supplementary
+  read ("What a miss shows", below) and then more random picks on the rerun slot's file (`--extra <rerun slot>=5`
+  adds 5 to its 5; its 5 weighted picks still apply); a reader that only reads less deeply late gets
+  `--extra <slot>=5`. Draw them once any supplementary read is done: a rerun slot's file gets picks of its own. Note the weighted picks and why in `retro.md`;
 - run `ltz crosscheck <S> --unit <unit>`: it lists the cites two or more items share and flags those whose
   items state different numbers. Readers see one window at a time and never compare items, so judge each
   flagged family together, at the evidence;
@@ -79,7 +81,9 @@ measure counts them as found by none.
   Build its `--list` input file from the changed items (with `changed`, each edited field's `old` text included) plus the named items (without it).
 - Fix its real wrongs as a follow-up commit, as `references/fixing.md` says (a find in old text is swept first), and
   check that follow-up too, until a check returns 0. Its finds in
-  this unit's old text go into `confirmed.json` (`"foundBy": "fixcheck"`). Re-run `record` after every fix check, a clean one included: it reads the checker's
+  this unit's old text (snapshot text the fix did not change: a named item or an unchanged field) go into
+  `confirmed.json` (`"foundBy": "fixcheck"`). An "old text held" find is not one: it overturns the fix's wrong
+  (`references/fixing.md`, "After the fix checker"). Re-run `record` after every fix check, a clean one included: it reads the checker's
   result files (the fix-check counts, and any "ruled:" ok). A find in another
   unit's item is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
   policy).
@@ -145,15 +149,15 @@ before any edit, then the fixes, `diffcheck` and the fix checker as usual. After
 `ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
 `closed-leads-pending` itself). If round F confirmed any wrong (other than an "evidence moved" one), the unit is reported with its adjusted closing
-count (`0 (adj n, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
+count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
 - **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`, or for `evidence-moved` leads: queue just the chunks that cover
-  them, read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with no dropped range, `init` alone writes an empty
-  queue). Leads are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). `ltz record` accepts a `final-check`
+  them, read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
+  queue). Other leads are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
-  that closed with them. Apply the held draft (re-checked against today's bar), log it in round F's fixlog, and
+  that closed with them. Re-check the held draft against today's bar and rulings (or draft the fix now if its line names none), apply it, log it in round F's fixlog, and
   fix-check it.
 - **Mark each lead settled** in `closed-unit-leads.txt`, and each known wrong and dropped range in `known-wrongs.txt` (round F, date). If new leads are logged
   against a unit after its round F (by round F's sweeps or otherwise), the final targeted check repeats for those
@@ -189,9 +193,10 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
   items you cleared and how. A changed file can break a universal claim it was never cited for. The groups are a
   floor: a logged search can miss new code (a path built at run time), so read the diff itself and add any item
   whose claim it touches. Take that reach to the owner with the options (move now, at a
-  unit's close, or not), and move only on their answer. Set it to a commit, never a branch name. Closed units stay closed at the pin they closed at (write it on `loop.md`'s Units
+  unit's close, or not), and move only on their answer. Set it to a tag or commit, never a branch name (`snapshot` records the commit it resolves to). `reach` needs a single git evidence source: with folder or several sources, build the same three groups by hand from a diff of the old and new evidence (for the logged searches, run `ltz searches <S> --rounds all --at-current` on a scratch copy of the state folder whose `config.json` points at the new evidence), and pin a new folder by its sha256. Closed units stay closed at the pin they closed at (write it on `loop.md`'s Units
   line); tell the owner how many of their items the move reaches, and ask whether to reopen them.
-  Re-check earlier fixes' bounds at the new pin with `ltz searches <S> --rounds all --at-current`. A wrong only
+  Re-check earlier fixes' bounds at the new pin with `ltz searches <S> --rounds all --at-current` (and on
+  `S/discovery` too, if discovery ran). A wrong only
   the new evidence refutes has origin "evidence moved" (`references/learning.md`, "The retro").
   - **The move is a process decision** (`P-n`; `references/setup.md`, "Which answers are bar rulings"): record it in
     `config.json` and `loop.md`'s Evidence line, never in `classes.md`. It doesn't touch a frozen bar. An answer
@@ -258,7 +263,7 @@ There are two exceptions mid-round:
     one or two per reader.
 - **What a miss shows.** A reader who misses a canary gets a supplementary read of its range by a fresh agent,
   as for trimmed evidence, before the pass counts. If its misses are in late windows only (it is tiring), also
-  shorten the chunks.
+  shorten the chunks from the next round's snapshot (`snapshot --chunk-size`), and say so in the report.
 
 ## The remaining-wrongs estimate
 `record` estimates how many wrongs each chunk still holds, from the overlap of its two readers (the Chapman

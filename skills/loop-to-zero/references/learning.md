@@ -3,7 +3,7 @@
 ## Triggers
 Each of these writes a lesson to `S/lessons.md`, and a line for each changed verdict (one line per verdict per
 round) to the `judgments.jsonl` of the state folder that holds that verdict's round (for a discovery pass,
-`S/discovery/judgments.jsonl`):
+`S/discovery/judgments.jsonl`; for a closed unit's verdicts, at its final targeted check: "Counting"):
 
 | Trigger | What it shows |
 |---|---|
@@ -12,7 +12,7 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
 | A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
 | Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
-| A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks |
+| A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks from the next snapshot |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
 | A class turns up that the setup research did not predefine | The research missed a source. Add it to `S/research.md`, and propose adding it to `references/setup.md`'s research sources to the skill's maintainer |
 | An item's field returns to a value it held in an earlier round, unexplained by a ruling (`ltz flips <S> <unit>`, run at each retro, over every round's `fixlog.jsonl`, the `historyFolders` (discovery) included) | A definition is unclear. Take it to the owner with each reading as an option. Until the answer, the item's verdict follows SKILL.md "Verdicts" |
@@ -26,7 +26,8 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 1. Try it with `ltz replay` (below), using a pattern that encodes the wording's point, or write "n/a" if no
    pattern can, and measure its reach.
 2. Propose it to the owner in the report, with the replay numbers.
-3. Once approved, it goes into the next round's copy.
+3. Once approved, it waits in its `S/owner-questions.md` entry until the current round's last fix check is
+   done, and is then written into `S/classes.md` before the next `snapshot`, so it enters the next round's copy.
 
 **A ruling** (the owner's own words) enters `S/classes.md` at once, because fix checkers read the current bar
 (one given in a solo reading or fix-check session enters at the hand-back: `references/modes.md`).
@@ -102,8 +103,7 @@ until that check.
 
 ## The retro (`r<R>/retro.md`)
 1. **Sort each confirmed wrong on two axes.**
-   - **Origin:** pre-existing text; your own edit; a new class; a missing ruling (including a reader wrong
-     overturned by a ruling given mid-round); evidence moved (the owner moved the pin and only the new evidence
+   - **Origin:** pre-existing text; your own edit; a new class; a missing ruling; evidence moved (the owner moved the pin and only the new evidence
      refutes the item: `record` warns when the pin moved since the round's snapshot; such a wrong adjusts no
      earlier round's count, is no reader miss and does not count toward the escalation trigger;
      `references/round.md`, "Between rounds only"). A verdict of yours later overturned is "writer misjudgment"; when
@@ -113,13 +113,13 @@ until that check.
      checker in old text, or the extract).
 
    **For each wrong a reader missed, check its render log** before choosing a remedy. If the reader never
-   showed the refuting line, it failed to look: the remedy is reading depth (window size, the whole-context
+   showed the refuting line, it failed to look: the remedy is reading depth (window size, through a side-by-side trial: "Changing the reader setup"; the whole-context
    lens, a supplementary read), not a sharper class wording. If it showed the line and still marked ok, it
    misjudged: then a sharper wording is the remedy (Triggers, "Only one of two readers found a confirmed
    wrong").
 
    Count reader false alarms separately. A reader wrong overturned by a ruling given mid-round is not a false
-   alarm: it goes under "missing ruling", and it is not in the round's count. Record it in `confirmed.json`'s
+   alarm: it goes under "missing ruling", listed apart from the origin counts, and it is not in the round's count. Record it in `confirmed.json`'s
    `withdrawn` list with the ruling id, so `ltz record` counts it apart. A wrong outside a frozen bar is not a false
    alarm either: it goes in the `outsideBar` list.
 2. **If the count rose,** say whether the bar moved (old text, newly seen) or your edits regressed.
@@ -145,7 +145,7 @@ until that check.
 8. **Applied check** (last, after any id the retro added): every id in `confirmed.json` is settled. A wrong has a
    fixlog entry, a held draft (`drafts/<id>.md`) under an open owner question (listed in `S/owner-questions.md`), or a line in `S/known-wrongs.txt`; a withdrawn id has its
    ruling id; an `outsideBar` id has its note, for the report's list; a pending id has its reason; a defect has its `defects.md`
-   line; a `ruledKept` id names a ruling whose entry records the keep. Settle any id that isn't as its kind says
+   line; a `ruledKept` id names a ruling whose entry records the keep; a `rejected` id has its note (a file:line or "history:"). Settle any id that isn't as its kind says
    here: a wrong the owner closed the unit with gets its `S/known-wrongs.txt` line (SKILL.md, "Owner overrides");
    any other wrong whose fix no open owner question holds goes through round steps 4 and 5. Then run retro steps 1
    to 8 again, until step 8 finds nothing to settle.
@@ -175,6 +175,9 @@ say "no held-out history yet" rather than quoting the in-sample recall.
   record the result. A test written after seeing the result decides nothing.
 
 ## Changing the reader setup (model, brief, window size)
+A labelled stand-in for an unavailable external reviewer (`references/modes.md`) is not a setup change and needs
+no trial: its items go on `S/owed-rechecks.txt`.
+
 Never switch the readers' model, cut or reword the reader brief, or change the window size on a hunch, even to
 save cost. First run the old and the new setup side by side, uncounted, on the same chunk of the last recorded
 round (its snapshot), and compare: the confirmed wrongs each finds, false alarms, canaries if planted, and cost
@@ -204,5 +207,8 @@ comparison to the owner (it is their mode decision). It takes effect from the ne
   - contradicts SKILL.md or a reference file;
   - or keeps recurring although SKILL.md already states it. Then propose a mechanical check (a tool, a gate
     or a hook), not more words.
+
+  Also propose a new scenario for `tests/` when a real loop exposes a failure no current scenario would catch
+  (`tests/README.md`).
 - **After any edit to SKILL.md, `references/` or `scripts/`,** re-run the skill's tests (`tests/README.md`). A
   lesson promotion is tested by its replay, and `skillcheck` runs after any edit to `lessons.md`.

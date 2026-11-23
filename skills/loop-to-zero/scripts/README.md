@@ -2,7 +2,8 @@
 
 This is a tool kit for the loop-to-zero skill. It needs Node 18 or later, uses ESM, and has no packages:
 nothing to install. Every command prints a short summary and exits non-zero on any failure, problem,
-mismatch or flag.
+mismatch or flag, except the report-only commands (`crosscheck`, and `reach`, which exits non-zero only on a
+problem): their exit status says nothing about what they list, so judge every family or group they print.
 
 Loops run from the project folder, so every command is written with the skill's path, here
 `<skill>`:
@@ -63,7 +64,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given (see "The diff check" and "Searches"). |
 | `node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...\|all] [--at-current]` | Re-runs every structured fixlog search of those rounds over `boundaryPaths`, each round at the pin its `pin.json` recorded (with `--at-current`, at the current pin), and reports each scope that was too narrow (see "Searches"). |
 | `node <skill>/scripts/ltz.mjs reach <S> --to <rev> [--unit <unit>]` | Before a pin move, lists the files changed between the pin and <rev> inside `boundaryPaths` and, per unit, the items that cite one, the universal items whose last structured search finds different hits at <rev>, and the universal items with no search to re-run (see "Reach"). |
-| `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share, and flags the families whose items state different numbers. Reports only. |
+| `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share, and flags the families whose items state different numbers. Reports only: it exits 0 whatever it flags. |
 | `node <skill>/scripts/ltz.mjs sweep <S> <pattern.json\|classfile> [--unit U] [--count]` | Prints hits; with `--count`, only hit counts per pattern and unit. Refuses a pattern that misses a known instance (see "Sweeps"). |
 | `node <skill>/scripts/ltz.mjs flips <S> <unit>` | Reports an (id, field) whose value returns to one it held earlier, in `S/`'s rounds or a `historyFolders` round. Exits non-zero for an unexplained flip (see "Flips"). |
 | `node <skill>/scripts/ltz.mjs rulings <S>` | Lists every ruling id in the decision log that is not found, as whole text, in `S/classes.md`'s "accepted by ruling" section, and exits non-zero if any is missing (see "Rulings"). |
@@ -655,7 +656,7 @@ Notes on these fields:
 - **`r<R>/snapshot.sha256`:** `<sha256>  snapshot.jsonl`. `render`, `record` and `diffcheck` refuse a snapshot that no longer matches it.
 - **`r<R>/list.json`:** `["<id>", ...]`, in list order. Position 1 is the first id.
 - **`r<R>/chunks.json`:** `{"c1": {"from": 1, "to": 64}, ...}`. Each position is in exactly one chunk. The default size is about 70 items, cut on window multiples, and a tail shorter than half a chunk joins the chunk before it.
-- **`--list` file** (the fix-checker input, `r<R>/fixcheck-<K>-<chunk>-input.jsonl`, where `<K>` is the fix-check iteration): a JSONL of **full items** in the item format, one per line, with ids unique.
+- **`--list` file** (the fix-checker input, `r<R>/fixcheck-<K>-<part>-input.jsonl`, where `<K>` is the fix-check iteration): a JSONL of **full items** in the item format, one per line, with ids unique.
   - **A changed item** carries `"changed"`: one `{"field", "old"?, "new"}`, or an array of them when several fields changed. Each is rendered on its own line (`changed[1]: <field>: <new>  (was: <old>)`). A `changed` that is empty, or lacks `field` or `new`, is refused.
   - **A named item** has no `changed` field. It is an item the new text names, added for context, and its window heading is marked `(named item, for context)`.
   - `render --list` shows each item's text from this file, not from the snapshot.
@@ -663,8 +664,8 @@ Notes on these fields:
   - Bad JSON, a missing id or a duplicate id is refused.
 
 **Reader files:**
-- **`r<R>/agent-<slot>.jsonl`** (reader results): `{"unit", "id", "verdict": "ok|wrong", "class": [...], "note", "cites": [...]}`. A `wrong` note names a `file:line` that the reader rendered.
-- **`r<R>/fixcheck-<K>-<chunk>.jsonl`** (fix-checker results, iteration `<K>`, in the reader schema): `record` reads them into `measure.json`'s `fixChecker`. A line without an `id`, or with a verdict other than `ok` or `wrong`, is a PROBLEM, and so is a `fixcheck-*.jsonl` file not named this way.
+- **`r<R>/agent-<slot>.jsonl`** (reader results): `{"unit", "id", "verdict": "ok|wrong", "class": [...], "note", "cites": [...]}`. A `wrong` note names a `file:line` that the reader rendered, unless it starts "self-contradiction:" and quotes the clashing figures.
+- **`r<R>/fixcheck-<K>-<part>.jsonl`** (fix-checker results, iteration `<K>`, in the reader schema): `record` reads them into `measure.json`'s `fixChecker`. A line without an `id`, or with a verdict other than `ok` or `wrong`, is a PROBLEM, and so is a `fixcheck-*.jsonl` file not named this way.
 - **`r<R>/render-<slot>.jsonl`** (render log, written only by render and show):
   - `{"t": "item", "id"}`: an item shown in a window;
   - `{"t": "cite", "cite", "path", "status", "id"?, "via"?}`: one cite attempt; `status` is `ok`, `beyond-eof`, `not-found-at-pin`, `key-not-found` or similar;
@@ -836,14 +837,14 @@ Notes on these fields:
   - `ruledOks`: `[{id, slot, ruling, refs}]`, every `ok` whose note starts `ruled: <ruling id>` (the
     reader and fix-checker briefs' form for wording a ruling approved where the evidence differs). They
     come from the lines the merged view uses, and then from the fix checker's result files
-    `fixcheck-<K>-<chunk>.jsonl`, whose `slot` is the file's name (such as `fixcheck-1-p1`; `<chunk>` names a part of the fix set, not a round chunk). `refs`
+    `fixcheck-<K>-<part>.jsonl`, whose `slot` is the file's name (such as `fixcheck-1-p1`; `<part>` names a part of the fix set). `refs`
     are the note's file:line references. Each one is printed as a warning, not a PROBLEM, unless its id
     is in `pending` with `pendingReason` `ruled-wording`, or listed in `confirmed.json`'s `ruledKept`
     with the same ruling (the owner kept the ruling).
   - `fixChecker`: one entry per fix-check iteration, `[{iteration, itemsChecked, wrongs, wrongIds,
-    notJudged, chunks: {<chunk>: {itemsChecked, wrongs, wrongIds, inputItems?, notJudged?, notRun?}}}]`.
+    notJudged, chunks: {<part>: {itemsChecked, wrongs, wrongIds, inputItems?, notJudged?, notRun?}}}]`.
     `itemsChecked` counts distinct ids. `inputItems` and `notJudged` come from the matching
-    `fixcheck-<K>-<chunk>-input.jsonl`; `notRun` marks an input with no results yet. It is empty until
+    `fixcheck-<K>-<part>-input.jsonl`; `notRun` marks an input with no results yet. It is empty until
     a fix checker has run, which is normal at a round's first `record`.
   - `canaries.<slot>`: `{planted, plantedWrong, plantedOk, caught, missed, falseAlarms, okCorrect, notJudged, detail}`.
   - **The estimate** is Chapman: N = ((n1+1)(n2+1)/(m+1)) − 1, and remaining = N − (n1 + n2 − m). It uses the first two readers listed for a chunk. It is a low estimate: readers share a brief, so they are not independent, and `foundByNone` adds to it.

@@ -29,7 +29,7 @@ Your judgments get no independent check, so the mode makes up for it with order 
   (the rules, the round's `classes.md` copy with the ruling texts it quotes, the precedents), the items and
   the evidence. Only when confirming the wrongs (`references/round.md`, step 3) consult the history that
   `references/fixing.md` ("History") lists. Outside findings are used only after your own reading (`references/setup.md`, "Existing outside findings").
-- **Spot-checks:** re-read 10 ok items (10 per round: you are the only reader), chosen by the rule in `references/round.md`, step 3, in the writer's
+- **Spot-checks:** re-read 10 ok items per round in total, not per slot (you are the only reader): 5 at random and 5 weighted, by the rule in `references/round.md`, step 3. Draw the random ones with `ltz spotcheck ... --per-slot <k>`, choosing the smallest k that gives at least 5 across the slots, and quote the bound for that pooled random count. Do this in the writer's
   session after the reading. That session already starts after a context reset (`references/round.md`, step 1),
   so the spot-checks need no session of their own. They come before the fixes.
 - **A ruling given in a solo reading or fix-check session** (the owner tells that session): the brief's
@@ -39,8 +39,8 @@ Your judgments get no independent check, so the mode makes up for it with order 
   (`references/round.md`, "Between rounds only"): at confirm for a reading, or when you take the fix
   checker's results.
 - **Ruling-level leads:** ask the owner at once; what the lead touches waits for the answer (SKILL.md,
-  "Cross-unit effects"). In solo mode, "at once" holds mid-reading too: when one surfaces during a reading
-  session (a sweep run too early, an outside report), finish the current window, then send the owner a one-line
+  "Cross-unit effects"). In solo mode, "at once" holds mid-reading too: when one (from a sweep run too early),
+  or an outside finding that refutes wording a ruling approved, surfaces during a reading session, finish the current window, then send the owner a one-line
   flag (the ruling, the item, what refutes its wording) and go back to reading. The flag needs nothing read, so
   it doesn't break the cold read. The full costed ask follows after the hand-back, once you have read the
   ruling's entry. Don't hold the lead until the hand-back.

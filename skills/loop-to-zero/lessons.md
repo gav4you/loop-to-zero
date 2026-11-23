@@ -7,7 +7,7 @@ This is the skill's memory.
 - **Keeping it short:** merge a new lesson into an existing one that says the same thing, and drop a lesson
   a later one supersedes, noting what superseded it.
 
-**Format:** see `references/learning.md` ("Lesson format"). **Rule** is optional when the title states it. **Seen** counts occurrences. **Replay:** these lessons were seeded from history, so their Replay is "no history yet" (except where stated) until a project replays them. **When to read:** in solo mode, read the lessons after the round's reading, not before it. Marked ✓ = it worked, ✗ = it went
+**Format:** see `references/learning.md` ("Lesson format"). **Rule** is optional when the title states it. **Seen** counts occurrences. **Replay:** these lessons were seeded by the skill's maintainer (from history and from the skill's own test loops), not promoted, so their Replay is "no history yet" (except where stated) until a project replays them. **When to read:** in solo mode, read the lessons after the round's reading, not before it. Marked ✓ = it worked, ✗ = it went
 wrong.
 
 Lessons change behaviour from now on, and reach back to the earlier verdicts and edits they could have spoiled
@@ -31,7 +31,7 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
   - **Change:** `classes.md`, accepted by ruling.
   - **Seen:** several.
 - **✗ Ask what zero is for.**
-  - **Rule:** a fixed reference needs less than a fully correct one.
+  - **Rule:** a frozen reference needs less than a fully correct one.
   - **Why:** a fix loop on a reference grew (4, 6, 13, 18 findings, about 3 hours a round) until the owner
     stopped it as wasteful, and kept the items as the reference instead (a stopping rule).
   - **Change:** setup question 0.
@@ -66,7 +66,7 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
   - **Why:** in one improve-and-harden loop, a class's "wrong when" text said that a claim "covers only" the
     bounded cases. Read literally, that excused the unbounded claim the class exists to catch. It stood through
     many cold reads before one reader reported it.
-  - **Replay:** n/a (process lesson).
+  - **Replay:** no history yet.
   - **Change:** none in the steps yet; the starter row U2 in `reading-classes.md` was reworded this way.
   - **Seen:** 1.
 
@@ -305,7 +305,7 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
   - **Why:** in one improve-and-harden loop, a stale section was removed; it had also been the only text that
     showed one rule at work. The next two test runs stated that rule less each time, and the second left it out. Once another sentence
     was made to carry the rule, the next run stated it again.
-  - **Replay:** n/a (process lesson).
+  - **Replay:** no history yet.
   - **Change:** none in the steps yet.
   - **Seen:** 1.
 

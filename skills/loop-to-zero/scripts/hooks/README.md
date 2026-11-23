@@ -44,7 +44,7 @@ commit the writer files:
 
 Every other write stays allowed, so readers and a fix checker in a fresh session can do their work.
 This covers their outputs in the round folder (`agent-*`, `render-*`, `w-*`, and the fix-checker
-results `fixcheck-<K>-<chunk>.jsonl`) and any scratch folder. A commit by another session is allowed unless it would include a
+results `fixcheck-<K>-<part>.jsonl`) and any scratch folder. A commit by another session is allowed unless it would include a
 writer file; when what it includes cannot be determined, it is blocked. An unreadable `writer.lock`
 counts as held by another session.
 
