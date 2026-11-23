@@ -52,7 +52,8 @@ was applied; update it at every retro. A lesson a tool now refuses mechanically 
 as `ltz diffcheck` refusing an unlogged universal) is marked "Retired: enforced by <check>, <date>" and moved under
 a "Retired" heading at the end of the file: it is not deleted (back-propagation and `judgments.jsonl` still name
 it), but it no longer counts among the lessons re-read at each round start. At each retro, list the live lessons
-not confirmed for 5 or more rounds, for review; quiet is not a reason to delete one.
+not confirmed for 5 or more rounds, in `retro.md` and in the report's lessons item, for the owner to keep or
+retire; quiet is not a reason to delete one.
 
 ## Counting
 - **A wrong that an earlier pass missed counts in the round that finds it.** The latest full pass that marked
@@ -94,7 +95,8 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
   - in the current unit: re-judge now; the reverts (here, and of the cross-unit edits its false wrongs caused)
     follow after the round's reading (`references/fixing.md`, "Reverting");
   - in units not yet closed, their own verdicts at their next round: log them for that unit
-    (`cross-unit-edits.txt`, verdict "deferred"), which that round handles (`references/round.md`, step 3);
+    (`cross-unit-edits.txt`, verdict "deferred"), which that round handles (`references/round.md`, step 3; during discovery, main round 1 of that unit:
+    `references/setup.md`, step 9);
   - in closed units, as leads.
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
@@ -118,8 +120,9 @@ until that check.
    misjudged: then a sharper wording is the remedy (Triggers, "Only one of two readers found a confirmed
    wrong").
 
-   Count reader false alarms separately. A reader wrong overturned by a ruling given mid-round is not a false
-   alarm: it goes under "missing ruling", listed apart from the origin counts, and it is not in the round's count. Record it in `confirmed.json`'s
+   Count reader false alarms separately. A reader wrong overturned by a ruling given mid-round (a new one, or an amendment) is not a false
+   alarm, and it is not in the round's count: its origin is "missing ruling" (an overturn under an entry that already
+   covered the point is "writer misjudgment" and goes in `rejected`: `references/fixing.md`, "Reverting"), listed apart from the confirmed wrongs' origins. Record it in `confirmed.json`'s
    `withdrawn` list with the ruling id, so `ltz record` counts it apart. A wrong outside a frozen bar is not a false
    alarm either: it goes in the `outsideBar` list.
 2. **If the count rose,** say whether the bar moved (old text, newly seen) or your edits regressed.
@@ -165,10 +168,10 @@ from, and judge the rule on the held-out recall and false hits. If no other roun
 say "no held-out history yet" rather than quoting the in-sample recall.
 
 ## Trying a new check or a new method
-- **A new mechanical check in the gate** (a project check in `S/checks/`, or a new hook rule) runs warn-only for
-  one round first: it reports what it would have blocked, and you judge each hit, before it is allowed to block.
+- **A new mechanical check in the gate** (a project check in `S/checks/`) runs warn-only for one round first: it reports what it would have blocked, and you judge each hit, before it is allowed to block.
   Hits that turn out right are candidate wrongs (confirm checks as usual); false hits mean the check is fixed first.
   Regression patterns are the exception: they block at once, because their known instances test them.
+  A new hook rule is not yours to add: propose it to the skill's maintainer, who tests it before it ships.
 - **A new method for a round** (narrow falsifiers, a different sweep, a new reading order): before trying it,
   write in the round's `retro.md` the test that decides whether to keep it, for example "keep if it confirms at
   least as many wrongs as the last sweep of the class did, at no more cost". After the round, apply that test and

@@ -47,8 +47,8 @@ against a baseline copy made before the edit, as in step 1):
    runs than baseline runs.
 6. **Then run every other scenario once** on the edited skill. A criterion that fails gets 5 more edited runs
    and 6 baseline runs, so each side has 6. It is a regression to fix when the edited runs pass at least 2
-   fewer times than the baseline runs, or when the edit changes a sentence the criterion depends on and the
-   edited runs pass fewer times at all. Otherwise note it as variance, with both counts, in the commit message.
+   fewer times than the baseline runs. A scenario found at this step to depend on a sentence the edit changed is
+   touched: go back to step 5 for it. Otherwise note it as variance, with both counts, in the commit message.
    For these other scenarios one run's difference is normal: agents vary. Step 5's rule for the target and
    touched scenarios still holds.
 7. **Put the pass counts in the commit message.**

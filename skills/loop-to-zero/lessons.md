@@ -229,7 +229,7 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
   - **Change:** `fixing.md`, step 4.
   - **Seen:** 4.
 - **✓ Make every class a permanent regression pattern.**
-  - **Rule:** write the pattern before the fix, and re-run all patterns after each batch.
+  - **Rule:** write the pattern before the fix, and re-run all patterns after each fix batch.
   - **Why:** the patterns grew to 217 with 0 hits, and they caught one follow-up regression.
   - **Change:** `fixing.md`, steps 1 and 5.
   - **Seen:** 14 passes.
@@ -260,8 +260,8 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
     cost 7.4M for half its chunks, and single-agent sweeps had missed what verifiers then found.
   - **Change:** `fixing.md`, step 1.
   - **Seen:** 1.
-- **✗ Never exempt a part that once came back clean.**
-  - **Why:** an excluded "clean" part held 5 wrongs.
+- **✗ Never exempt from a sweep a range of items that once came back clean.**
+  - **Why:** an excluded "clean" range held 5 wrongs.
   - **Change:** `fixing.md`, step 1.
   - **Seen:** 1.
 - **✗ Measure a rule change's reach before adopting it.**
@@ -311,7 +311,7 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
 
 ## Running agents
 - **✗ Launching many agents at once strands them all at one limit.**
-  - **Rule:** start at 2, with the rest queued.
+  - **Rule:** launch up to the owner's concurrency cap (recommend starting at 2), with the rest queued.
   - **Why:** six readers launched together all stopped part-way, and about 25 helpers drained a limit in
     minutes.
   - **Change:** `queue-and-outages.md`.

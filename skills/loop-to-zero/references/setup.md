@@ -5,7 +5,7 @@ test reader may run. The steps match SKILL.md's Setup.
 
 ## Order
 1. **Read the lessons:** this skill's `lessons.md`, and `S/lessons.md` if it exists.
-2. **Create the state folder** (`references/state-template.md`), then take the writer's lock (`ltz lock acquire`).
+2. **Create the state folder** (`references/state-template.md`), then take the writer's lock (`ltz lock <S> acquire`).
    If the guard hook is already installed in the project's settings, pass `--session auto`. Otherwise pass
    `--session <id>` with an id of your own, such as the date and a letter; `S/writer.lock` keeps it, so a later
    session can release it.
@@ -64,8 +64,8 @@ test reader may run. The steps match SKILL.md's Setup.
    is no discovery) if none of that pass's readers finds it (`foundBy: "spot-check"`), and never hinted to its
    readers. Afterwards, mark its job `done` in the queue: an open job in any
    round makes the guard block item commits. If the evidence is live or not text, split the setup sitting in two:
-   settle question 5 (the boundary and pin, and who takes the export and strips its secrets, or the text
-   conversion) first, take the export or make the conversion (into `S/evidence/<date>/`; point config `evidence` at it then, as
+   settle question 5's pin and export scope (and who takes the export and strips its secrets, or the text
+   conversion) first. Leave the boundary itself for the rest of the questions (asked after research source 2). Then take the export or make the conversion (into `S/evidence/<date>/`; point config `evidence` at it then, as
    step 8 describes), research its parts, run r0, then ask the rest. r0 carries no canaries.
 
    **Quoting r0's cost to the owner:**
@@ -84,8 +84,8 @@ test reader may run. The steps match SKILL.md's Setup.
      - non-text evidence (PDF, docx): a pinned text conversion with one canonical numbering, which the owner
        approves as the evidence;
      - an export or text conversion goes in `S/evidence/<date>/`, named in config `evidence` (type `dir`) and
-       in the readers' paths. Pin it by content: `ltz snapshot` prints the folder's hash, which goes in that
-       source's `sha256`; every tool then refuses the folder once any file in it changes, is added or is
+       in the readers' paths. Pin it by content: take `ltz snapshot <S> <first unit> <its next round>` now (1 for a fresh loop; that round takes it again) to print the folder's
+       hash, and put it in that source's `sha256` before discovery's or round 1's snapshot; every tool then refuses the folder once any file in it changes, is added or is
        removed;
      - secrets: `render` masks secret-looking values by default. Keep files that are mostly secrets out of the
        boundary;
@@ -163,7 +163,9 @@ At setup step 4, with the owner's OK (adopting forgoes discovery: setup question
    <its next round>`; that round takes it again when it starts): the rebuilt rounds have no fixlogs, so their own
    fixes would show as unexplained changes.
 3. **Keep its rulings in force.** Change its practice only at a round boundary, with the owner's OK. The next
-   round continues its numbering.
+   round continues its numbering, and counts as each unit's first fix round (`references/fixing.md`): its fix
+   re-reads the whole unit. Wherever setup says "round 1" (extract-flagged items, r0 finds, the re-extract, the
+   hash snapshot), read the adopted loop's next round.
 
 ## Predefining names and classes from repo research
 The names and classes are fixed before the work begins. They are backed by evidence from the repo, not
@@ -236,7 +238,7 @@ another.
 **The draft bar.** Each proposed class's name, definition, what makes it wrong, what it is not, its ok example and fix form go into a draft
 `S/classes.md` for the r0 test reader (its example ids, pattern, source and replay result stay in `research.md`),
 together with quoted copies of the three lenses from `references/reading-classes.md`, the universal words
-(config `universalWords` when set, otherwise that file's list) and its "When two classes fit". Readers can
+(config `universalWords` when set, otherwise that file's list) its "When two classes fit" and its "Accepted forms". Readers can
 not open this skill's files, so `classes.md` has to carry them. Once the owner
 approves, amends or adds, it becomes round 1's bar.
 
@@ -280,7 +282,7 @@ the skill's maintainer).
      round's confirmed wrongs are still fixed and fix-checked before the unit closes; any the owner leaves unfixed
      make it `closed-known-wrongs` (`references/round.md`, "Closed statuses").
    - **Agree an escalation trigger up front,** for example "more than about 3 new wrongs in items an earlier
-     pass accepted and nobody has changed since, or any repeat on a fixed item". Without discovery, it can't fire in
+     pass accepted and nobody has changed since, or any repeat on a fixed item". Without discovery or adopted history, it can't fire in
      round 1, because no earlier pass has accepted anything. When it fires, take the owner the trend, the classes and the
      cost per pass. The owner decides whether
      to continue, cap the passes, or change the method; asking doesn't pause the loop
@@ -376,7 +378,9 @@ applies only when the item cites both, or a ruling says the config implements th
   approver, overrides and drops. Readers never see them (the brief states the probe and bar settings as
   instructions).
 - **Approving the names, classes and rules** (question 1) is a process decision: its content is `classes.md` and
-  `rules.md` themselves, which readers already read, so it needs no accepted-by-ruling entry.
+  `rules.md` themselves, which readers already read, so it needs no accepted-by-ruling entry. So is approving a
+  later class, class-wording change or reader-guidance line, and the owner's answer on a class found mid-pass
+  (it joins the bar unapproved; the owner keeps or drops it after the report).
 
 `R-n` and `P-n` are examples. Use the project's own id scheme, with a `rulingIdPattern` that matches only bar
 rulings (test it on a known id). If its scheme can't tell bar rulings apart, keep `S/decisions.md` for the loop's
@@ -393,7 +397,8 @@ readers per chunk or concurrency.
   the owner says so.
 - **Map them to item ids** at setup, in `S/inputs/audit-map.json`.
 - **Measure recall** each round over this unit's outside findings still present in the round's snapshot (not
-  fixed in an earlier round): how many the round caught. Each one no reader caught points to a missing class, so log a lesson. A mapped wrong that no reader finds is confirmed by the writer
+  fixed in an earlier round): how many the round caught. Diagnose each one no reader caught as `references/learning.md`, "The retro", step 1 says; only one that fits
+  no class in the bar points to a missing class (log that lesson). A mapped wrong that no reader finds is confirmed by the writer
   with `foundBy: "audit"`, counted as found by none.
 - **A finding that maps to no item** (a missing control, a gap no item covers) is not a wrong. Put it in
   `S/defects.md` if the evidence falls short, or in `S/owner-questions.md` if it asks for a new item. Never add

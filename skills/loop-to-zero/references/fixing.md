@@ -33,7 +33,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    <the ok>; rule-meaning: no, <why>; ambiguity: no, <why>"). If you can't show the reasoning fails, the item is not plainly refuted:
    don't confirm it, so it counts as that reader's false alarm (readers', fix checkers' and the writer's oks all
    count, and so does this round's other reader's reasoned ok). `confirmed.json`'s `withdrawn` list is only for
-   wrongs a ruling given mid-round overturns.
+   wrongs a ruling given mid-round overturns (including one that answers the round's own `pending` items while
+   it waits).
 4. **The refuter, the item type and the classes** (below). Otherwise, the evidence plainly refutes it: `wrong`.
 
 - **History.** Earlier reasoned oks live in each round's `report.json` notes, readers' `agent-*.jsonl` lines and
@@ -44,7 +45,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   included;
   set config `historyFolders` so the repeat check, `flips`, `sweep` and `replay` read its rounds too; run
   `ltz searches` on `S/discovery` itself, since it does not).
-  - **A repeat** (any re-confirmation of an id an earlier round of the unit confirmed, for an overlapping class;
+  - **A repeat** (any re-confirmation of an id an earlier round of the unit confirmed, for an overlapping class, unless
+    `judgments.jsonl` later overturned that earlier wrong;
     `ltz record` flags it).
     Split it two ways:
     - **The evidence plainly refutes the claim under the current bar.** Your earlier fix failed
@@ -81,6 +83,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   order in `S/classes.md` decides only a real tie (`references/reading-classes.md`, "When two classes fit", which
   `S/classes.md` quotes for readers). It governs the wording and the regression pattern.
 - **Partly true items** count as one wrong.
+- **A vague relation** ("A uses B", under the bar's vague-relation class, U13 in the starter set) is `wrong`
+  without a refuting line: confirm that the verb names no action the evidence could show false, and record the
+  cited link as the line the rewrite will state.
 - **Ambiguous wording** ("passes a timeout": the option, or its effect?) is a wrong under the bar's
   ambiguity class (if the bar has none: "A class found mid-pass" on an open bar). Rewrite the item to say one
   thing (a requirement item only by an owner ruling: "Requirement items", below). On a frozen bar with no such
@@ -131,8 +136,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 
   In one project this checked 706 claims for about 2.4M tokens and found 16 new wrongs, while a heavy
   pre-sweep had cost about 7.4M for half its chunks.
-- **Never exempt a part that once came back clean.** One part excluded "to avoid regressing a clean batch"
-  then held 5 wrongs.
+- **Never exempt from a sweep a range of items (or a unit) that once came back clean.** One range excluded "to
+  avoid regressing a clean range" then held 5 wrongs.
 
 ## 2. Fix the seed and the hits
 First ask whether exclusivity is the point of the item. Every "only" or "no" asserts sole-ness, so that is not the
@@ -159,8 +164,9 @@ Every fix follows 2 to 4.
      it, subtract, or open the list if softening is allowed.
 4. **One wording per class.** Fix every hit of a class with one wording, reused from an earlier fix of that class
    already found correct (not `S/precedents.md`, which readers read) or the source's own words. Don't write fresh prose for each item.
-   - **A wording no fix of the class has used yet is tried on one item first:** fix that item, re-read it and
-     fix-check it, and only once the check returns 0 apply the wording to the other hits (a follow-up commit).
+   - **A wording no fix of the class has used yet is tried on one item first:** take that item through steps 3
+     to 6 (dependents, re-read, diff check, commit) and the fix check (iteration 1); once that check returns 0 for the
+     item, apply the wording to the other hits in the next follow-up commit (iteration K+1).
 5. **Write each fix's expected effect before applying a batch,** in the round's `retro.md` under that batch: the
    ids and fields it changes, and what it should leave unchanged. After the commit, compare the diff and `fixlog.jsonl` with it; a change you didn't
    expect (another field, another item, a fix that didn't land) is checked before the fix checker, and is a lesson.
@@ -188,8 +194,8 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
   added or kept, is cleared only by `search` and `hits` in `fixlog.jsonl` for that id and field, or by an edit
   that removes the universal word. A qualifier alone ("probably", "usually") does not clear it. A universal word
   used in another sense ("disables the timeout" rather than "no timeout") is cleared by rewording. The same applies to any list in such a clause:
-  "only A" turned into "only A and B" is caught. A changed clause holding a list of 3 or more with no "such as" also
-  needs the logged search, even after the universal word is removed (`scripts/README.md`, "New lists"). Clauses you didn't change aren't flagged: the readers judged
+  "only A" turned into "only A and B" is caught. A changed clause holding a list of 3 or more with no hedge word ("such as", "for example", "e.g.", "among
+  others") also needs the logged search, even after the universal word is removed (`scripts/README.md`, "New lists"). Clauses you didn't change aren't flagged: the readers judged
   them, and your re-read (section 4) covers how your edit changes what they mean.
 - **`judged`.** A search that backs a universal lists every hit you judged at the pin, one entry each:
   `"judged": [{"at": "path:line", "why": "<short reason>"}]`. `ltz diffcheck` re-runs the search and requires the
@@ -198,7 +204,7 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
 - **`blindSpots`.** A structured search also states what it can't see (options in variables, calls split over
   lines, dynamic names). `diffcheck` fails without it.
 - **`search` and `hits`.** `search` is a structured search `{"regex", "flags", "paths", "count"}`, which
-  `ltz diffcheck` re-runs at the pin by default to check `hits` (how many matches it returned). A free-text
+  `ltz diffcheck` re-runs at the pin by default to check `hits` (its count, in the search's `count` unit: matches, lines or files). A free-text
   search fails. `diffcheck` fails paths narrower than `boundaryPaths` unless a `scopeNote` explains the bounded
   claim and a `scopeText` (the scope words) appears in the new text; the search to log is still one over the
   whole boundary (section 2, step 3).
@@ -270,8 +276,11 @@ K+1). Repeat until a check returns 0; it usually takes one or two.
 
 ## Reverting fixes caused by false wrongs
 When a verdict is overturned (by the owner, your own re-check (recorded as `spot-check`), a fix checker's "old text held" or a ruling):
-0. If the wrong is in the current round's `confirmed.json`, take it out of the wrongs: a ruling's goes in
-   `withdrawn`, and so does the owner's (an owner's overturn is recorded as a bar ruling: `references/owner-asks.md`);
+0. If the wrong is in the current round's `confirmed.json`, take it out of the wrongs. A wrong no reader marked
+   (one with a `foundBy`) is removed, whatever overturned it, with its `judgments.jsonl` line as the record. For a
+   reader-marked wrong: one a ruling given this round (a new one, or an amendment) overturns goes in `withdrawn`, and so does an owner's overturn that rests on a rule, scope or definition (it is recorded
+   as a bar ruling; a bare "it's fine" on a plainly refuted item is a wish: `references/owner-asks.md`); an overturn
+   under a ruling already in the bar goes in `rejected` with its `S/classes.md:<line>`;
    any other that a reader marked (your re-check's, an "old text held") goes in `rejected`, with the file:line that backs the old text.
    Re-run `record`.
 1. Re-read every edit it caused, siblings included.

@@ -18,9 +18,10 @@ S/
   research.md        the setup research: terms with their repo sources, claim-shape counts, evidence kinds,
                      past-error groups, rulings, proposed classes with examples, tested sweeps, replay results
   classes.md         the bar: the owner-approved classes, "accepted by ruling", and quoted copies of the
-                     three lenses, the universal words and "When two classes fit"
-  precedents.md      optional: worked examples of judged items that the owner approved (never an item a reader
-                     or fix checker will judge again, round F included, so reading stays cold)
+                     three lenses, the universal words, "When two classes fit" and "Accepted forms"
+  precedents.md      optional: worked examples of judged items that the owner approved (made-up items, or real
+                     ones removed from it before any round or fix check that would read them, round F
+                     included, so reading stays cold)
   lessons.md         project lessons (the format in references/learning.md)
   judgments.jsonl    one line per changed verdict per round, for this folder's rounds (a discovery pass's
                      verdicts go in S/discovery/judgments.jsonl):
@@ -78,7 +79,7 @@ S/
                      measure.json, fixlog.jsonl (id, unit for a cross-unit edit, field, old, new, search, hits, judged, blindSpots, scopeNote, scopeText, ruling, basis and source for a requirement item),
                      fixcheck-<K>-<part>-input.jsonl, fixcheck-<K>-<part>.jsonl, retro.md,
                      drafts/<id>.md (fixes drafted before they may be applied), briefs/<slot>.md (each filled
-                     brief as sent; a fix checker's is briefs/fixcheck-<K>-<part>.md), scratch/<slot>/ (one per agent; never committed)
+                     brief as sent; a fix checker's is briefs/fixcheck-<K>-<part>.md), scratch/<slot>/ (one per agent, and scratch/writer/ for your own probes; never committed)
 ```
 
 **Verdicts:**

@@ -232,7 +232,19 @@ export function repeatProblems(S, unit, R, wrongs, curReaderClasses, cfg = {}, i
       if (!fs.existsSync(p)) continue;
       const { wrongs: w } = loadConfirmed(p);
       const rc = readerClasses(r.dir);
+      // A wrong that judgments.jsonl later overturned (its latest line for this unit and round says
+      // "now": "ok" or "pending-owner") is no repeat basis, as replay treats it.
+      const latest = new Map();
+      const jp = path.join(src.base, 'judgments.jsonl');
+      if (fs.existsSync(jp)) {
+        for (const { obj: j } of readJsonl(jp, { what: jp }).rows) {
+          if (!j || typeof j.id !== 'string' || (j.unit !== undefined && j.unit !== unit)) continue;
+          if (Number(String(j.round).replace(/^r/, '')) !== r.n) continue;
+          latest.set(j.id, j.now);
+        }
+      }
       for (const [id, v] of w) {
+        if (latest.get(id) === 'ok' || latest.get(id) === 'pending-owner') continue;
         const cls = classesOf(v).length ? classesOf(v) : [...(rc.get(id) || [])];
         if (!prev.has(id)) prev.set(id, []);
         prev.get(id).push({ round: `${src.label}${r.name}`, cls });

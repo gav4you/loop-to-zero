@@ -86,11 +86,12 @@ An item whose wording an "accepted by ruling" entry approves is ok. If the evide
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
-defect. Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
+defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect.
 {PROBES: either "You may run probes of the code in a scratch copy under {SCRATCH} (never in a repo)." or
-"Do not run code; read only."}
+"Do not run the project's code, config loaders or parsers. Throwaway helper scripts in {SCRATCH} (to evaluate an
+expression or count matches, say) are allowed."}
 {SOLO_RULING: in solo mode only: "If the owner gives you a ruling while you read, write the owner's words,
 verbatim and dated, to {SCRATCH}rulings.md, keep judging under classes.md as it stands, and add the ruling
 to the note of each item it touches. If evidence that a ruling's approved wording is false reaches you while you
@@ -122,7 +123,8 @@ Split large fix sets into parts of about 70 changed items, one checker per part,
 value; not a round chunk). Name the files by check iteration `{K}` (1 for the fix commit, 2 for its first
 follow-up, and so on) and by part. A fix checker is not queued, but it counts toward the concurrency cap, and the
 limit rules in `references/queue-and-outages.md` cover it (wait, then continue it). Keep each filled brief, as
-sent, in `r<R>/briefs/fixcheck-<K>-<part>.md`.
+sent, in `r<R>/briefs/fixcheck-<K>-<part>.md`. Record each fix checker's transcript path at launch in the round's
+`retro.md`, and add `ltz cost <those transcripts>` to the round's `ltz cost --queue` total.
 
 ```text
 You are the FIX CHECKER for {PROJECT}. Commit {C} just changed items, and {n} of them are in your input. Read those cold and judge each
@@ -159,7 +161,7 @@ An item whose wording an "accepted by ruling" entry approves is ok. If the evide
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
-defect. Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
+defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect.
 

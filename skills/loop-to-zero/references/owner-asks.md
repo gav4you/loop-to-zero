@@ -25,15 +25,19 @@ with that decision id and the date, report it as withdrawn (with your reading of
 labelled for the owner to correct), and stop asking it.
 
 **Unprompted rulings** are recorded the same way, for example "stop flagging those" or "that's covered by
-R-12". An owner's overturn of a verdict ("that item is fine") is recorded as a bar ruling (`R-n`) with its
-accepted-by-ruling entry, so the overturned wrong can go in `withdrawn`.
+R-12". An owner's overturn of a verdict that rests on a rule, scope or definition ("those are in scope") is recorded as
+a bar ruling (`R-n`) with its accepted-by-ruling entry, so the overturned reader wrong can go in `withdrawn`. When
+it names an existing ruling ("that's covered by R-12"): if R-12's entry already covers the point, record no new
+ruling, and the wrong goes in `rejected` with the entry's `S/classes.md:<line>`; if the owner's words extend it,
+record a dated amendment on R-12, and the wrong goes in `withdrawn`. A bare "that item is fine" about an item the evidence plainly refutes is a wish: answer
+it with options, including the override path (SKILL.md, "Owner overrides").
 - Add each bar ruling to `S/classes.md` under accepted by ruling (`references/reading-classes.md`). The entry's
   wording is yours, so quote the ruling verbatim, replay a pattern that encodes its point (or write n/a), and show the entry's text to the owner
   in the report.
 - A ruling that clarifies or extends an existing one becomes a dated amendment on that id, in its
   accepted-by-ruling entry. A new standing
-  instruction gets a new id. When the owner names an existing ruling ("that's covered by R-12"), it is an
-  amendment on that id.
+  instruction gets a new id. When the owner names an existing ruling and the words extend
+  it, it is an amendment on that id; if its entry already covers the point, no amendment is recorded (above).
 - Any answer to an "amend <ruling>?" question that keeps the ruling ("keep it", "stop flagging those") counts as the
   owner keeping it. Record it in that ruling's accepted-by-ruling entry ("kept after 'amend?', <date>", with the
   owner's words); it
@@ -71,7 +75,7 @@ accepted-by-ruling entry, so the overturned wrong can go in `withdrawn`.
 - **Challenge a risky override once.** When the owner picks against a safety recommendation:
   1. challenge once, naming the concrete risk;
   2. record the choice as "knowingly amends X", with the risk the owner accepted;
-  3. mark it not to be asked again.
+  3. note in that decision-log entry, and in its `S/owner-questions.md` line, that it is not to be asked again.
 - **Keep amendments narrow and explicit.**
   - Each reversal names the rulings it supersedes and how far it reaches ("for this one column", "for the
     outage only").
@@ -79,8 +83,8 @@ accepted-by-ruling entry, so the overturned wrong can go in `withdrawn`.
   - Record any edit the owner makes to the recorded text.
   - Build the list of changed rulings by comparing the answers against earlier rulings, not from memory.
 - **Check every premise, and compute every count you report with a tool.** A false premise is worse than a
-  typo. When a premise or count you reported was wrong, record the correction in the ruling entry and tell
-  the owner.
+  typo. When a premise or count you reported was wrong, record the correction in that decision's decision-log entry
+  (never in `classes.md`) and tell the owner.
 - **A rejected question shows a preference.** When the owner rejects a question, write the preference behind
   it as a choice rule and apply it to the remaining questions.
   - Ask how far the rule reaches.

@@ -3,7 +3,7 @@
 This is a tool kit for the loop-to-zero skill. It needs Node 18 or later, uses ESM, and has no packages:
 nothing to install. Every command prints a short summary and exits non-zero on any failure, problem,
 mismatch or flag, except the report-only commands (`crosscheck`, and `reach`, which exits non-zero only on a
-problem): their exit status says nothing about what they list, so judge every family or group they print.
+problem): their exit status says nothing about what they list, so judge every cite group or reach group they print.
 
 Loops run from the project folder, so every command is written with the skill's path, here
 `<skill>`:
@@ -64,7 +64,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given (see "The diff check" and "Searches"). |
 | `node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...\|all] [--at-current]` | Re-runs every structured fixlog search of those rounds over `boundaryPaths`, each round at the pin its `pin.json` recorded (with `--at-current`, at the current pin), and reports each scope that was too narrow (see "Searches"). |
 | `node <skill>/scripts/ltz.mjs reach <S> --to <rev> [--unit <unit>]` | Before a pin move, lists the files changed between the pin and <rev> inside `boundaryPaths` and, per unit, the items that cite one, the universal items whose last structured search finds different hits at <rev>, and the universal items with no search to re-run (see "Reach"). |
-| `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share, and flags the families whose items state different numbers. Reports only: it exits 0 whatever it flags. |
+| `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share, and flags the cite groups whose items state different numbers. Reports only: it exits 0 whatever it flags. |
 | `node <skill>/scripts/ltz.mjs sweep <S> <pattern.json\|classfile> [--unit U] [--count]` | Prints hits; with `--count`, only hit counts per pattern and unit. Refuses a pattern that misses a known instance (see "Sweeps"). |
 | `node <skill>/scripts/ltz.mjs flips <S> <unit>` | Reports an (id, field) whose value returns to one it held earlier, in `S/`'s rounds or a `historyFolders` round. Exits non-zero for an unexplained flip (see "Flips"). |
 | `node <skill>/scripts/ltz.mjs rulings <S>` | Lists every ruling id in the decision log that is not found, as whole text, in `S/classes.md`'s "accepted by ruling" section, and exits non-zero if any is missing (see "Rulings"). |
@@ -75,7 +75,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs cost --queue <S> <unit> <R>` | Sums every transcript path stored in that round's `queue.json` (see "Transcripts and cost"). |
 | `node <skill>/scripts/ltz.mjs cost --timeline <transcript.jsonl>` | Prints each message's tokens with its timestamp, and sums the startup and each render window (see "Transcripts and cost"). |
 | `node <skill>/scripts/ltz.mjs replay <S> <pattern.json\|classfile> --rounds <unit>[,..\|all] [--holdout <unit>/r<R>,...]` | Reports a pattern's recall and false hits on past rounds, a `historyFolders` round's included. A wrong later overturned in the `judgments.jsonl` of the state folder holding its round is not counted (see "Replay"). `--holdout` also reports them without the rounds the rule was written from. |
-| `node <skill>/scripts/ltz.mjs spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K>]` | Draws each reader's random spot-checks from its ok items, half early and half late in its range, reproducibly from the seed, and writes `r<R>/spotchecks.json`. |
+| `node <skill>/scripts/ltz.mjs spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K>]` | Draws each reader's random spot-checks from its ok items (K per slot, 5 by default, plus any `--extra`), half early and half late in its range (the odd one early), reproducibly from the seed, and writes `r<R>/spotchecks.json`. |
 | `node <skill>/scripts/ltz.mjs lock <S> acquire\|release\|check --session <id>\|auto` | Manages the single-writer lock `S/writer.lock`; `--session auto` takes the id from the guard (see "The writer's lock"). |
 
 The `<skill>/scripts/hooks/guard.mjs` PreToolUse hook is documented in `hooks/README.md`. The guard works
@@ -562,7 +562,8 @@ the round like any other, so the round does not count as zero.
 
 ## Replay
 `node <skill>/scripts/ltz.mjs replay <S> <pattern.json|classfile> --rounds <unit>[,...|all]` runs the
-pattern(s) over each past round's `snapshot.jsonl` that has a `confirmed.json`, and reports the recall
+pattern(s) over each past round's `snapshot.jsonl` that has a `confirmed.json` (r0 never: its find list is
+`{}` by rule), and reports the recall
 on that round's confirmed wrongs of the pattern's class, and the false hits.
 - **History folders.** With `historyFolders` in `config.json`, each folder's `<folder>/<unit>/r*`
   rounds that have a `confirmed.json` are replayed too, before `S/`'s, in config order, as in `flips`.
@@ -751,7 +752,8 @@ Notes on these fields:
     warning.
   - Write `{}` when nothing was confirmed.
   - **Repeat check.** A confirmed id that an earlier round of the same unit also confirmed (r0 does not
-    count) is a PROBLEM when the classes overlap. The classes come from the entries, or else from the
+    count, nor an earlier wrong whose latest `judgments.jsonl` line for that round says `now` `ok` or
+    `pending-owner`) is a PROBLEM when the classes overlap. The classes come from the entries, or else from the
     readers' class labels, and a class unknown on either side counts as overlapping. How to settle it:
     - **The evidence plainly refutes the item.** It stays `wrong`, with a `repeatReason`, a non-empty
       `repeatNote` saying what happened, and a `rulingsChecked` list (see "`rulingsChecked`" below):
@@ -842,7 +844,7 @@ Notes on these fields:
     is in `pending` with `pendingReason` `ruled-wording`, or listed in `confirmed.json`'s `ruledKept`
     with the same ruling (the owner kept the ruling).
   - `fixChecker`: one entry per fix-check iteration, `[{iteration, itemsChecked, wrongs, wrongIds,
-    notJudged, chunks: {<part>: {itemsChecked, wrongs, wrongIds, inputItems?, notJudged?, notRun?}}}]`.
+    notJudged, chunks: {<part>: {itemsChecked, wrongs, wrongIds, inputItems?, notJudged?, notRun?}}}]`. These `chunks` are keyed by fix-check part (`p1`, `p2`, ...), not by round chunk.
     `itemsChecked` counts distinct ids. `inputItems` and `notJudged` come from the matching
     `fixcheck-<K>-<part>-input.jsonl`; `notRun` marks an input with no results yet. It is empty until
     a fix checker has run, which is normal at a round's first `record`.

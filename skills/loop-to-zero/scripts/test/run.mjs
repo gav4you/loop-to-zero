@@ -861,6 +861,10 @@ test('record: a repeat (same id, overlapping class, earlier round) is a PROBLEM'
   passes(ltz(['record', S, 'u1', '2', ...READERS]), 'control: no id confirmed twice');
   fs.rmSync(path.join(RD(S, 'u1', 2), 'report.json'));
   wj(r1, { A02: { note: 'src/auth.js:6', class: 'C2' } });
+  fs.writeFileSync(path.join(S, 'judgments.jsonl'), JSON.stringify({ date: '2026-01-02', unit: 'u1', round: 1, id: 'A02', was: 'wrong', now: 'ok', by: 'fixcheck', reason: 'old text held' }) + '\n');
+  passes(ltz(['record', S, 'u1', '2', ...READERS]), 'an earlier wrong judgments.jsonl overturned is no repeat basis');
+  fs.rmSync(path.join(RD(S, 'u1', 2), 'report.json'));
+  fs.rmSync(path.join(S, 'judgments.jsonl'));
   const r = fails(ltz(['record', S, 'u1', '2', ...READERS]), /PROBLEM: confirmed\.json: A02 repeats r1 \(class C2\)/);
   ok(/keep it wrong with "repeatReason": "plain-fix-failure".*"new-text".*"repeatNote"; only the Verdicts exceptions go in "pending", with a "pendingReason": "rule-meaning".*"boundary-silent".*"ruled-wording"/.test(r.out), `the way out is named:\n${r.out}`);
   ok(!fs.existsSync(path.join(RD(S, 'u1', 2), 'report.json')), 'nothing written');
@@ -3183,6 +3187,12 @@ test('replay: recall on confirmed wrongs of the class, and false hits', () => {
   ok(/recall 0\/1 \(missed A05\)/.test(r2.out), 'missed instance named');
   fails(ltz(['replay', S, patFile(S, ONLY), '--rounds', 'u2']), /no round folder of u2/);
   fails(ltz(['replay', S, patFile(S, { ...ONLY, class: undefined }), '--rounds', 'u1']), /has no "class"/);
+  // r0 (the measurement round, confirmed.json {} by rule) is never replayed: its hits are not false hits.
+  const r0 = path.join(S, 'u1', 'r0');
+  fs.cpSync(RD(S), r0, { recursive: true });
+  wj(path.join(r0, 'confirmed.json'), {});
+  const r3 = passes(ltz(['replay', S, patFile(S, ONLY), '--rounds', 'u1']));
+  ok(!/u1\/r0/.test(r3.out) && /u1\/r1 U-only: recall 1\/1; false hits 1 \(A07\)/.test(r3.out), `r0 skipped:\n${r3.out}`);
 });
 test('replay: falls back to the readers\' class labels when confirmed.json has none', () => {
   const S = baseCopy();

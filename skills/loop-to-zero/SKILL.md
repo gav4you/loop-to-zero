@@ -56,6 +56,7 @@ Map the project's own words onto these, and use the project's words with the own
 | r0 | The setup's cost-measurement read of one window. Its verdicts don't count. |
 | stopping rule | An owner-approved condition for closing a unit other than a zero pass. A unit closed that way is `closed-by-stopping-rule`, unless it closes with a confirmed wrong unfixed or over a dropped range (then `closed-known-wrongs`: `references/round.md`, "Closed statuses"). |
 | hint | Same as reader guidance. |
+| rule | In the `rule-meaning` exception: a verification rule (the text the briefs quote as `{RULES}`: the project's own, or `S/rules.md` when drafted at setup) or a bar ruling's text. A dispute over a class's wording is not one: it is a bar-wording change (`references/learning.md`, "Changing the bar's wording"), and the item goes through the confirm checks meanwhile. |
 | outside finding | An audit's or review's finding, mapped to items and confirmed as `foundBy: "audit"` (`references/setup.md`, "Existing outside findings"). Not an outside report: a user report, ticket, incident note or log, which is only something to reproduce (`references/debugging.md`). |
 | origin | Where a wrong came from: pre-existing text, your own edit, a new class, a missing ruling, writer misjudgment (a verdict of yours later overturned; `references/learning.md`), or evidence moved (only a new pin refutes it; `references/round.md`, "Between rounds only"). |
 | writer's lock | `S/writer.lock`: only one session writes to a loop (`ltz lock`). |
@@ -71,7 +72,7 @@ Map the project's own words onto these, and use the project's words with the own
 | flip | A field returning to a value it held in an earlier round (`ltz flips`). |
 | probes | Running the code (or a config loader or parser) in a scratch copy to test a claim, if the owner allows it. |
 | reader guidance | Notes that state what to bound, carried to readers only in `classes.md`'s "Reader guidance" section. Never new facts. |
-| hedge | Opening a claim with "such as", "for example" or "among others" (softening). Stating a proven scope ("outside tests") is not a hedge. Subtraction (dropping a false or unproven clause) is never softening, and is always allowed for descriptive items. A requirement item is never narrowed to fit the evidence (a copying error from its own source is fixed: `references/fixing.md`, "Requirement items"). A qualifier like "probably" fixes nothing. |
+| hedge | Opening a claim with "such as", "for example", "e.g." or "among others" (softening). Stating a proven scope ("outside tests") is not a hedge. Subtraction (dropping a false or unproven clause) is never softening, and is always allowed for descriptive items. A requirement item is never narrowed to fit the evidence (a copying error from its own source is fixed: `references/fixing.md`, "Requirement items"). A qualifier like "probably" fixes nothing. |
 | context reset | A fresh session, or the owner clearing the conversation. What follows starts from `S/HANDOFF.md` (the writer's steps resume) or from the brief of a cold read it runs (such as a solo reading or a fix-check self-check). The writer can't reset itself mid-session: when a step calls for resets, it first gives the owner their order, each with its first prompt, through to the one that resumes from `S/HANDOFF.md`. |
 | final targeted check | After every unit closes (or sooner, between rounds, if the owner asks: `references/round.md`, "Between rounds only"), with the owner's OK per unit: the unit is reopened as `final-check`, and its round F reads its dropped ranges and the chunks holding `evidence-moved` leads, confirms its other leads, fixes the real ones, applies its known wrongs' held drafts, and fix-checks them. It then returns to the closed status `loop.md` kept for it ("was <status>") (`references/round.md`, step 8). |
 | escalation trigger | The owner's rule for when a stalled loop goes back to them (setup question 0). |
@@ -85,7 +86,7 @@ Map the project's own words onto these, and use the project's words with the own
   (a wrong outside a frozen bar, listed for the owner). None counts as a wrong.
 - **An item the evidence plainly refutes is always `wrong`** (or `defect`, when it is a requirement the evidence
   doesn't meet or a policy-vs-config mismatch: see `defect` above), even on a repeat, when the refuter is inside
-  the approved bar and evidence boundary. It is never parked as `pending-owner`. Three exceptions make it
+  the bar (on an open bar, a class found mid-pass included) and the evidence boundary. It is never parked as `pending-owner`. Three exceptions make it
   `pending-owner`, each recorded with a `pendingReason`:
   - a rule's meaning is in dispute (readers and writer read it differently, or its own text admits two readings), and
     the item's truth turns on that meaning (`rule-meaning`);
@@ -150,8 +151,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    `S/<unit>/r<R>/` here, so step 5 can replay its history.
 5. **Research the repo, then predefine the names and classes.** Use the repo's own words, and five sources
    for the classes. Each class gets its record (`references/setup.md`, "Each class records") and is replayed on any
-   recorded history. If the evidence is live or not text, settle question 5 and take the export or conversion
-   first (`references/setup.md`, step 6).
+   recorded history. If the evidence is live or not text, settle question 5's pin and export scope and take the
+   export or conversion first (the boundary is asked later, with the research) (`references/setup.md`, step 6).
 6. Measure one test reader on one window, in r0/.
 7. **Ask the setup questions:**
    - what zero is for, and the zero definition;
@@ -181,7 +182,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
 ## Round checklist (`references/round.md`)
 1. **Start:** take the writer's lock; snapshot, which also copies the bar, lists and chunks; queue; plan the
    canaries.
-2. **Read:** cold readers in the owner's mode. No item commits until the reading is done.
+2. **Read:** cold readers in the owner's mode. No item file is edited or committed until the reading is done (fixes are
+   drafted in `drafts/<id>.md`).
 3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`); write the find
    list and run `record` (it scores the canaries); give any supplementary reads; spot-check 10 oks per reader, add
    their finds and run `record` again. Work each new `defect` through
@@ -204,7 +206,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
   the verdict and the refuter). The round's fix checker reads those items with the rest; that unit's next round
   then reads them normally. A unit with no snapshot yet (r0's doesn't count) needs a baseline before the first such edit:
   `ltz snapshot <S> <unit> 1`, which that unit's round 1 takes again when it starts. Re-take it only after the
-  editing unit's `diffcheck` and commit, or that diffcheck fails on its own logged edits.
+  editing round's last `diffcheck` and commit (its fix checks' follow-ups and any reverts included), or that diffcheck fails on its own logged edits.
 - **Closed units** are never edited. Log each match as a lead.
   - Leads are deferred under the recommended policy, once the owner rules it.
   - A final targeted check handles all leads after every unit closes (or sooner, between rounds, if the owner asks).
@@ -232,5 +234,5 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
 | "Make up a class now" | Classes come from repo research; a new one also logs a lesson |
 | "Freeze the bar to finish faster" | That is the owner's call |
 | "The count rose, so the fixes are failing" | Check the origins first; usually the bar moved |
-| "Launch every reader at once" | They all stop at the same limit. Start at 2, with the rest queued |
+| "Launch every reader at once" | They all stop at the same limit. Launch up to the owner's concurrency cap (recommend starting at 2), with the rest queued |
 | "Tell the readers about the canaries or the other reader" | That breaks the measurement |

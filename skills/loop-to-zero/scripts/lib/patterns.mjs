@@ -245,7 +245,7 @@ export function replay({ S, patternFile, rounds, holdout }) {
   };
   const roundNo = (x) => Number(String(x).replace(/^r/, ''));
   const toReplay = [];
-  for (const src of sources) for (const unit of units) for (const r of listRounds(path.join(src.base, unit))) toReplay.push({ src, unit, r });
+  for (const src of sources) for (const unit of units) for (const r of listRounds(path.join(src.base, unit))) if (r.n !== 0) toReplay.push({ src, unit, r }); // r0 is never replayed: its find list is {} by rule
   for (const { src, unit, r } of toReplay) {
     const snapP = path.join(r.dir, 'snapshot.jsonl');
     const confP = path.join(r.dir, 'confirmed.json');
