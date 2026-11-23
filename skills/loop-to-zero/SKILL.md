@@ -33,7 +33,7 @@ Map the project's own words onto these, and use the project's words with the own
 | part | A fix-check part: a split of a fix set into about 70 changed items, one fix checker each, named `p1`, `p2`, ... (`fixcheck-<K>-<part>`). Not a chunk. |
 | window | The items a reader renders at once, about 16. |
 | evidence | What the items are judged against. It is fixed at a **pin** (a tag, commit or dated export) and limited by the **evidence boundary** (which kinds count). |
-| bar | What counts as wrong, kept in `classes.md`: the approved classes, the accepted-by-ruling entries, the three lenses and the universal words. Open: classes found later are added and reported. Frozen: no new classes after a stated round (owner rulings still enter); a wrong outside the classes goes in `confirmed.json`'s `outsideBar` list (not a false alarm) and is listed for the owner, not counted. |
+| bar | What counts as wrong, kept in `classes.md`: the approved classes, the accepted-by-ruling entries, the three lenses, the universal words, "When two classes fit", "Accepted forms" and any reader guidance. Open: classes found later are added and reported. Frozen: no new classes after a stated round (owner rulings still enter); a wrong outside the classes goes in `confirmed.json`'s `outsideBar` list (not a false alarm) and is listed for the owner, not counted. |
 | class | A named kind of wrong, with a definition and a fix form. |
 | sweep / seed | A search over every item for one class. The seed is the confirmed wrong that starts it. |
 | refuter | The file:line at the pin that shows an item wrong. |
@@ -43,7 +43,7 @@ Map the project's own words onto these, and use the project's words with the own
 | fix checker | A cold reader of the items a fix changed. |
 | gate | The scripts that must pass before a commit is accepted. |
 | discovery | Repeated pre-loop passes over every item under the three lenses. They end at zero or when the owner says. |
-| lead | An item in a closed unit that needs action (a sweep match, a revert, an amended ruling's item, or one a pin move reaches), logged in `closed-unit-leads.txt` rather than edited. |
+| lead | An item in a closed unit that needs action (such as a sweep match, a revert, an amended ruling's item, an outside review's find, or one a pin move reaches), logged in `closed-unit-leads.txt` rather than edited. |
 | adjusted | A past count restated after a verdict changed, written `n (adj m, reason, date)`. |
 | canary | A planted test item (known wrong or known ok), shown only inside readers' windows. |
 | ruling / decision log | A ruling is an owner decision about how items are judged (a bar ruling, numbered like `R-n`). A process decision (`P-n`) covers how the loop runs, including the close rules and the approval of the class set (its content is `classes.md` itself). The decision log holds both, verbatim, and is the master copy. Readers never open it. |
@@ -208,7 +208,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
   `ltz snapshot <S> <unit> 1`, which that unit's round 1 takes again when it starts. Re-take it only after the
   editing round's last `diffcheck` and commit (its fix checks' follow-ups and any reverts included), or that diffcheck fails on its own logged edits.
 - **Closed units** are never edited. Log each match as a lead.
-  - Leads are deferred under the recommended policy, once the owner rules it.
+  - Leads are deferred under the recommended policy, once the owner decides it.
   - A final targeted check handles all leads after every unit closes (or sooner, between rounds, if the owner asks).
   - A lead that would change what a ruling permits goes to the owner at once. Items in open units that depend
     on the answer (it would change their verdict, or the wording of their fix): `ruled-wording` where the evidence refutes wording the ruling approved; `rule-meaning` where
@@ -220,7 +220,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
 |---|---|
 | "One wrong left, close it anyway" | Closing needs a full-depth pass at 0 |
 | "Stitch this round's partial pass to the last one" | A pass is one full read of one snapshot |
-| "This pass skimmed the tail; it still counts" | Only a full-depth pass counts |
+| "This pass skimmed the tail; it still counts" | Only a full-depth pass counts: re-read the skimmed range with a supplementary read first |
 | "The reader stopped at the limit; relaunch it fresh" | Continue it. Launch fresh only in the cases `references/queue-and-outages.md` lists ("When a fresh launch is allowed") |
 | "Commit fixes while a reader is still reading" | Readers judge the snapshot |
 | "Copy the item's cites into cites_read", or "fill a missing item myself" | The coverage check would pass while checking nothing |

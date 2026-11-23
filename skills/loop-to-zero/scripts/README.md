@@ -58,7 +58,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> init --opaque [--per-chunk N] [--chunks c2,...]` | Creates `queue.json` with short random slot names, N per chunk (default 2), and prints the `--chunk-readers` arguments for `record` (see "Opaque slot names"). `--chunks` queues only those chunks, for a `final-check` unit only. |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> next --cap N` | Lists stopped jobs to continue, then slots to launch within the cap: pairs whole, reruns one by one. |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> mark <slot> <state> [--agent id] [--transcript path] [--reset <date-time>] [--ruling id]` | Sets a job's state. `done` is refused unless the result file covers the range. `replaced` closes an abandoned slot. `dropped-by-owner` needs `--ruling` with its decision id (see "Dropped ranges"). `--transcript` stores the agent's transcript path (see "Transcripts and cost"). `--reset <date-time>` records when a limit resets (for `stopped-limit`; `next` waits until then). It takes an ISO 8601 date and time, `YYYY-MM-DDTHH:MM`, with optional `:SS`, fractional seconds, and `Z` or a `+HH:MM`/`-HH:MM` offset, such as `2026-11-10T03:00` (local time, with no `Z` or offset). Anything else is refused: a bare clock time (`03:00`), a date with no time (`2026-11-10`), a date with no year (`Nov 10 03:00`), or an invalid date or time (such as `2026-11-31T03:00`, or `24:00`, which ISO 8601 allows). |
-| `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> replace <slot> --agent <newId> [--from P] [--transcript path]` | Puts a fresh agent on the same slot after an account change or in a new session. The slot stays open (see "Replacing an agent"). |
+| `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> replace <slot> --agent <newId> [--from P] [--transcript path]` | Puts a fresh agent on the same slot after an account change, in a new session, or when a continue fails because the agent's context is full. The slot stays open (see "Replacing an agent"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> rerun <slot> --from P --to Q` | Adds a new slot, with an opaque name and its parent recorded, that reads positions P-Q of that slot again. `record` uses its lines there (see "Re-runs and supplementary reads"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status` | Prints each slot's state, result lines, resume position, any dropped range and earlier agents. |
 | `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given (see "The diff check" and "Searches"). |
@@ -400,7 +400,7 @@ Any other flip fails the command.
 `replaced`, `dropped-by-owner`. `done`, `replaced` and `dropped-by-owner` are closed; every other state
 is open, `queued` included. The guard blocks item commits while any job in any round is open.
 
-**Replacing an agent.** After an account change, or in a new session, an old agent cannot be continued.
+**Replacing an agent.** After an account change, in a new session, or when its context is full, an old agent cannot be continued.
 Then, in this order:
 1. Run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status`. The slot's `resume` value is FROM:
    the first position its result file lacks (the slot's first position when it has no file).
@@ -689,9 +689,11 @@ Notes on these fields:
   ```
   - `pending`, `withdrawn`, `outsideBar`, `ruledKept`, `rejected` and `defects` are reserved keys.
   - **`rejected`** lists every reader wrong the writer did not confirm (a false alarm), each with a note that
-    names a file:line answering the refuter, or starts "history:" and names the earlier reasoned ok. A reader
+    names a file:line answering the refuter (for a "self-contradiction:" wrong, the item's own file:line, with its
+    figures shown to agree), or starts "history:" and names the earlier reasoned ok. A reader
     wrong (canaries aside) that is not confirmed, pending, a defect, withdrawn, outside the bar or rejected is
-    a PROBLEM, and so is a note with neither, or an id also in another list. One no reader marked gives a
+    a PROBLEM, and so is a note with neither, or an id also in the wrongs, `pending`, `defects`, `withdrawn` or `outsideBar`
+    (`ruledKept` may hold the same id: the other reader's ruled ok, kept). One no reader marked gives a
     warning. In `measure.json` they stay false alarms; `report.json` shows them `ok`, with the note under
     `rejected`.
   - **`withdrawn`** (optional) lists reader wrongs that a ruling given mid-round overturned. In

@@ -42,10 +42,11 @@ The same format is used in `S/lessons.md` and in the global `lessons.md`:
 - **a title:** the rule in short, marked ✓ (it worked) or ✗ (it went wrong);
 - **Rule:** optional, when the title already says it;
 - **Why:** what was judged, what was right, the root cause, and the cost;
-- **Replay:** the replay's recall and false hits. Or "no history yet" (lessons seeded from history), or "n/a
-  (process lesson)" for cost or process lessons. Required before a lesson is promoted;
+- **Replay:** the held-out recall and false hits; or "no history yet" / "no held-out history yet" when no (held-out)
+  round exists; or "n/a (process lesson)" for cost or process lessons. Required before a lesson is promoted;
 - **Change:** the file or step it changed, named only once that text carries the lesson; until then, "none yet";
-- **Seen:** the count. Project names go only in `S/lessons.md`.
+- **Seen:** the count. Project names go only in `S/lessons.md`;
+- **Promoted:** in `S/lessons.md` only, once promoted: the global lesson's title and the date.
 
 **Keeping `S/lessons.md` live.** Each project lesson also carries **Last confirmed:** the round it last recurred or
 was applied; update it at every retro. A lesson a tool now refuses mechanically (shown with a negative test, such
@@ -100,7 +101,8 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
   - in closed units, as leads.
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
-the final targeted check confirms a wrong in it, never for an "evidence moved" wrong. Its status is `closed-leads-pending` from when the first lead is logged
+the final targeted check confirms a wrong in it, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
+question answered, after the close): the closing pass judged those correctly under the bar of its time. Its status is `closed-leads-pending` from when the first lead is logged
 until that check.
 
 ## The retro (`r<R>/retro.md`)
@@ -202,8 +204,8 @@ comparison to the owner (it is their mode decision). It takes effect from the ne
       before a verdict is kept). A lesson about a kind of claim, a fix's wording or a class (a fix that missed a
       member, a wording readers misjudge) is not one: it needs the replay.
 
-  A merge bumps the global lesson's Seen count. Add the global lesson's title to the
-  project lesson's Change field in `S/lessons.md`: a lesson whose Change field names one is already promoted.
+  A merge bumps the global lesson's Seen count. Record it in the project lesson's
+  **Promoted** field in `S/lessons.md` (the global title and date): a lesson with that field is already promoted.
 - **Promotions need no approval,** but each one is reported to the owner.
 - **No skill file except the global `lessons.md` is edited on your own** (it takes promotions, above). Propose a
   change to the skill's maintainer (usually the owner) when a global lesson:

@@ -176,6 +176,8 @@ invented mid-pass. Write the research to `S/research.md`, citing each finding.
   item source's own headings.
 - Never use a generic word where the repo has its own.
 - Record each mapping with the file:line where the repo uses it, and the item-id scheme with examples.
+- A word the repo uses in two senses (one the item, one a setting, say) is asked of the owner before research
+  uses it: which sense is which, and the word for the other. Record the answer in the terms map first.
 
 **Classes (the bar).** They come from five sources. Search each with no output limit, and keep the counts.
 1. **Claim shapes in the items.** Count them with `ltz sweep --count` over every item, not a sample (counting needs no
@@ -269,7 +271,8 @@ the skill's maintainer).
    to build against, or a fully correct document. That decides how far the loop goes.
    - Recommend writing down that a zero pass:
      - records no confirmed wrong (an item outside a frozen bar is listed for the owner, not counted);
-     - read every item at full depth. A filtered, tiered or partly skimmed pass never counts.
+     - read every item at full depth. A filtered or tiered pass never counts; a partly skimmed one counts
+       only once supplementary reads have re-read every skimmed range.
    - Recommend that owner-only questions about a rule's meaning (`rule-meaning`) are listed at each pass end and
      don't block zero, and that a unit closing with such items open is marked `closed-owner-questions-open`. The owner may rule that they
      block. `boundary-silent` and `ruled-wording` items always block, because the evidence refutes them. The answer sets config
@@ -375,12 +378,16 @@ applies only when the item cites both, or a ruling says the config implements th
 - **Process decisions** (`P-n`) cover how the loop runs: the zero definition, the close rules, readers,
   concurrency, canaries, probes, hooks, masking, granularity, the evidence pin and any move of it (the boundary
   stays a bar ruling), the bar's open or frozen state, the branch and
-  approver, overrides and drops. Readers never see them (the brief states the probe and bar settings as
+  approver, overrides and drops, and every other setup answer not listed as a bar ruling (the cross-unit policy,
+  the escalation trigger, the unit order, the fix-checker mode, version control and publishing). Readers never see them (the brief states the probe and bar settings as
   instructions).
 - **Approving the names, classes and rules** (question 1) is a process decision: its content is `classes.md` and
   `rules.md` themselves, which readers already read, so it needs no accepted-by-ruling entry. So is approving a
-  later class, class-wording change or reader-guidance line, and the owner's answer on a class found mid-pass
-  (it joins the bar unapproved; the owner keeps or drops it after the report).
+  later class, class-wording change or reader-guidance line, and the owner's keep of a class found
+  mid-pass (it joins the bar unapproved). An answer that drops one is a bar ruling (`R-n`, with an accepted-by-ruling
+  entry): the reader wrongs confirmed under it in the current round go in `withdrawn`; earlier rounds' are
+  re-judged by back-propagation (`judgments.jsonl` lines, adjusted counts) and their edits reverted (`references/fixing.md`,
+  "Reverting").
 
 `R-n` and `P-n` are examples. Use the project's own id scheme, with a `rulingIdPattern` that matches only bar
 rulings (test it on a known id). If its scheme can't tell bar rulings apart, keep `S/decisions.md` for the loop's

@@ -157,7 +157,9 @@ Every setup question (`references/setup.md`) belongs to the owner, including:
 ## Reporting a round (information, not a stop)
 Open with two things, before item 1:
 - **A headline:** one or two sentences on what the round found and whether the unit can close, stamped with
-  the round and pin its figures are as of ("round 5, at v3.2"). Take every figure from `record`'s output.
+  the round and pin its figures are as of ("round 5, at v3.2"). Take every figure from `record`'s output; whether the unit can close is `countsAsZero` (or step 8's conditions where
+  they override it: a defect closed by owner decision, a past round adjusted to 0) plus
+  `references/round.md` step 8's own checks (`S/defects.md`, skimmed ranges, edits after the read).
 - **Decisions needed:** each open owner question that blocks a close or holds drafted fixes, one line each:
   what it blocks and by when the answer is needed (for example, before the next round's snapshot). Write "none"
   when there are none.
@@ -167,8 +169,8 @@ Then report, in this order:
    retro", step 2), naming any class that is not falling.
    - **Bridge each count from the last round's; never give it alone.** Say what became of the last round's
      wrongs and where this round's came from: "round 4 found 7, all fixed (fix check returned 0); round 5 found
-     4, all new: none is a repeat or in text I edited". Split the new ones into repeats, finds in your own edits
-     and the rest, from `record`'s output.
+     4, all new: none is a repeat or in text I edited". Split the new ones into repeats (from `record`'s output), finds in your
+     own edits (from the retro's origin axis: `references/learning.md`, "The retro", step 1) and the rest.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
    your own edit, a new class, a missing ruling, writer misjudgment, evidence moved) and by who found them (both readers, one only, none), plus
    reader false alarms. A round still being read is reported as "at least n (reading incomplete)".

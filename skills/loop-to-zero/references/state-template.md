@@ -29,7 +29,8 @@ S/
                       by: owner|reader|spot-check|fixcheck|sweep|audit|extract,
                       reason, lesson, backprop: [ids re-judged]}
   cross-unit-edits.txt    edits in units not yet closed, made from another unit's round
-                          (unit, id, verdict, refuter, source unit+round, commit); a "deferred" line instead
+                          (unit, id, verdict, refuter, source unit+round, commit, and for a fix a note on
+                          why exclusivity is or isn't the item's point); a "deferred" line instead
                           has status open|settled (round, date)
   closed-unit-leads.txt   matches in closed units (unit, id, kind wrong|revert|evidence-moved, class, refuting file:line or
                           ruling id (evidence-moved: the changed file or the search whose hits changed, and the pin decision id; class none; source the pin decision), source unit+round (or an outside review and its date), ruling-level: yes|no,
@@ -54,18 +55,19 @@ S/
   canaries-src/      the writer's source files for `ltz canary add --from` (same rules as canaries.jsonl)
   writer.lock        the writing session (ltz lock)
   HANDOFF.md         one current paste-ready prompt to resume in a new session: use this skill (its name and folder), read S/loop.md, take over the
-                     writer's lock, run `ltz queue <S> <unit> <R> status` for each open round, re-read the lessons and S/classes.md (solo: after the reading). If an earlier handoff was saved elsewhere (memory, a dated copy), mark that one SUPERSEDED at its top. Update it after every round.
+                     writer's lock, run `ltz queue <S> <unit> <R> status` for each open round (while discovery runs, <S> for the lock and the queues is S/discovery), re-read the lessons and S/classes.md (solo: after the reading). If an earlier handoff was saved elsewhere (memory, a dated copy), mark that one SUPERSEDED at its top. Update it after every round.
   items.jsonl        the extracted items (stable ids)
   inputs/            outside findings (audits, reviews), closed to readers
   checks/            the project's extract script and any project checks
   checks/patterns/   class patterns (JSON); those marked "regression" are re-run by ltz diffcheck
   discovery/         the discovery state folder, if discovery runs: the tools read it as the state folder
-                     (references/setup.md, step 9); lessons, defects and owner questions stay in S/
+                     (references/setup.md, step 9); lessons, defects, owner questions and
+                     cross-unit-edits.txt stay in S/
   known-wrongs.txt   items a `closed-known-wrongs` unit closed with, and ranges dropped by override, for the final
                      targeted check: one line each, with the date and status open|settled (round F, date). A known
                      wrong's line has unit, id, refuter, decision id and the drafted fix's path
                      (<unit>/r<R>/drafts/<id>.md, if any); a dropped range's has unit, round, slot, positions
-                     from-to and decision id
+                     from-to, the range's first and last item ids, and decision id
   inputs/audit-map.json   outside findings mapped to item ids (closed to readers)
   evidence/<date>/   a dated export or text conversion, if the evidence is live or not text: read-only once
                      pinned by its sha256 in config.json's evidence (type dir), and named in the readers' paths

@@ -112,7 +112,8 @@ marked there that the re-run doesn't (`references/briefs.md`).
   `references/round.md`, step 1, and `references/modes.md`):
   1. read `S/loop.md`;
   2. take over the writer's lock (`ltz lock release` with the old session id, then `acquire`);
-  3. run `ltz queue <S> <unit> <R> status` for each open round;
+  3. run `ltz queue <S> <unit> <R> status` for each open round (while discovery runs, `<S>` for steps 2 and 3
+     is `S/discovery`, the folder `.ltz-state` names);
   4. re-read both lessons files and `S/classes.md` (in solo mode, only once the round's reading is done).
 - **Test the handoff cold before a new session relies on it.** Before the first resume from it, and again after its
   steps change, have a fresh session (an agent; in solo mode, a session after a context reset, or one the owner opens) given only `S/HANDOFF.md` say what it would do next, without

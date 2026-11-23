@@ -82,7 +82,8 @@ claim vs source, whole context, and adversarial input. Check every field the rul
 universal words that classes.md lists literally. Back every "no X", "only X" or
 "every X" with a search at the pin with NO output limit. A search that finds nothing counts only once the same
 command, on the same paths, finds something you know is there; name that control in the note.
-An item whose wording an "accepted by ruling" entry approves is ok. If the evidence differs from that wording,
+An item whose wording an "accepted by ruling" entry approves is not wrong for the ruled point;
+judge its other claims and citations as usual. If the evidence differs from that wording,
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
@@ -157,7 +158,8 @@ your own result file, the evidence at the pin, and {SCRATCH}. That rules out ear
 fix, lessons, the git history or git diffs of the items, and memory and handoff files.
 
 Apply the three lenses and the universal words, as quoted in classes.md. {PROBES} {SOLO_RULING}
-An item whose wording an "accepted by ruling" entry approves is ok. If the evidence differs from that wording,
+An item whose wording an "accepted by ruling" entry approves is not wrong for the ruled point;
+judge its other claims and citations as usual. If the evidence differs from that wording,
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
@@ -228,7 +230,7 @@ Reply with the path, the counts, and one line per wrong.
      evidence. If the evidence refutes the approved wording, record it in `pending` (`ruled-wording`, with the
      question "amend <ruling>?"), unless the ruling's entry records that the owner kept it after that question:
      then list it in `confirmed.json`'s `ruledKept` (`{"id", "ruling"}`), unless the id is also in the wrongs,
-     `pending`, `defects`, `withdrawn` or `outsideBar` (then leave it out; its warning is expected).
+     `pending`, `defects`, `withdrawn` or `outsideBar` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

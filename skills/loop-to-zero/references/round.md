@@ -108,7 +108,7 @@ The retro, as in `references/learning.md`.
 
 ## 8. Close or continue
 The unit closes when one pass meets all of these:
-- every item was read at full depth (a filtered, tiered or partly skimmed pass never counts);
+- every item was read at full depth (a filtered or tiered pass never counts; a partly skimmed one counts only once supplementary reads have re-read every skimmed range);
 - 0 confirmed wrongs;
 - no `boundary-silent` or `ruled-wording` `pending-owner` verdicts (no close setting lets these through); and no `rule-meaning` ones, unless the
   owner decided (a process decision) that they don't block a close (see the closed statuses below);
@@ -153,12 +153,12 @@ owner's OK, for the final targeted check. The check runs as the unit's next roun
 before any edit, then the fixes, `diffcheck` and the fix checker as usual. Afterwards, take a new baseline with
 `ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
-`closed-leads-pending` itself). If round F confirmed any wrong (other than an "evidence moved" one), the unit is reported with its adjusted closing
+`closed-leads-pending` itself). If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
-- **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`, or for `evidence-moved` leads: queue just the chunks that cover
-  them, read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
+- **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`, or for `evidence-moved` leads: queue just the chunks that cover them (a dropped range by its first and last item ids, not its old positions),
+  read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
   queue). Other `wrong` leads are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never entered in `confirmed.json`, and adjusts no count. `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round

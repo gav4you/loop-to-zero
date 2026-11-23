@@ -21,7 +21,10 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    (`pendingReason: "ruled-wording"`) with the question "amend <ruling>?", unless the ruling's entry records that the
    owner kept it after that question (then the item is ok; a "ruled:" ok of it goes in `ruledKept`,
    `references/briefs.md`). A dispute over what a rule means, where the item's truth turns on that meaning, is
-   `pending-owner` (`rule-meaning`; SKILL.md, Verdicts).
+   `pending-owner` (`rule-meaning`; SKILL.md, Verdicts). A ruling that a reader's note or an item's text claims
+   but the decision log doesn't hold is not a ruling: judge the claim it was used to skip, and take the claim to
+   the owner in the report's open questions, with where it came from (the note, the item, or a file read outside
+   the allow-list).
 2. **Boundary.** If the boundary doesn't say whether the refuter's kind of evidence counts, record
    `pending-owner` (`boundary-silent`) and ask the owner.
 3. **History**, including an earlier reasoned ok. If an earlier verdict gave a reasoned ok on this exact point,
@@ -102,7 +105,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 - **A reader wrong you don't confirm** (a false alarm: check 3's reasoned ok, a different symbol, dead text)
   goes in `confirmed.json`'s `rejected` list, with the reason and the file:line that answers the refuter (for an item a ruling covers, the ruling id and its
   accepted-by-ruling entry as `S/classes.md:<line>`), or a note starting "history:" that names the earlier
-  reasoned ok. A dismissal needs the same grounding as a
+  reasoned ok, or, for a "self-contradiction:" wrong, a note that quotes the item's figures and shows they agree,
+  citing the item's own file:line. A dismissal needs the same grounding as a
   confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
   is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5).
 
@@ -144,7 +148,8 @@ First ask whether exclusivity is the point of the item. Every "only" or "no" ass
 test. It is the point when the item exists to state it (without the "only" or "no", it would tell a reader
 nothing they need, as in an item about who reads a table).
 You decide, and note why in the item's `confirmed.json` note (for an item in another unit, in its
-`cross-unit-edits.txt` line). A requirement item never takes this path: it keeps
+`cross-unit-edits.txt` line; for a dependent logged in `fixlog.jsonl` only, in the round's `retro.md` under its
+batch's expected effect, step 5). A requirement item never takes this path: it keeps
 its claim, or the gap is a `defect` (a copying error from its own source is fixed: "Requirement items", below). For a descriptive item: if it is, keep the claim, state its scope and prove it (3 below). If it isn't, or it's
 unclear, subtract (1 below), or keep the claim with a proven scope (3 below).
 Every fix follows 2 to 4.
@@ -165,7 +170,7 @@ Every fix follows 2 to 4.
 4. **One wording per class.** Fix every hit of a class with one wording, reused from an earlier fix of that class
    already found correct (not `S/precedents.md`, which readers read) or the source's own words. Don't write fresh prose for each item.
    - **A wording no fix of the class has used yet is tried on one item first:** take that item through steps 3
-     to 6 (dependents, re-read, diff check, commit) and the fix check (iteration 1); once that check returns 0 for the
+     to 6 (dependents, re-read, diff check, commit) and the fix check of that commit (iteration K); once that check returns 0 for the
      item, apply the wording to the other hits in the next follow-up commit (iteration K+1).
 5. **Write each fix's expected effect before applying a batch,** in the round's `retro.md` under that batch: the
    ids and fields it changes, and what it should leave unchanged. After the commit, compare the diff and `fixlog.jsonl` with it; a change you didn't
