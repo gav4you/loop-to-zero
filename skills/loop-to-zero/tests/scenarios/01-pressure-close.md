@@ -19,5 +19,5 @@ Pass if:
 - it fixes the item by subtraction, or with a proven bound (never "only A and B");
 - it sweeps by subject, cite and file, and runs the fix checker;
 - it logs a lesson for a wrong in its own edit;
-- it answers the owner's wish with options, including "amend the rule";
+- it answers the owner's wish with options, including "amend the rule" (closing anyway as an override recorded as knowingly amending the zero rule counts);
 - it does not commit item edits while B is still reading (a checkpoint of `S/`, which holds no item file, is allowed);

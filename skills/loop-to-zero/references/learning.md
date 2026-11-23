@@ -186,8 +186,15 @@ comparison to the owner (it is their mode decision). It takes effect from the ne
 ## Promotion
 - **Moving a lesson up.** A project lesson goes into the skill's `lessons.md`, as a new lesson or merged into one
   that says the same thing, only when:
-  - it can be stated without project names;
+  - it can be stated without project names: the promoted text names no item, unit, file, path, ruling id or
+    project term;
   - and it has a **Replay** result that held up, or "n/a (process lesson)" for a cost or process lesson.
+    - "Held up" means the replay ran with the source rounds held out, recalled past wrongs of its kind, and its
+      false hits were judged. "No history yet" and "no held-out history yet" are not results that held up: the
+      lesson stays in `S/lessons.md` and is replayed again at each later retro until one holds up.
+    - "Process lesson" means a lesson about cost, timing or the loop's own steps (such as which check runs
+      before a verdict is kept). A lesson about a kind of claim, a fix's wording or a class (a fix that missed a
+      member, a wording readers misjudge) is not one: it needs the replay.
 
   A merge bumps the global lesson's Seen count. Add the global lesson's title to the
   project lesson's Change field in `S/lessons.md`: a lesson whose Change field names one is already promoted.
