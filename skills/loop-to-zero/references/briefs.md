@@ -31,8 +31,8 @@ Fill the `{…}` slots:
 | `{PART}` | The fix-check part: a split of the fix set into about 70 changed items each, named `p1`, `p2`, ... |
 
 The two readers of a chunk get the same brief apart from their slot. Keep each filled brief, as sent, in
-`r<R>/briefs/<slot>.md`: a replacement agent gets that text, followed by "continue from position FROM" (the
-slot's resume position). Never tell a reader that another reader
+`r<R>/briefs/<slot>.md`: a replacement agent gets that text unchanged (its {FROM} stays the slot's first
+position), followed by "continue from position P", where P is the slot's resume position. Never tell a reader that another reader
 exists. Launch readers as background agents (the Agent tool), not as Workflow subagents: only Agent-tool
 agents can be continued with SendMessage after a limit.
 

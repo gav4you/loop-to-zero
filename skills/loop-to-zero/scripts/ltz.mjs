@@ -143,8 +143,8 @@ queue <S> <unit> <R> status
   recorded; record uses its lines for P-Q, except where a later rerun overlaps.
   "replace <slot> --agent <newId>" (after an account change or in a new session) puts a
   fresh agent on the same slot, which stays open (running); the old agent goes to agentHistory. The
-  order: take FROM from "status" (the slot's resume position), launch the fresh agent from FROM, then
-  run "replace <slot> --agent <newId> --from FROM" at once; --from must equal the result file's resume
+  order: take the resume position P from "status", launch the fresh agent with the slot's kept brief followed
+  by "continue from position P", then run "replace <slot> --agent <newId> --from P" at once; --from must equal the result file's resume
   position when replace runs. "status" prints each slot's result lines, resume position and earlier
   agents.`,
   diffcheck: `diffcheck <S> <unit> <R> [--verify-searches|--no-verify-searches]

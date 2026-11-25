@@ -340,9 +340,9 @@ export const mark = locked(function mark({ S, unit, R, slot, state, agent, reset
 });
 
 /**
- * After an account change (or a new session) an old agent cannot be continued. The order: take FROM
- * (the slot's resume position) from status, launch a fresh agent on the same slot from FROM, then
- * record it here with its id; --from FROM, if given, must still equal the result file's resume
+ * After an account change (or a new session) an old agent cannot be continued. The order: take the
+ * slot's resume position P from status, launch a fresh agent with the slot's kept brief followed by
+ * "continue from position P", then record it here with its id; --from P, if given, must still equal the result file's resume
  * position. The slot stays open (running) with the new agent; the old agent goes into agentHistory.
  * (mark ... replaced is for closing an abandoned slot, not this.)
  */
@@ -385,8 +385,8 @@ export const replace = locked(function replace({ slot, agent, from, transcript }
   return {
     output:
       from !== undefined
-        ? `agent ${e.agent} reads ${slot} from FROM = ${resume}, as launched (it appends to agent-${slot}.jsonl)`
-        : `agent ${e.agent} reads ${slot}; it must have been launched with FROM = ${resume} (it appends to agent-${slot}.jsonl); pass --from to have that checked`,
+        ? `agent ${e.agent} reads ${slot} from position ${resume} ("continue from position ${resume}"), as launched (it appends to agent-${slot}.jsonl)`
+        : `agent ${e.agent} reads ${slot}; it must have been launched with the slot's brief and "continue from position ${resume}" (it appends to agent-${slot}.jsonl); pass --from to have that checked`,
     summary: `queue replace: ${slot} ${prev} -> running with agent ${e.agent}; earlier agents: ${e.agentHistory.map((h) => h.agent).join(', ') || 'none'}`,
   };
 });

@@ -116,8 +116,8 @@ marked there that the re-run doesn't (`references/briefs.md`).
 
 ## Account change or a new session
 - Agents from an old session cannot take SendMessage. For each unfinished job:
-  1. launch a fresh agent with the same brief (`r<R>/briefs/<slot>.md`), FROM = its resume position from
-     `ltz queue <S> <unit> <R> status`;
+  1. launch a fresh agent with the same brief (`r<R>/briefs/<slot>.md`), unchanged, followed by "continue from
+     position P", where P is its resume position from `ltz queue <S> <unit> <R> status`;
   2. record it at once with `ltz queue <S> <unit> <R> replace <slot> --agent <newId> --from P --transcript
      <path>`. The slot stays open,
      and the old agent id moves to its history. `mark <slot> replaced` is only for closing an abandoned slot.

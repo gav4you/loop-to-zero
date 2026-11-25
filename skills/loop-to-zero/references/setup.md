@@ -101,9 +101,11 @@ test reader may run. The steps match SKILL.md's Setup.
      - if the pin differs from the one used for research, re-run the research counts.
    - **Re-run extract** with the approved item-type rule and any granularity answer, before discovery's first
      snapshot (or round 1's, with no discovery), re-keying as in step 4.
-   - **Write** `S/loop.md`, `S/HANDOFF.md`, the decision log and the approved `S/classes.md`. Run `ltz rulings <S>`: every ruling
-     in the log needs an accepted-by-ruling entry, and the tool checks that each id appears in that section. Set
-     config `requireRulingEntries` so `snapshot` refuses otherwise.
+   - **Write** `S/loop.md`, `S/HANDOFF.md`, the decision log and the approved `S/classes.md`. Set config `decisionLog` (the log's
+     path, relative to `S/`) and `rulingIdPattern` (one that matches only bar rulings, tested on a known id):
+     `ltz rulings`, the `withdrawn` check and the `rulingsChecked` check of a repeat read both. Then run
+     `ltz rulings <S>`: every ruling in the log needs an accepted-by-ruling entry, and the tool checks that each
+     id appears in that section. Set config `requireRulingEntries` so `snapshot` refuses otherwise.
    - **If the owner approved hooks,** enable `scripts/hooks/guard.mjs` in the project's settings, never the
      user-level settings (`scripts/hooks/README.md`). If you took the lock under an id of your own, re-take it
      under your real session id: `ltz lock <S> release --session <your id>`, then `ltz lock <S> acquire
@@ -317,6 +319,8 @@ the skill's maintainer).
    - Ask whether an open defect blocks a unit's close. Recommend: it doesn't block, and defects are reported
      every round. For controls and compliance items, state the case for blocking plainly: a closed unit with
      unmet controls may read as attested.
+   - If a project tracker is connected, also ask whether defects may be filed as tickets, each with the owner's OK
+     or under a standing process decision.
    - The extract script writes `"type": "requirement"|"description"` on every item in `items.jsonl`, one value
      for all when the items don't mix. If they mix, ask for a per-item rule for the script to apply, and show the
      owner the borderline items.
@@ -339,8 +343,7 @@ the skill's maintainer).
    time, from the measurement. Also ask whether readers may run probes of the code in a scratch copy:
    recommend allowing them where the research finds claims about run-time behaviour (config loading,
    parsing), and read only otherwise. Probes also let the writer reproduce a `defect`
-   (`references/debugging.md`). If a project tracker is connected, also ask whether defects may be filed as
-   tickets, each with the owner's OK or under a standing process decision.
+   (`references/debugging.md`).
    - **Canaries** (planted test items, `references/round.md`). Recommend one or two per reader per round.
      They are not offered in solo mode (the writer is the only reader, and planted them). They measure each reader's catch rate and false alarms, and they never enter the
      items.

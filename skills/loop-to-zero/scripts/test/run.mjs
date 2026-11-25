@@ -1514,12 +1514,12 @@ test('queue replace: a fresh agent on the same slot after an account change; the
   r = fails(ltz(['queue', S, 'u1', '1', 'replace', 'c1-a', '--agent', 'ag2', '--from', '5']), /resumes at position 4; positions would be skipped/);
   ok(!/unless the new agent/.test(r.out), r.out);
   r = passes(ltz(['queue', S, 'u1', '1', 'replace', 'c1-a', '--agent', 'ag2', '--from', '4']));
-  ok(/agent ag2 reads c1-a from FROM = 4, as launched/.test(r.out) && /stopped-limit -> running with agent ag2; earlier agents: ag1/.test(r.out), r.out);
+  ok(/agent ag2 reads c1-a from position 4 \("continue from position 4"\), as launched/.test(r.out) && /stopped-limit -> running with agent ag2; earlier agents: ag1/.test(r.out), r.out);
   ok(!/launch the new agent/.test(r.out), `the agent is already launched:\n${r.out}`);
   let e = rj(path.join(RD(S), 'queue.json')).slots.find((s) => s.slot === 'c1-a');
   eq([e.state, e.agent, e.agentHistory.map((h) => h.agent)], ['running', 'ag2', ['ag1']], 'open, new agent, old agent in history');
   r = passes(ltz(['queue', S, 'u1', '1', 'replace', 'c1-a', '--agent', 'ag3']));
-  ok(/agent ag3 reads c1-a; it must have been launched with FROM = 4 .*pass --from to have that checked/.test(r.out), r.out);
+  ok(/agent ag3 reads c1-a; it must have been launched with the slot's brief and "continue from position 4" .*pass --from to have that checked/.test(r.out), r.out);
   e = rj(path.join(RD(S), 'queue.json')).slots.find((s) => s.slot === 'c1-a');
   eq(e.agentHistory.map((h) => h.agent), ['ag1', 'ag2'], 'history grows');
   ok(/earlier agents ag1, ag2/.test(passes(ltz(['queue', S, 'u1', '1', 'status'])).out), 'status shows them');
@@ -5124,7 +5124,7 @@ test('queue: a result file that lacks no position but is not clean gets no resum
   passes(q('mark', 'c1-b', 'stopped-context'));
   ok(/^continue c1-b \(agent ag2\): SendMessage "continue from position 5"$/m.test(passes(q('next', '--cap', '4')).out), 'control: next continues from 5');
   r = passes(q('replace', 'c1-b', '--agent', 'ag5', '--from', '5'), 'control: replace from the gap');
-  ok(/agent ag5 reads c1-b from FROM = 5/.test(r.out), r.out);
+  ok(/agent ag5 reads c1-b from position 5/.test(r.out), r.out);
   r = passes(q('mark', 'c1-b', 'dropped-by-owner', '--ruling', 'P-2'), 'control: drop the uncovered tail');
   eq(queueSlot(S, 'c1-b').dropped, { from: 5, to: 6, ruling: 'P-2' }, 'the dropped tail');
 });

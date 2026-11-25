@@ -447,16 +447,16 @@ started at the same moment do not lose each other's update.
 
 **Replacing an agent.** After an account change, in a new session, or when its context is full, an old agent cannot be continued.
 Then, in this order:
-1. Run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status`. The slot's `resume` value is FROM:
+1. Run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status`. The slot's `resume` value, P below, is
    the first position its result file lacks (the slot's first position when it has no file).
-2. Launch a fresh agent on the slot, with the same brief, from FROM. It appends to
-   `agent-<slot>.jsonl`.
-3. Run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> replace <slot> --agent <newId> --from FROM
+2. Launch a fresh agent on the slot with the slot's kept brief, unchanged (its FROM stays the slot's first
+   position), followed by "continue from position P". It appends to `agent-<slot>.jsonl`.
+3. Run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> replace <slot> --agent <newId> --from P
    --transcript <path>` with the id and transcript path the launch gave.
    - `--from` must equal the result file's resume position when `replace` runs, so nothing is judged
      twice or skipped.
    - So run it at once, before the new agent writes its first line. If the agent has already written
-     lines from FROM, `replace` refuses (its message says so); check that those lines are the new
+     lines from P, `replace` refuses (its message says so); check that those lines are the new
      agent's, then run `replace` without `--from`.
 
 What `replace` does:
