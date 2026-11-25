@@ -55,7 +55,7 @@ S/
   canaries-src/      the writer's source files for `ltz canary add --from` (same rules as canaries.jsonl)
   writer.lock        the writing session (ltz lock)
   HANDOFF.md         one current paste-ready prompt to resume in a new session: use this skill (its name and folder), read S/loop.md, take over the
-                     writer's lock, run `ltz queue <S> <unit> <R> status` for each open round (while discovery runs, <S> for the lock and the queues is S/discovery), re-read the lessons and S/classes.md (solo: after the reading). If an earlier handoff was saved elsewhere (memory, a dated copy), mark that one SUPERSEDED at its top. Update it after every round.
+                     writer's lock, run `ltz queue <S> <unit> <R> status` for each open round (while discovery runs, <S> for the lock and the queues is S/discovery), re-read the lessons, the decision log and S/classes.md (solo: after the reading). If an earlier handoff was saved elsewhere (memory, a dated copy), mark that one SUPERSEDED at its top. Update it after every round.
   items.jsonl        the extracted items (stable ids)
   inputs/            outside findings (audits, reviews), closed to readers
   checks/            the project's extract script and any project checks

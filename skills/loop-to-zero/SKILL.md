@@ -48,6 +48,7 @@ Map the project's own words onto these, and use the project's words with the own
 | canary | A planted test item (known wrong or known ok), shown only inside readers' windows. |
 | ruling / decision log | A ruling is an owner decision about how items are judged (a bar ruling, numbered like `R-n`). A process decision (`P-n`) covers how the loop runs, including the close rules and the approval of the class set (its content is `classes.md` itself). The decision log holds both, verbatim, and is the master copy. Readers never open it. |
 | zero rule | A unit closes only on a full-depth pass with 0 confirmed wrongs. |
+| ruling-level lead | A lead that would change what a ruling permits. It goes to the owner at once ("Cross-unit effects", below). A lead whose refuter is a ruling id, such as a revert under a ruling, is not one. |
 | supplementary read | A fresh agent (in solo mode, you after a context reset: `references/modes.md`) re-reads a range whose reader skimmed. Like a re-run of a range whose cites were trimmed or never rendered, it is recorded with `ltz queue rerun` (`references/queue-and-outages.md`). |
 | named item | An item the new text of a fix names, given to the fix checker for context. |
 | snapshot | The unit's items frozen at a round's start (`snapshot.jsonl`, hashed). Readers judge it. |
@@ -61,7 +62,7 @@ Map the project's own words onto these, and use the project's words with the own
 | outside finding | An audit's or review's finding, mapped to items and confirmed as `foundBy: "audit"` (`references/setup.md`, "Existing outside findings"). Not an outside report: a user report, ticket, incident note or log, which is only something to reproduce (`references/debugging.md`). |
 | origin | Where a wrong came from: pre-existing text, your own edit, a new class, a missing ruling, writer misjudgment (a verdict of yours later overturned; `references/learning.md`), or evidence moved (only a new pin refutes it; `references/round.md`, "Between rounds only"). |
 | writer's lock | `S/writer.lock`: only one session writes to a loop (`ltz lock`). |
-| session | One Claude Code conversation. The writer and each agent count as separate sessions: each has its own context, and under the writer's lock an agent is not the writer, though Claude Code runs it under the writer's session id (`scripts/hooks/README.md`, "The writer lock"). |
+| session | One Claude Code conversation. The writer and each agent count as separate sessions: each has its own context. Under the writer's lock an agent the writer launches is not the writer, though Claude Code runs it under the launching conversation's session id; a writer that itself runs as an agent holds the lock by its agent id (`scripts/hooks/README.md`, "Who the holder is"). |
 | handoff | `S/HANDOFF.md`: the paste-ready prompt to resume in a new session. |
 | hand-back | In solo mode: the point where the writer's steps resume after the round's reading sessions, or after a fix-check session (`references/modes.md`). |
 | item type / softening | Whether items describe the evidence or state requirements, and whether fixes may hedge ("such as"). Both are setup questions. |

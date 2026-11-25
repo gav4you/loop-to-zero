@@ -63,9 +63,11 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   any supplementary read is done (a rerun slot's file gets picks of its own): it spreads them over each
   reader's early and late positions and records the picks and seed in `spotchecks.json`. A reader that missed a
   canary gets more random picks on the rerun slot's file (`--extra <rerun slot>=5` gives it 5 more random
-  picks than its own 5; it gets no weighted picks of its own, as the parent reader's 5 still apply). A reader
-  that only reads less deeply late gets `--extra <slot>=5`, and the next round's snapshot gets shorter chunks
-  (`snapshot --chunk-size`). Note the weighted picks and why in `retro.md`;
+  picks than its own 5; it gets no weighted picks of its own, as the parent reader's 5 still apply). Before the draw, take
+  each reader's depth from its render log (extra lines read per item: `scripts/README.md`, "File formats"),
+  over the early half of its windows and over the late half. A reader whose late depth is under half its early
+  depth, with no other sign of a skim, only reads less deeply late: it gets `--extra <slot>=5`, and the next
+  round's snapshot gets shorter chunks (`snapshot --chunk-size`). Note the weighted picks and why in `retro.md`;
 - add the spot-checks' finds to `confirmed.json` (`"foundBy": "spot-check"`) and run `record` again.
 
 ## 4. Fix

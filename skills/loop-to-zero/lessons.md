@@ -4,8 +4,9 @@ This is the skill's memory.
 - **When to read it:** at setup, and at the start of every round (in solo mode, after the round's reading).
 - **When to add to it:** in each round's retro, by promoting project lessons that can be stated without
   project names and have a Replay result that held up (or "n/a (process lesson)") (`references/learning.md`, "Promotion").
-- **Keeping it short:** merge a new lesson into an existing one that says the same thing, and drop a lesson
-  a later one supersedes, noting what superseded it.
+- **Keeping it short:** merge a new lesson into an existing one that says the same thing. Dropping a lesson a
+  later one supersedes (with a note of what superseded it) is the skill's maintainer's edit: a loop's writer
+  proposes it (`references/learning.md`, "Promotion").
 
 **Format:** see `references/learning.md` ("Lesson format"). **Rule** is optional when the title states it. **Seen** counts occurrences. **Replay:** these lessons were seeded by the skill's maintainer (from history and from the skill's own test loops), not promoted, so their Replay is "no history yet" (except where stated) until a project replays them. **When to read:** in solo mode, read the lessons after the round's reading, not before it. Marked ✓ = it worked, ✗ = it went
 wrong.
@@ -149,7 +150,8 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
 - **✗ Write-set and existence claims miss side effects and operator artefacts.**
   - **Rule:** "writes only X" counts trigger, cascade and other-mode writes. "Every table has RLS" counts what
     operator commands create.
-  - **Why:** an audit trigger's extra row, a memory-mode upsert and a DR test's table each refuted such claims.
+  - **Why:** a trigger's extra row, another mode's write path and a table an operator's test creates each refuted
+    such claims.
   - **Change:** `reading-classes.md`, U3 and U6.
   - **Seen:** 1.
 - **✓ A flip register settles definitions.**

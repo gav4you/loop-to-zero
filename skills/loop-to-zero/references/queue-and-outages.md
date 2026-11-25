@@ -24,7 +24,7 @@
     lesson.
 - **Readers tire.** Measure, per reader, the extra lines read per item in early windows against late ones.
   In one project, a long reader's depth fell from about 56 to 4.5 after its first windows. A sharp fall
-  means the chunks are too long.
+  (late depth under half the early depth: `references/round.md`, step 3) means the chunks are too long.
 - **Concurrency.** The owner sets it. Recommend starting low, at 2 (one chunk's pair), with the rest queued.
   - `ltz queue next` launches a chunk's readers together. A chunk with more queued readers than the cap
     can never launch, so it reports that chunk as a PROBLEM.
@@ -54,7 +54,11 @@
   window, so every continue is exact. After a hard stop mid-window, continue from the first missing position,
   which `ltz queue status` reports. A file that lacks no position but holds a duplicate or stray line has
   no resume position: `status` shows `resume none (not clean: ...)`, and `mark done`, `replace` and
-  `dropped-by-owner` refuse it until those lines are removed.
+  `dropped-by-owner` refuse it until those lines are removed. Remove them yourself: keep the first line for each
+  position, and delete the later duplicate, the line outside the range or the unparseable line. Never add or
+  change a line. Where two lines for one item gave different verdicts, re-judge the item yourself and confirm
+  a real wrong as `foundBy: "spot-check"`, as for a reply-only verdict ("Tool gotchas", below). Note each
+  removal in `retro.md`.
 
 ## Limits and credits: wait, never fail
 - **In the same session, never kill a stopped agent and never relaunch it.** Mark it stopped-limit (with its
@@ -119,7 +123,8 @@ marked there that the re-run doesn't (`references/briefs.md`).
   2. take over the writer's lock (`ltz lock release` with the old session id, then `acquire`);
   3. run `ltz queue <S> <unit> <R> status` for each open round (while discovery runs, `<S>` for steps 2 and 3
      is `S/discovery`, the folder `.ltz-state` names);
-  4. re-read both lessons files and `S/classes.md` (in solo mode, only once the round's reading is done).
+  4. re-read both lessons files, the decision log and `S/classes.md` (in solo mode, only once the round's reading
+     is done).
 - **Test the handoff cold before a new session relies on it.** Before the first resume from it, and again after its
   steps change, have a fresh session (an agent; in solo mode, a session after a context reset, or one the owner opens) given only `S/HANDOFF.md` say what it would do next, without
   acting; fix any gap it hits. A handoff written at setup and never resumed from has not been tested. A resuming session re-reads

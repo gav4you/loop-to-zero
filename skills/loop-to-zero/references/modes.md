@@ -14,8 +14,8 @@ false low.
 - The next round with independent readers confirmed 51.
 
 If the owner rules solo anyway, say what is given up. Early on, have a cold reader re-read one sample window in a
-fresh session the owner opens (setup question 6; if the owner ruled such sessions out, after a context reset
-instead, as for a solo reading session), from a reader brief filled for it alone: an opaque slot name
+fresh session the owner opens (setup question 6; if the owner ruled such sessions out, after the owner clears the
+conversation instead, as for a solo reading session), from a reader brief filled for it alone: an opaque slot name
 of its own, not queued (so its renders stay out of your render log), `{SCRATCH}` for that slot, that window's
 positions, and the brief's Write path changed to `{SCRATCH}agent-<slot>.jsonl` (the tools take an `agent-*.jsonl` in the
 round folder for a reader's result file: the repeat check and `replay` read its class labels). Confirm each wrong it finds that your pass missed as a wrong of the round

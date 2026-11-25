@@ -27,7 +27,7 @@ test reader may run. The steps match SKILL.md's Setup.
 
    **Test first:** run `node <skill>/scripts/test/run.mjs`, and give the extract script its own negative tests. Then
    **run extract.** Flag items with no cite, or with a cite the script cannot parse.
-   - **Reconcile the extract against its source, both ways,** before trusting it: every unit the source numbers
+   - **Reconcile the extract against its source, both ways,** before trusting it: every entry the source numbers
      or lists (a requirement, a table row, an entry in its table of contents) maps to an item, and every item
      maps back to the source. List the orphans on either side and settle each. Matching totals prove nothing: a
      missed requirement and a split item cancel out. Write the flagged ids, and each orphan with how it was
@@ -62,7 +62,7 @@ test reader may run. The steps match SKILL.md's Setup.
    mode: its reader is an
    agent only if the owner has
    already allowed agents (otherwise ask that first). With agents ruled out, its reader is a fresh session the owner
-   opens with the reader brief filled for r0 (if the owner rules that out too, it is read after a context reset, as a solo
+   opens with the reader brief filled for r0 (if the owner rules that out too, it is read after the owner clears the conversation, as a solo
    reading session is: `references/modes.md`; it needs a session that has not seen the research), and that session's transcript is the one measured. Queue its one reader with `ltz queue <S> <unit> 0 init --opaque
    --per-chunk 1`. r0 writes `confirmed.json` as `{}`, so a `record` run on r0 reports one PROBLEM per reader wrong; run it only
    for the coverage lines, and take r0's cost from `ltz cost`. A real wrong r0 surfaces is noted in r0's `retro.md`,
@@ -260,7 +260,7 @@ the skill's maintainer).
   items' own fields: spec open-item tables, decision records, plans, and "owner" or "TBD" markers.
 - **Before closing setup, check that each "answer now" question has a decision** (a bar ruling or a process
   decision), and each deferred one has its
-  stated default recorded in `S/owner-questions.md`, labelled as the default, not a decision. A census keyed only on the items missed spec-level owner items twice.
+  stated default recorded in `S/owner-questions.md`, labelled as the default, not a decision. The default is only what the later ask will recommend: an item whose verdict turns on the question stays `pending-owner` until the owner answers. A census keyed only on the items missed spec-level owner items twice.
 - **Dedupe them.** Identical questions become one ask, naming every item it covers. Check the decision log
   first, and never re-ask a settled question, unless a later owner rule conflicts with it.
 - **Order them by when an answer is due and what a late answer costs.** Ask early where a late "no" is

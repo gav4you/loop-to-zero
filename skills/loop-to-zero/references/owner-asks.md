@@ -184,7 +184,8 @@ Then report, in this order:
      present a clean round as proof that nothing is left.
 4. **Cross-unit counts:** edits in units not yet closed, and leads in closed units.
 5. **Cost:** tokens and wall-clock time, against the estimate.
-6. **Lessons logged**, and any SKILL.md change you propose.
+6. **Lessons logged**, and any change to the skill that you propose to its maintainer (to SKILL.md, `references/`,
+   `scripts/` or `tests/`): the report is where each such proposal is written.
 7. **Open questions and defects:** every open owner question (such as `pending-owner` items, an override
    question or a ruling-level lead), ranked by what it blocks (a close, then held drafts, then nothing), each with
    its age in days since it was asked, and the questions withdrawn since the last report, `outsideBar` items, this round's `defect` verdicts (each with its root cause
