@@ -177,7 +177,7 @@ Then report, in this order:
 3. **How much is likely still unfound:**
    - the remaining-wrongs estimate, with its caveat, its range and any low-confidence flag from `measure.json`;
    - how far this unit's earlier estimates ran low: each earlier round's estimate against the wrongs later rounds
-     found in text that round had read, unedited since (`references/learning.md`, "The retro", step 3);
+     found in text that round had read, unedited since, "evidence moved" ones aside (`references/learning.md`, "The retro", step 3);
    - the canary scores per reader (caught, false alarms);
    - the found-by-only-one-reader count;
    - what the clean results can and cannot show (`references/round.md`, "What a clean result shows"). Never

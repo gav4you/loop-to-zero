@@ -15,8 +15,9 @@ import { estimateRemaining, estimateRange, ESTIMATE_CAVEAT, round2 } from './est
 
 const RESERVED = new Set(['pending', 'defects', 'withdrawn', 'outsideBar', 'ruledKept', 'rejected']);
 // plain-fix-failure: the earlier fix did not settle it; new-text: the wrong is in text an earlier fix
-// introduced; earlier-miss: a different claim of the same class in old text, missed earlier.
-export const REPEAT_REASONS = ['plain-fix-failure', 'new-text', 'earlier-miss'];
+// introduced; earlier-miss: a different claim of the same class in old text, missed earlier;
+// evidence-moved: only the new evidence refutes it, after a pin move (no fix failure and no miss).
+export const REPEAT_REASONS = ['plain-fix-failure', 'new-text', 'earlier-miss', 'evidence-moved'];
 // Verdicts: readers give ok or wrong; the writer records pending-owner and defect; report.json adds
 // unread for an item no reader read, and outside-bar for a reader wrong the writer listed as outside a
 // frozen bar (confirmed.json "outsideBar": listed for the owner, not counted).
@@ -289,7 +290,7 @@ export function repeatProblems(S, unit, R, wrongs, curReaderClasses, cfg = {}, i
         problems.push(
           `confirmed.json: ${id} repeats ${e.round} (${what}). If the evidence plainly refutes it, keep it wrong with ` +
             '"repeatReason": "plain-fix-failure" (the earlier fix failed), "new-text" (an earlier fix introduced the text) ' +
-            'or "earlier-miss" (a different claim of the class, missed earlier in old text) and a "repeatNote"; ' +
+            '"earlier-miss" (a different claim of the class, missed earlier in old text) or "evidence-moved" (only the new evidence refutes it, after a pin move) and a "repeatNote"; ' +
             'only the Verdicts exceptions go in "pending", with a "pendingReason": "rule-meaning" (a dispute over a rule\'s meaning), ' +
             '"boundary-silent" (the boundary is silent on the refuter\'s kind of evidence) or "ruled-wording" (a ruling approved the wording)',
         );

@@ -29,7 +29,7 @@ Your judgments get no independent check, so the mode makes up for it with order 
   (the rules, the round's `classes.md` copy with the ruling texts it quotes, the precedents), the items and
   the evidence. Only when confirming the wrongs (`references/round.md`, step 3) consult the history that
   `references/fixing.md` ("History") lists. Outside findings are used only after your own reading (`references/setup.md`, "Existing outside findings").
-- **Spot-checks:** re-read ok items per round in total, not per slot (you are the only reader): at least 5 at random (every pick the draw below gives) and 5 weighted, by the rule in `references/round.md`, step 3. Draw the random ones with `ltz spotcheck ... --per-slot <k>`, choosing the smallest k that gives at least 5 across the slots, and quote the bound for that pooled random count. Do this in the writer's
+- **Spot-checks:** re-read ok items per round in total, not per slot (you are the only reader): at least 5 at random (every pick the draw below gives) and 5 weighted, by the rule in `references/round.md`, step 3. Draw the random ones with `ltz spotcheck ... --per-slot <k>`, choosing the smallest even k (at least 2) that gives at least 5 across the slots, so each slot's picks fall early and late, and quote the bound for that pooled random count. Do this in the writer's
   session after the reading. That session already starts after a context reset (`references/round.md`, step 1),
   so the spot-checks need no session of their own. They come before the fixes.
 - **A ruling given in a solo reading or fix-check session** (the owner tells that session): the brief's

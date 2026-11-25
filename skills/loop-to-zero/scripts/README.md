@@ -403,6 +403,9 @@ held earlier, across `S/<unit>/r*/fixlog.jsonl`.
 A flip is explained, listed apart and not a failure, when the fixlog entry that makes the return
 carries a `ruling`:
 - **a ruling id**, such as `"R-12"`;
+- **a pin move's decision id**, such as `"P-6"`, for a return that only the new evidence calls for
+  (origin "evidence moved"), on a descriptive item. A requirement item's change never takes it: an unmet
+  requirement is a defect;
 - **`"judgment:<round>:<id>"`**, for an overturn that was not a ruling (a spot-check, say). It counts
   only when the `judgments.jsonl` of the state folder holding that entry (`S/`, or the history folder
   for a history round) has an entry for this unit with that round and id, and that entry concerns the
@@ -427,7 +430,8 @@ all, and a rerun launches on its own.
 - **During a known limit wait, `next` lists nothing to launch.** A wait is known while a
   `stopped-limit` job has a recorded reset (`--reset`) that is still ahead. `next` then prints the
   `wait` line for that job, any `continue` lines, and one `hold` line with the number of queued
-  slots and the latest such reset. The summary counts the held slots. A `stopped-limit` job with no
+  slots and the latest such reset. Send the `continue` lines only once the wait is over
+  (`references/queue-and-outages.md`, "Limits and credits"). The summary counts the held slots. A `stopped-limit` job with no
   reset recorded, or with a reset in the past, holds nothing back.
 - **A chunk with more queued readers than the cap itself can never launch.** `next` reports it as a
   PROBLEM naming the chunk, its reader count and the cap, and exits non-zero. A chunk that only
@@ -755,7 +759,7 @@ Notes on these fields:
 - **`r<R>/confirmed.json`:**
   ```json
   {"<id>": {"note": "...", "foundBy": "sweep|spot-check|audit|fixcheck|extract", "class": "U1"|["U1"],
-            "repeatReason": "plain-fix-failure|new-text|earlier-miss", "repeatNote": "...",
+            "repeatReason": "plain-fix-failure|new-text|earlier-miss|evidence-moved", "repeatNote": "...",
             "rulingsChecked": [{"ruling": "<ruling id>", "why": "<why it does not cover this item>"}]},
    "pending": [{"id": "<id>", "pendingReason": "rule-meaning|boundary-silent|ruled-wording",
                 "question": "..."}],
@@ -843,7 +847,9 @@ Notes on these fields:
       one of:
       - `"plain-fix-failure"`: the earlier fix did not settle it;
       - `"new-text"`: the wrong is in text an earlier fix introduced;
-      - `"earlier-miss"`: a different claim of the same class, in old text, that was missed earlier.
+      - `"earlier-miss"`: a different claim of the same class, in old text, that was missed earlier;
+      - `"evidence-moved"`: only the new evidence refutes it, after a pin move. It is no fix failure and no
+        miss (`references/learning.md`, "The retro").
 
       **Tie-break:** if the refuted claim is still standing, it is `"plain-fix-failure"`.
     - **It goes in `pending`, for the owner, only for** a dispute over a rule's meaning
@@ -967,7 +973,7 @@ Notes on these fields:
   | `blindSpots` | with a structured `search` | What the search cannot see (it may also sit inside `search`). |
   | `scopeNote` | when `paths` are narrower than `boundaryPaths`, or for any search that backs a scoped claim | Why the claim is deliberately bounded. Whenever it is present, `scopeText` is checked. |
   | `scopeText` | with `scopeNote` | The scope words the item states. They must appear (case- and spacing-insensitive) in the field's current text: in diffcheck the item's current value, in `searches` the last `new` logged for that field in the round. So a later edit that drops the bound is caught. |
-  | `ruling` | on an entry that returns a field to an earlier value; or, instead of `basis`, on any change to a requirement item | A ruling id, `judgment:<round>:<id>`, or `judgment:<folder>/<round>:<id>` for a judgments line in a history folder; it marks that flip as explained (see "Flips"). On a requirement item's change it is the ruling that allows it (see "The diff check"). |
+  | `ruling` | on an entry that returns a field to an earlier value; or, instead of `basis`, on any change to a requirement item | A ruling id, `judgment:<round>:<id>`, `judgment:<folder>/<round>:<id>` for a judgments line in a history folder, or, for a return only a pin move calls for, that move's decision id; it marks that flip as explained (see "Flips"). On a requirement item's change it is the ruling that allows it (see "The diff check"). |
   | `basis` | on a change to a requirement item, unless it has a `ruling` | `"copying-error"`: the item miscopied its source, which the edit restores. The only accepted value. |
   | `source` | with `basis` | The `file:line` the item copies, such as a policy line or a config value; non-empty. |
 - **`S/judgments.jsonl`:** `{"date", "unit", "round", "id", "was", "now", "by", "reason", "lesson"?, "backprop"?}`, one line per changed verdict per round. A line goes in the `judgments.jsonl` of the state folder that holds the verdict's round: `S/judgments.jsonl` for `S/`'s rounds, a history folder's own (such as `S/discovery/judgments.jsonl`) for its rounds. `replay` reads each folder's file for that folder's rounds, to leave out overturned wrongs. `flips` reads it to check `judgment:` references: `judgment:<round>:<id>` in the folder holding the fixlog entry, and `judgment:<folder>/<round>:<id>` from a fixlog entry in another folder (see "Flips").

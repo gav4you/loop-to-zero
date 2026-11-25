@@ -53,18 +53,17 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
     `ltz record` flags it).
     Split it two ways:
     - **The evidence plainly refutes the claim under the current bar.** Your earlier fix failed
-      (`plain-fix-failure`, `new-text`), or an earlier pass missed it (`earlier-miss`). It is `wrong`: fix it,
-      and log a lesson. In `confirmed.json`, give it a `"repeatReason"` and a non-empty
+      (`plain-fix-failure`, `new-text`), or an earlier pass missed it (`earlier-miss`), or, after a pin move,
+      only the new evidence refutes it (`evidence-moved`). It is `wrong`: fix it, and log a lesson (not for
+      `evidence-moved`). In `confirmed.json`, give it a `"repeatReason"` and a non-empty
       `"repeatNote"`:
       - `plain-fix-failure`: the claim an earlier round refuted still stands, perhaps reworded, whatever the
         refuter now is;
       - `new-text`: the earlier fix introduced a different claim, and that claim is wrong;
-      - `earlier-miss`: a different claim of the same class, in old text, that earlier passes missed.
-
-      A repeat that only the new evidence refutes after a pin move (origin "evidence moved":
-      `references/learning.md`, "The retro") takes `new-text` when an earlier fix wrote the refuted text, else
-      `earlier-miss`, with a `repeatNote` naming the pin move's decision id. It is no fix failure and no miss: it
-      logs no lesson and does not count toward the escalation trigger.
+      - `earlier-miss`: a different claim of the same class, in old text, that earlier passes missed;
+      - `evidence-moved`: only the new evidence refutes it, after a pin move (origin "evidence moved":
+        `references/learning.md`, "The retro"); the `repeatNote` names the pin move's decision id. It is no fix
+        failure and no miss: it logs no lesson and does not count toward the escalation trigger.
     - **A rule's meaning is in dispute, and the item's truth turns on that meaning** (SKILL.md, Verdicts). Record it
       as `pending-owner` (`rule-meaning`) and ask the owner. A
       ruling is probably missing from the bar.
@@ -157,7 +156,7 @@ You decide, and note why in the item's `confirmed.json` note (for an item in ano
 batch's expected effect, step 5). A requirement item never takes this path: it keeps
 its claim, or the gap is a `defect` (a copying error from its own source is fixed: "Requirement items", below). For a descriptive item: if it is, keep the claim, state its scope and prove it (3 below). If it isn't, or it's
 unclear, subtract (1 below), or keep the claim with a proven scope (3 below).
-Every fix follows 2 to 4.
+Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven bounds, one wording per class).
 1. **Subtraction** (dropping a false or unproven clause) is never softening, and is always allowed for descriptive items. **If
    softening is also allowed,** you may hedge: open the list with "such as"
    or "for example". **If it is not allowed,** subtract, or keep the claim and state its proven scope (for a

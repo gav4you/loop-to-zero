@@ -280,7 +280,8 @@ the skill's maintainer).
      - read every item at full depth. A filtered or tiered pass never counts; a partly skimmed one counts
        only once supplementary reads have re-read every skimmed range.
    - Recommend that owner-only questions about a rule's meaning (`rule-meaning`) are listed at each pass end and
-     don't block zero, and that a unit closing with such items open is marked `closed-owner-questions-open`. The owner may rule that they
+     don't block zero, and that a unit closing on a zero pass with such items open is marked `closed-owner-questions-open`
+     (`references/round.md`, "Closed statuses"). The owner may rule that they
      block. `boundary-silent` and `ruled-wording` items always block, because the evidence refutes them. The answer sets config
      `ownerQuestionsBlock`, and the answer on defects (question 3) sets `defectsBlock`. `ltz record` uses both (for
      defects, only the round's `confirmed.json` list; the close also checks `S/defects.md`, where a defect the owner

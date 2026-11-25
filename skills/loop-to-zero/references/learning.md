@@ -8,14 +8,14 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | Trigger | What it shows |
 |---|---|
 | The owner overrules a verdict, or gives a ruling (asked or not) | Your reading of a rule was off, or a ruling was missing from the bar |
-| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok | Your fix overreached, or an earlier pass missed it |
+| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1) | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
 | A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"). A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
 | Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
 | A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks from the next snapshot |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
 | A class turns up that the setup research did not predefine | The research missed a source. Add it to `S/research.md`, and propose adding it to `references/setup.md`'s research sources to the skill's maintainer |
-| An item's field returns to a value it held in an earlier round, unexplained by a ruling (`ltz flips <S> <unit>`, run at each retro, over every round's `fixlog.jsonl`, the `historyFolders` (discovery) included) | A definition is unclear. Take it to the owner with each reading as an option. Until the answer, the item's verdict follows SKILL.md "Verdicts" |
+| An item's field returns to a value it held in an earlier round, unexplained by a ruling or a pin move's decision id (`ltz flips <S> <unit>`, run at each retro, over every round's `fixlog.jsonl`, the `historyFolders` (discovery) included) | A definition is unclear. Take it to the owner with each reading as an option. Until the answer, the item's verdict follows SKILL.md "Verdicts" |
 | The agreed escalation trigger fires | The loop may not converge. Take the owner the trend, the classes and the cost per pass |
 | The count jumps right after the rules or reader guidance changed | Treat the edit as the cause. Re-check the edited line first |
 | The owner rules, or amends a ruling | If it changes behaviour, carry it into every affected item (`references/fixing.md`). If it only changes how items are judged, back-propagate to the verdicts and edits it overturns (below) |
@@ -71,7 +71,7 @@ retire; quiet is not a reason to delete one.
   in the retro. An overturn that reaches back writes one line per past verdict, each with its own round.
 - **Reverts of earlier rounds' edits** go in the current round's `fixlog.jsonl`.
 - **Fix-checker misses.** A later round's find in text the fix checker passed counts in the retro as a fix-checker
-  miss.
+  miss, unless its origin is "evidence moved" ("The retro", step 1).
 - **Fix-checker finds in this unit's old text** (a named item, an unchanged field) go into this round's
   `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's items are handled as in
   `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit").
@@ -110,7 +110,9 @@ until that check.
 1. **Sort each confirmed wrong on two axes.**
    - **Origin:** pre-existing text; your own edit; a new class; a missing ruling; evidence moved (the owner moved the pin and only the new evidence
      refutes the item: `record` warns when the pin moved since the round's snapshot; such a wrong adjusts no
-     earlier round's count, is no reader miss and does not count toward the escalation trigger;
+     earlier round's count and is no miss of any kind (a reader's, an earlier pass's or the fix checker's): it
+     writes no lesson and no `judgments.jsonl` line (the earlier verdict was right at its pin), is left out of
+     the estimate's calibration (step 3), and does not count toward the escalation trigger;
      `references/round.md`, "Between rounds only"). A verdict of yours later overturned is "writer misjudgment"; when
      a ruling overturns it, it is "missing ruling" if the bar lacked the ruling's point, and "writer misjudgment"
      if the entry covered it and you misread it.
@@ -135,7 +137,7 @@ until that check.
 3. **The scores:** the canary scores, the remaining-wrongs estimate, the early-versus-late reading depth, and the
    recall of the unit's outside findings (`references/setup.md`, "Existing outside findings").
    **Calibrate the estimate:** for each earlier round of the unit, compare its total estimate with the wrongs
-   later rounds confirmed in text that round read, unedited since (repeats with `earlier-miss`, and
+   later rounds confirmed in text that round read, unedited since, of any origin but "evidence moved" (repeats with `earlier-miss`, and
    `judgments.jsonl` lines that turned that round's ok to wrong). Record the ratio found-later / estimated in
    `retro.md`; the report quotes it (`references/owner-asks.md`, "Reporting a round", item 3). A round whose
    estimate was 0 has no ratio: record its later finds as "found later despite an estimate of 0". The latest

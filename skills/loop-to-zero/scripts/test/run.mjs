@@ -4467,6 +4467,24 @@ test('queue: a slot with no name or no state is refused with a message', () => {
   }
 });
 
+test('record: a repeat only the new evidence refutes after a pin move takes repeatReason "evidence-moved"', () => {
+  const S = baseCopy();
+  asRound2(S);
+  wj(path.join(RD(S, 'u1', 1), 'confirmed.json'), { A02: { note: 'src/auth.js:6', class: 'C2' } });
+  const r2 = path.join(RD(S, 'u1', 2), 'confirmed.json');
+  const entry = (extra) => ({ ...CONFIRMED, A02: { ...CONFIRMED.A02, repeatNote: 'only pin v2 refutes the r1 fix (P-6)', rulingsChecked: [], ...extra } });
+  wj(r2, entry({ repeatReason: 'evidence-moved' }));
+  const r = passes(ltz(['record', S, 'u1', '2', ...READERS]), 'evidence-moved is an accepted reason');
+  ok(/confirmed 3 \(1 repeat\(s\): A02 evidence-moved, of r1\)/.test(r.out), r.out);
+  eq(rj(path.join(RD(S, 'u1', 2), 'report.json')).items.find((x) => x.id === 'A02').repeatReason, 'evidence-moved', 'on the item');
+  fs.rmSync(path.join(RD(S, 'u1', 2), 'report.json'));
+  // It still needs its note, like any reason; the flag names it among the ways out.
+  wj(r2, { ...CONFIRMED, A02: { ...CONFIRMED.A02, repeatReason: 'evidence-moved', rulingsChecked: [] } });
+  fails(ltz(['record', S, 'u1', '2', ...READERS]), /A02 has repeatReason "evidence-moved" but no "repeatNote"/);
+  wj(r2, CONFIRMED);
+  fails(ltz(['record', S, 'u1', '2', ...READERS]), /or "evidence-moved" \(only the new evidence refutes it, after a pin move\) and a "repeatNote"/, 'the PROBLEM names it');
+});
+
 // ---- code-versus-docs audit, part 4: the guard hook and skillcheck
 // ---- audit 4: guard.mjs and skillcheck.mjs
 // The guard now reads CLAUDE_PROJECT_DIR; the tests set it themselves, so it is dropped from what they inherit.

@@ -163,8 +163,9 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    - whether questions about a rule's meaning block a close;
    - the escalation trigger;
    - the names, classes and drafted verification rules;
-   - discovery first, and the unit order;
-   - item type (with granularity, if still open), and whether open defects block a close;
+   - discovery first (with a pass cap), the unit order, and whether the next unit waits for the owner's go;
+   - item type (with granularity, if still open), and whether open defects block a close (and, if a tracker is
+     connected, whether defects may be filed as tickets);
    - softening;
    - the evidence boundary and pin;
    - the config-to-policy mapping (question 5a);
@@ -173,7 +174,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    - canaries, hooks and masking;
    - an open or frozen bar;
    - the cross-unit policy;
-   - the decision log, branch and approver;
+   - the decision log, branch and approver, and whether `S/` goes under git or gets dated backups;
    - push and publish.
 
    Recommend; never default.

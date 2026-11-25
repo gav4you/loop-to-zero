@@ -231,7 +231,7 @@ Reply with the path, the counts, and one line per wrong.
    Round step 3 also judges the cite groups `ltz crosscheck` flags and the unit's deferred cross-unit lines
    (`references/round.md`, step 3).
    - A repeat the evidence plainly refutes is `wrong`, with `repeatReason` (`plain-fix-failure` when the refuted
-     claim still stands, `new-text` or `earlier-miss`), a `rulingsChecked` list (`references/fixing.md`)
+     claim still stands, `new-text`, `earlier-miss`, or `evidence-moved` when only a moved pin refutes it), a `rulingsChecked` list (`references/fixing.md`)
      and a `repeatNote`. Only the Verdicts exceptions go in `pending` (a rule's meaning, a silent boundary, or
      ruled wording; `references/fixing.md`).
    - **Ruled wording.** Every ok (a reader's or a fix checker's) whose note starts "ruled:" and names a differing file:line is checked at the

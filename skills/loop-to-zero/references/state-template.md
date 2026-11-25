@@ -12,7 +12,8 @@ S/
                      defectsBlock, optional universal-word override (scripts/README.md)
   loop.md            terms, units, evidence + pin + boundary, item type, ruling ids, modes, bar,
                      cross-unit policy, trend, cost, "Next step" (one line, always current)
-  decisions.md       the decision log, if the project has none: every owner decision verbatim, dated, numbered
+  decisions.md       the decision log when question 9 puts it here (always at first, provisionally; also kept beside
+                     a project log whose ids can't mark bar rulings): every owner decision verbatim, dated, numbered
                      (bar rulings R-n, process decisions P-n)
   rules.md           the verification rules, if the project had none (drafted at setup, owner-approved)
   research.md        the setup research: terms with their repo sources, claim-shape counts, evidence kinds,

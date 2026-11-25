@@ -146,7 +146,9 @@ may still count it. If a later round finds it again at the same pin, it stays cl
   closing pass left `rule-meaning` items open (with none, the status is `closed`). If a later answer makes one of
   its items wrong, log that as a lead (SKILL.md, "Cross-unit effects"). When the last of them is
   answered (`S/owner-questions.md` shows each one's decision id), the status becomes `closed`; if the unit is `closed-leads-pending` or `final-check` by then, its "was"
-  status does;
+  status does. Only a unit closed on a zero pass takes this status: one that closes by an override or a stopping
+  rule is `closed-known-wrongs` or `closed-by-stopping-rule` (below), which win, and its open `rule-meaning`
+  questions are noted on `loop.md`'s Units line;
 - `closed-leads-pending`, once a lead is logged against the closed unit. It stays that way until the
   final targeted check settles the lead, even one that has since become moot. `loop.md`'s Units line keeps the closed status it returns to ("was
   <status>", at first the status it replaced);
@@ -211,7 +213,9 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
   line); tell the owner how many of their items the move reaches, and ask whether to reopen them.
   Re-check earlier fixes' bounds at the new pin with `ltz searches <S> --rounds all --at-current` (and on
   `S/discovery` too, if discovery ran, after pointing its `config.json` evidence at the new pin). A wrong only
-  the new evidence refutes has origin "evidence moved" (`references/learning.md`, "The retro").
+  the new evidence refutes has origin "evidence moved" (`references/learning.md`, "The retro"). When its fix
+  returns a field to a value it held before, put the move's decision id in that fixlog entry's `ruling`, so
+  `ltz flips` takes the return as explained (`scripts/README.md`, "Flips").
   - **The move is a process decision** (`P-n`; `references/setup.md`, "Which answers are bar rulings"): record it in
     `config.json` and `loop.md`'s Evidence line, never in `classes.md`. It doesn't touch a frozen bar. An answer
     that also says whether to reopen closed units is the same decision (one id).
@@ -292,7 +296,7 @@ capture-recapture estimator: N = (n1+1)(n2+1)/(m+1) − 1).
   and flags `lowConfidence` when the two readers share fewer than 3 finds. Quote the range, and say when it is
   low-confidence.
 - **Correct it by the unit's own history** before relying on it: compare each earlier round's estimate with the
-  wrongs later rounds found in text that round had read, unedited since (the retro, step 3). If the estimate ran
+  wrongs later rounds found in text that round had read, unedited since, "evidence moved" ones aside (the retro, step 3). If the estimate ran
   low by a factor, say so with the figure.
 
 ## What a clean result shows
