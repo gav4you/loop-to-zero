@@ -103,8 +103,8 @@ refutes its wording), note it in {SCRATCH}rulings.md, and go back to reading."}
 ## Write: one result file, as you go
 {S}/{UNIT}/r{R}/agent-{SLOT}.jsonl. After each window, APPEND one JSON line per item, in list order:
 Before citing a refuter you found by searching, show it with {SHOW_CMD}: a cite you never rendered is refused.
-{"unit":"{UNIT}","id":"…","verdict":"ok"|"wrong","class":["<class>", …],"note":"<why: an ok names the claim you tested hardest and the line that holds it, in words of that item; a wrong
-names the refuting file:line at the pin>","cites":["path:line", …]}
+{"unit":"{UNIT}","id":"…","verdict":"ok"|"wrong","class":["<class>", …],"note":"<why; a wrong names the
+refuting file:line at the pin>","cites":["path:line", …]}
 `cites` lists every line your verdict rests on: the item's cites you read, and any line you showed.
 List every class that applies, the first as classes.md's "When two classes fit" says.
 An item its own text refutes (its figures disagree: parts that don't add up to its total, a share that doesn't

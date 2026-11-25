@@ -13,7 +13,9 @@ export const UNIT_STATUSES = [
 
 // Every config.json key the tools read (top level, then unit and evidence-source fields).
 // test/run.mjs checks this list against the code in both directions. loadConfig refuses a key that
-// is in none of the three lists, so a misspelled key cannot be silently ignored.
+// differs from one of these only in case, "-" or "_" (a misspelling, such as "windowsize"). Any other
+// key the tools do not read loads, ignored, and snapshot names it (unknownConfigKeys), so a note a
+// writer keeps in config.json (an earlier pass's pin, say) does not stop the tools.
 export const CONFIG_KEYS = [
   'evidence', 'windowSize', 'itemFields', 'units', 'universalWords', 'itemsRoot',
   'maskSecrets', 'maskKeys', 'maskAllow', 'maskExclude', 'boundaryPaths',
@@ -29,14 +31,28 @@ export const DEFAULT_UNIVERSAL_WORDS = [
   'no caller', 'nothing reads', 'exists only', 'appears only',
 ];
 
+const UNKNOWN_KEYS = new WeakMap(); // cfg -> ["<where><key>", ...]: keys the tools do not read
+
+/** The keys of a loaded config that the tools do not read, each with where it is ("evidence: pinPass1"). */
+export function unknownConfigKeys(cfg) {
+  return UNKNOWN_KEYS.get(cfg) || [];
+}
+
 export function loadConfig(S) {
   if (!S) fail('state folder <S> is required');
   if (!fs.existsSync(S) || !fs.statSync(S).isDirectory()) fail(`state folder not found: ${S}`);
   const cfg = readJson(path.join(S, 'config.json'), 'S/config.json');
   const isObject = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   if (!isObject(cfg)) fail('config.json must be a JSON object ({"evidence": {...}, "units": {...}, ...})');
+  const unknown = [];
+  const fold = (k) => k.toLowerCase().replace(/[-_]/g, '');
   const knownKeys = (obj, keys, where) => {
-    for (const k of Object.keys(obj)) if (!keys.includes(k)) fail(`${where}unknown key ${JSON.stringify(k)}. The keys are: ${keys.join(', ')}`);
+    for (const k of Object.keys(obj)) {
+      if (keys.includes(k)) continue;
+      const meant = keys.find((x) => fold(x) === fold(k));
+      if (meant) fail(`${where}unknown key ${JSON.stringify(k)} (did you mean ${JSON.stringify(meant)}?). The keys are: ${keys.join(', ')}`);
+      unknown.push(`${where.replace(/^config\.json: /, '')}${k}`);
+    }
   };
   knownKeys(cfg, CONFIG_KEYS, 'config.json: ');
   evidenceSources(cfg); // validates one source or a list of prefixed sources
@@ -61,6 +77,7 @@ export function loadConfig(S) {
     fail('config.json: "universalWords" must be a non-empty array of non-empty strings, such as ["only", "every"] (leave the key out to use the default list)');
   }
   cfg.universalWords = cfg.universalWords ?? DEFAULT_UNIVERSAL_WORDS;
+  UNKNOWN_KEYS.set(cfg, unknown);
   return cfg;
 }
 

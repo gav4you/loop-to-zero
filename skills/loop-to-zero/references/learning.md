@@ -76,7 +76,8 @@ retire; quiet is not a reason to delete one.
   `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's items are handled as in
   `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit").
 - **Revert leads.** A revert lead alone sets `closed-leads-pending`. The closing count (the confirmed count of the
-  pass that closed the unit) changes for wrongs the final targeted check confirms, never for reverts.
+  pass that closed the unit) changes for wrongs the final targeted check confirms (not "evidence moved" or
+  "missing ruling" ones: "Back-propagation", below), never for reverts.
 - **The escalation trigger counts per unit.** Finds in other units count toward their own unit.
 - **"Who found it"** includes "none (writer)" for the writer's own re-check of a past verdict, recorded as
   `foundBy: "spot-check"` unless a sweep found it.
@@ -166,7 +167,7 @@ numbers in the lesson's **Replay** field.
 
 **Hold out the rounds a rule came from.** A pattern or wording written from a wrong will recall that wrong, so
 its recall there proves nothing. Run `ltz replay ... --holdout <unit>/r<R>` naming the round(s) it was written
-from, and judge the rule on the held-out recall and false hits. If no other round holds a wrong of the class,
+from (a discovery round by the label `replay` gives it, such as `discovery/<unit>/r<R>`), and judge the rule on the held-out recall and false hits. If no other round holds a wrong of the class,
 say "no held-out history yet" rather than quoting the in-sample recall.
 
 ## Trying a new check or a new method

@@ -260,7 +260,7 @@ the skill's maintainer).
   items' own fields: spec open-item tables, decision records, plans, and "owner" or "TBD" markers.
 - **Before closing setup, check that each "answer now" question has a decision** (a bar ruling or a process
   decision), and each deferred one has its
-  stated default recorded in `S/owner-questions.md`, labelled as the default, not a decision. The default is only what the later ask will recommend: an item whose verdict turns on the question stays `pending-owner` until the owner answers. A census keyed only on the items missed spec-level owner items twice.
+  stated default recorded in `S/owner-questions.md`, labelled as the default, not a decision. The default is only what the later ask will recommend, never a verdict: an item whose verdict turns on the question is `pending-owner` only under SKILL.md's Verdicts exceptions (such as `rule-meaning`, when the question is what a rule means). An item the evidence plainly refutes stays `wrong`, and a fix that depends on the answer waits for it (`references/round.md`, "Pending owner, defects, wishes"). A census keyed only on the items missed spec-level owner items twice.
 - **Dedupe them.** Identical questions become one ask, naming every item it covers. Check the decision log
   first, and never re-ask a settled question, unless a later owner rule conflicts with it.
 - **Order them by when an answer is due and what a late answer costs.** Ask early where a late "no" is
@@ -329,7 +329,9 @@ the skill's maintainer).
    - **5a: config-to-policy mapping.** Which configs implement which cited policies. Without a
      mapping, a policy-vs-config mismatch is judged only where an item cites both. The approved mapping is a bar ruling: quote its table
      in `classes.md` with the boundary, so readers also open the mapped config of an item that cites only the
-     policy. Readers mark a mismatch wrong with a note starting "policy vs config"; you record it as a `defect`.
+     policy. Readers mark a mismatch wrong with a note starting "policy vs config"; you record it as a `defect`,
+     except that a descriptive item that gives the policy's value as what the system does is `wrong` and fixed,
+     with the defect logged beside it ("Policy and config evidence", below).
 6. **Reader mode** (`references/modes.md`): solo, agents or an external reviewer. Also readers per chunk,
    concurrency, and the fix-checker mode. Quote each option's cost as a range of tokens and wall-clock
    time, from the measurement. Also ask whether readers may run probes of the code in a scratch copy:
@@ -417,7 +419,8 @@ readers per chunk or concurrency.
   no class in the bar points to a missing class (log that lesson). A mapped wrong that no reader finds is confirmed by the writer
   with `foundBy: "audit"`, counted as found by none.
 - **A finding that maps to no item** (a missing control, a gap no item covers) is not a wrong. Put it in
-  `S/defects.md` if the evidence falls short, or in `S/owner-questions.md` if it asks for a new item. Never add
+  `S/defects.md` if the evidence falls short, under the unit whose items cover its area (ask the owner when no unit
+  clearly does: the unit decides which close it can block), or in `S/owner-questions.md` if it asks for a new item. Never add
   items unasked.
 
 ## The decision log (the master copy of rulings)

@@ -6,7 +6,7 @@ import { fail, writeJson, writeJsonl, sha256File, parsePosInt, parseRound } from
 // An item may carry "type": "requirement" | "description"; the tools pass it through untouched
 // (diffcheck holds a requirement item's changes to a copying-error basis or a ruling).
 export const ITEM_TYPES = ['requirement', 'description'];
-import { loadConfig, requireUnit, loadItems, roundDir, readerResultFiles, loadCanaries } from './state.mjs';
+import { loadConfig, requireUnit, loadItems, roundDir, readerResultFiles, loadCanaries, unknownConfigKeys } from './state.mjs';
 import { rulingCheck } from './rulings.mjs';
 import { evidenceSources, pinRecord } from './sources.mjs';
 import { treeHash, checkDirPin } from './evidence.mjs';
@@ -134,6 +134,7 @@ export function snapshot({ S, unit, R, chunkSize, order }) {
       (order ? `, list in the --order file's order` : '') +
       ` -> ${rd}`,
     warnings: [
+      ...(unknownConfigKeys(cfg).length ? [`config.json holds key(s) the tools do not read, which are ignored: ${unknownConfigKeys(cfg).join(', ')}`] : []),
       ...dirPinHints,
       ...(r0 && chunkSize ? ['--chunk-size is ignored for r0 (one window)'] : []),
       ...(types.length ? [`"type" is neither "requirement" nor "description" for: ${types.slice(0, 10).join(', ')}${types.length > 10 ? ', ...' : ''}`] : []),

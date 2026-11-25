@@ -74,7 +74,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs cost <transcript.jsonl>...` | Sums token use from agent transcripts: cache reads, cache writes, other input, output and total. |
 | `node <skill>/scripts/ltz.mjs cost --queue <S> <unit> <R>` | Sums every transcript path stored in that round's `queue.json` (see "Transcripts and cost"). |
 | `node <skill>/scripts/ltz.mjs cost --timeline <transcript.jsonl>` | Prints each message's tokens with its timestamp, and sums the startup and each render window (see "Transcripts and cost"). |
-| `node <skill>/scripts/ltz.mjs replay <S> <pattern.json\|classfile> --rounds <unit>[,..\|all] [--holdout <unit>/r<R>,...]` | Reports a pattern's recall and false hits on past rounds, a `historyFolders` round's included. A wrong later overturned in the `judgments.jsonl` of the state folder holding its round is not counted (see "Replay"). `--holdout` also reports them without the rounds the rule was written from. |
+| `node <skill>/scripts/ltz.mjs replay <S> <pattern.json\|classfile> --rounds <unit>[,..\|all] [--holdout <unit>/r<R>,...]` | Reports a pattern's recall and false hits on past rounds, a `historyFolders` round's included. A wrong later overturned in the `judgments.jsonl` of the state folder holding its round is not counted (see "Replay"). `--holdout` also reports them without the rounds the rule was written from, each named `<unit>/r<R>`, or a `historyFolders` round by its label (`discovery/u1/r3`). |
 | `node <skill>/scripts/ltz.mjs spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K>]` | Draws each reader's random spot-checks from its ok items (K per slot, 5 by default, plus any `--extra`), half early and half late in its range (the odd one early), reproducibly from the seed, and writes `r<R>/spotchecks.json`. With a `queue.json`, it draws from the files of the queue's slots that are not `replaced`, and of each only the lines `record` uses (a rerun's lines in place of its parent's there); a file the queue does not hold is left out. Without one, it draws from every `agent-<slot>.jsonl`. |
 | `node <skill>/scripts/ltz.mjs lock <S> acquire\|release\|check --session <id>\|auto` | Manages the single-writer lock `S/writer.lock`; `--session auto` takes the id from the guard (see "The writer's lock"). |
 
@@ -682,9 +682,11 @@ All `.jsonl` files hold one JSON object per line.
 
 Notes on these fields:
 - **Keys and shapes.** Every `ltz` command that reads `config.json` refuses one that is not a JSON
-  object, and one that holds a key the tools do not read: at the top level, in a unit (`status`,
-  `itemFiles`) or in an evidence source (`type`, `repo`, `pin`, `root`, `prefix`, `sha256`). The message
-  names the key and lists the accepted ones, so a misspelled key is not ignored. `units` must be an
+  object, and one that holds a key differing from a key the tools read only in case, `-` or `_` (such as
+  `windowsize` or `mask_keys`): at the top level, in a unit (`status`, `itemFiles`) or in an evidence
+  source (`type`, `repo`, `pin`, `root`, `prefix`, `sha256`). The message names the key it resembles and
+  lists the accepted ones. Any other key the tools do not read, such as a note of an earlier pass's pin,
+  is ignored, and `snapshot` names it in a warning, so a misspelling no key resembles still shows. `units` must be an
   object of unit objects. `universalWords`, when present, must be a non-empty array of non-empty
   strings. The guard reads `config.json` on its own and does not make these checks.
 - **Unit statuses:**

@@ -5249,17 +5249,23 @@ test('config: "units" and "universalWords" of the wrong shape are refused', () =
   fails(queueCfgRun(noUnits), /unit u1 is not in config\.json "units" \(known: none\)/, 'control: no "units" key is not a shape error:');
   ok(units.u1, 'the control config had units');
 });
-test('config: a key the tools do not read is refused (top level, unit, evidence source), so a misspelled key cannot be ignored', () => {
-  let r = fails(queueCfgRun({ ...QUEUE_CFG(), windowsize: 4 }), /ERROR: config\.json: unknown key "windowsize"\. The keys are: evidence, windowSize, itemFields, units, universalWords, itemsRoot, maskSecrets, maskKeys, maskAllow, maskExclude, boundaryPaths, ownerQuestionsBlock, defectsBlock, decisionLog, rulingIdPattern, requireRulingEntries, historyFolders/);
+test('config: a key that differs from a known key only in case, "-" or "_" is refused (top level, unit, evidence source); any other unknown key loads and snapshot names it', () => {
+  let r = fails(queueCfgRun({ ...QUEUE_CFG(), windowsize: 4 }), /ERROR: config\.json: unknown key "windowsize" \(did you mean "windowSize"\?\)\. The keys are: evidence, windowSize, itemFields, units, universalWords, itemsRoot, maskSecrets, maskKeys, maskAllow, maskExclude, boundaryPaths, ownerQuestionsBlock, defectsBlock, decisionLog, rulingIdPattern, requireRulingEntries, historyFolders/);
   eq(r.code, 1, 'a refusal');
-  fails(queueCfgRun({ ...QUEUE_CFG(), maskkeys: ['dsn'] }), /config\.json: unknown key "maskkeys"\. The keys are: .*maskKeys/, 'maskkeys:');
-  fails(queueCfgRun({ ...QUEUE_CFG(), comment: 'x' }), /config\.json: unknown key "comment"/, 'a comment key:');
+  fails(queueCfgRun({ ...QUEUE_CFG(), maskkeys: ['dsn'] }), /config\.json: unknown key "maskkeys" \(did you mean "maskKeys"\?\)\. The keys are: .*maskKeys/, 'maskkeys:');
+  fails(queueCfgRun({ ...QUEUE_CFG(), mask_keys: ['dsn'] }), /config\.json: unknown key "mask_keys" \(did you mean "maskKeys"\?\)/, 'mask_keys:');
+  r = passes(queueCfgRun({ ...QUEUE_CFG(), comment: 'x' }), 'a comment key loads:');
+  ok(/WARNING: config\.json holds key\(s\) the tools do not read, which are ignored: comment/.test(r.out), r.out);
   const unit = (extra) => ({ ...QUEUE_CFG(), units: { u1: { status: 'open', itemFiles: ['docs/spec.md'], ...extra }, u2: { status: 'closed', itemFiles: ['docs/closed.md'] } } });
-  fails(queueCfgRun(unit({ itemfiles: ['docs/x.md'] })), /ERROR: config\.json: unit u1: unknown key "itemfiles"\. The keys are: status, itemFiles/, 'a unit key:');
-  fails(queueCfgRun(unit({ Status: 'closed' })), /config\.json: unit u1: unknown key "Status"\. The keys are: status, itemFiles/, 'a unit key:');
-  fails(queueCfgRun({ ...QUEUE_CFG(), evidence: { type: 'git', repo: REPO, pin: 'v1', Pin: 'v2' } }), /ERROR: config\.json: evidence: unknown key "Pin"\. The keys are: type, repo, pin, root, prefix, sha256/, 'a source key:');
-  fails(queueCfgRun({ ...QUEUE_CFG(), evidence: [{ type: 'git', repo: REPO, pin: 'v1', prefix: '' }, { type: 'dir', root: path.join(REPO, 'docs'), prefix: 'export/', sha: 'x' }] }),
-    /ERROR: config\.json: evidence\[1\]: unknown key "sha"\. The keys are: type, repo, pin, root, prefix, sha256/, 'a key of a listed source:');
+  fails(queueCfgRun(unit({ itemfiles: ['docs/x.md'] })), /ERROR: config\.json: unit u1: unknown key "itemfiles" \(did you mean "itemFiles"\?\)\. The keys are: status, itemFiles/, 'a unit key:');
+  fails(queueCfgRun(unit({ Status: 'closed' })), /config\.json: unit u1: unknown key "Status" \(did you mean "status"\?\)\. The keys are: status, itemFiles/, 'a unit key:');
+  fails(queueCfgRun({ ...QUEUE_CFG(), evidence: { type: 'git', repo: REPO, pin: 'v1', Pin: 'v2' } }), /ERROR: config\.json: evidence: unknown key "Pin" \(did you mean "pin"\?\)\. The keys are: type, repo, pin, root, prefix, sha256/, 'a source key:');
+  fails(queueCfgRun({ ...QUEUE_CFG(), evidence: [{ type: 'git', repo: REPO, pin: 'v1', prefix: '' }, { type: 'dir', root: path.join(REPO, 'docs'), prefix: 'export/', SHA256: 'x' }] }),
+    /ERROR: config\.json: evidence\[1\]: unknown key "SHA256" \(did you mean "sha256"\?\)\. The keys are: type, repo, pin, root, prefix, sha256/, 'a key of a listed source:');
+  r = passes(queueCfgRun({ ...QUEUE_CFG(), evidence: [{ type: 'git', repo: REPO, pin: 'v1', prefix: '' }, { type: 'dir', root: path.join(REPO, 'docs'), prefix: 'export/', sha: 'x' }] }), 'a key no known key resembles loads:');
+  ok(/ignored: evidence\[1\]: sha/.test(r.out), r.out);
+  r = passes(queueCfgRun(unit({ note: 'reopened 2026-11-01' })), 'a note on a unit loads:');
+  ok(/ignored: unit u1: note/.test(r.out), r.out);
   // Control: every key the lists hold, in its documented form, is accepted.
   const full = {
     ...QUEUE_CFG(),
@@ -5272,8 +5278,15 @@ test('config: a key the tools do not read is refused (top level, unit, evidence 
     historyFolders: [],
   };
   eq(Object.keys(full).sort(), [...CONFIG_KEYS].sort(), 'the control holds every key in CONFIG_KEYS');
-  passes(queueCfgRun(full), 'control: every documented key:');
+  r = passes(queueCfgRun(full), 'control: every documented key:');
+  ok(!/the tools do not read/.test(r.out), `no warning for documented keys:\n${r.out}`);
   passes(queueCfgRun({ ...QUEUE_CFG(), evidence: { type: 'dir', root: REPO } }), 'control: folder evidence:');
+});
+test('config: a note key on an evidence source (an earlier pass\'s pin) loads, and snapshot names it', () => {
+  const r = passes(queueCfgRun({ ...QUEUE_CFG(), evidence: { type: 'git', repo: REPO, pin: 'v1', pinPass1: 'v1', pinPass2: 'v1' } }), 'pinPass1 and pinPass2 load:');
+  ok(/WARNING: config\.json holds key\(s\) the tools do not read, which are ignored: evidence: pinPass1, evidence: pinPass2/.test(r.out), r.out);
+  passes(ltz(['show', path.join(RUN, `case-${nS}`, 'S'), 'u1', '1', 't-a', 'src/auth.js:3']), 'other commands read the folder too');
+  fails(queueCfgRun({ ...QUEUE_CFG(), windowsize: 4 }), /unknown key "windowsize" \(did you mean "windowSize"\?\)/, 'control: a misspelled key is still refused:');
 });
 test('config: a config.json that is not a JSON object is refused with a message', () => {
   for (const body of ['null', '[]', '"config"', '5']) {
