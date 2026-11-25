@@ -18,7 +18,8 @@ test reader may run. The steps match SKILL.md's Setup.
    - Count the items per unit with a script, not by eye.
 4. **Set up the tools.**
    - Write `S/config.json`: the evidence (git repo and pin, or a folder), the window size, the item fields,
-     and each unit's item files (every file that holds its items, shared files included) and status.
+     and each unit's item files (every file that holds its items, shared files included) and status. For live
+     or non-text evidence, leave `evidence` unset until step 6's export or conversion.
    - The skill's `scripts/ltz.mjs` provides snapshot, render (with `show`, and `--list <file>` for a fix
      checker's input), show, sweep, record, queue, diffcheck, searches, reach, flips, canary, spotcheck, crosscheck, cost, replay, rulings and lock (`scripts/README.md`).
    - **The one script the project must write is extract:** items into `S/items.jsonl` (id, unit, the item
@@ -26,6 +27,11 @@ test reader may run. The steps match SKILL.md's Setup.
 
    **Test first:** run `node <skill>/scripts/test/run.mjs`, and give the extract script its own negative tests. Then
    **run extract.** Flag items with no cite, or with a cite the script cannot parse.
+   - **Reconcile the extract against its source, both ways,** before trusting it: every unit the source numbers
+     or lists (a requirement, a table row, an entry in its table of contents) maps to an item, and every item
+     maps back to the source. List the orphans on either side and settle each. Matching totals prove nothing: a
+     missed requirement and a split item cancel out. Write the flagged ids, and each orphan with how it was
+     settled, at the top of `S/research.md` (step 5 continues that file).
    - **Ids stay stable for the whole loop.** A fix that splits an item keeps the old id with a suffix
      (`3.2.1a`), and never renumbers.
    - **Granularity** (is "3.2.1(a)" its own item?) is a question for the owner when it is unclear.
@@ -368,12 +374,15 @@ the skill's maintainer).
    applied.
 
 **Policy and config evidence.** When a statement differs from the policy text it cites, that is a copying
-error: fix the statement. When the policy differs from the config, that is a `defect` for the owner. This
+error: fix the statement. When the policy differs from the config, that is a `defect` for the owner: a
+requirement item is left as it is, and so is a descriptive item that states both values correctly. A descriptive
+item that gives the policy's value as what the system does is `wrong` as well (it misstates the config), with
+the mismatch logged as its own defect entry (`references/round.md`, "Pending owner, defects, wishes"). This
 applies only when the item cites both, or a ruling says the config implements the cited policy.
 
 **Which answers are bar rulings and which are process decisions.**
-- **Bar rulings** (numbered like `R-n`) change how items are judged: the evidence boundary, the item type,
-  softening, any scope or definition ruling, and any ruling that changes the behaviour items describe (carried
+- **Bar rulings** (numbered like `R-n`) change how items are judged: the evidence boundary, the config-to-policy
+  mapping (question 5a), the item type, softening, any scope or definition ruling, and any ruling that changes the behaviour items describe (carried
   into the items: `references/fixing.md`). They are quoted in `classes.md`.
 - **Process decisions** (`P-n`) cover how the loop runs: the zero definition, the close rules, readers,
   concurrency, canaries, probes, hooks, masking, granularity, the evidence pin and any move of it (the boundary

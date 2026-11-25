@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // ltz: tools for a "loop to zero" verification loop. Node >= 18, ESM, no dependencies.
 // Usage: node <skill>/scripts/ltz.mjs <command> [args]   (... <command> --help)
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LtzError, parseArgs } from './lib/util.mjs';
@@ -51,7 +52,7 @@ render <S> <unit> <R> <slot> show <cite>...
   --list renders from a JSONL file of full items instead of list.json (the fix-checker input):
   an item with a "changed" field (one {field, old?, new} or an array of them) is a changed item;
   one without is a named item, shown marked
-  "(named item, for context)". Positions count the file's lines. Canaries in r<R>/canary-plan.json
+  "(named item, for context)". Positions count the file's items (a blank line is skipped). Canaries in r<R>/canary-plan.json
   are inserted before their position.`,
   show: `show <S> <unit> <R> <slot> <cite>...
   Print those lines at the pin (path:12, path:20-25, path:Key or path#a.b.c) and log them to
@@ -95,7 +96,10 @@ render <S> <unit> <R> <slot> show <cite>...
   fullDepth, countsAsZero, zeroBlockers). countsAsZero needs full depth, no wrong and nothing unread;
   boundary-silent and ruled-wording pending items always block it, rule-meaning ones when config
   "ownerQuestionsBlock" is true (the default), defects when "defectsBlock" is true (default false).
-  Writes nothing if any PROBLEM is found.`,
+  Every slot queue.json holds must be named in --chunk-readers (reruns and slots closed as replaced
+  aside). The summary names each repeat kept wrong and prints each slot's canary score; a canary
+  missed, falsely alarmed on or not judged is a warning. With one reader per chunk it says the
+  remaining wrongs were not estimated. Writes nothing if any PROBLEM is found.`,
   queue: `queue <S> <unit> <R> init --pairs <chunk>=<slotA>,<slotB> ...
 queue <S> <unit> <R> init --opaque [--per-chunk N] [--chunks <chunk>,...]
 queue <S> <unit> <R> init   (a final-check unit only: an empty queue)
@@ -112,7 +116,18 @@ queue <S> <unit> <R> status
   status is final-check: it may queue a subset (--pairs naming some chunks, or --opaque --chunks), or
   none. "next" lists stopped jobs to continue, then slots to launch
   within the cap (running and stopped jobs count against it): pairs whole, reruns one by one.
+  While a stopped-limit job's recorded reset is still ahead, "next" lists nothing to launch: a "hold"
+  line gives the number of queued slots and the latest such reset, and the summary counts them. A
+  chunk with more queued readers than the cap itself can never launch whole: "next" reports it as a
+  PROBLEM (non-zero exit) naming the chunk, its reader count and the cap.
+  init, mark, replace and rerun hold the lock file queue.json.lock, beside queue.json, while they
+  read, change and write the queue. A command waits up to 10 seconds for it, then fails naming the
+  file and writes nothing. A lock file older than 30 seconds (left by a crashed command) is replaced.
   "mark <slot> done" refuses unless the result file covers the whole range exactly once.
+  A result file that lacks no position but holds a duplicate, a line outside the range or an
+  unparseable line has no resume position: "status" prints "resume none (not clean: ...)", "next"
+  lists a stopped slot as "unclean", and "mark <slot> dropped-by-owner" and "replace" refuse it
+  until those lines are removed.
   "--transcript <path>" stores the agent's transcript path on the slot (for cost --queue).
   "--reset <date-time>" records when a limit resets (for stopped-limit; "next" waits until then). It
   takes an ISO 8601 date and time, YYYY-MM-DDTHH:MM[:SS[.fff]][Z|+HH:MM|-HH:MM], such as
@@ -132,7 +147,7 @@ queue <S> <unit> <R> status
   run "replace <slot> --agent <newId> --from FROM" at once; --from must equal the result file's resume
   position when replace runs. "status" prints each slot's result lines, resume position and earlier
   agents.`,
-  diffcheck: `diffcheck <S> <unit> <R> [--no-verify-searches]
+  diffcheck: `diffcheck <S> <unit> <R> [--verify-searches|--no-verify-searches]
   Compare r<R>/snapshot.jsonl with S/items.jsonl field by field; the changed set must equal
   r<R>/fixlog.jsonl ({id, field, old, new, unit?, search?, hits?, judged?, blindSpots?,
   scopeNote?, scopeText?, ruling?, basis?, source?}). A changed field of an item whose "type" is
@@ -155,7 +170,8 @@ queue <S> <unit> <R> status
   per hit, whose locations must equal the hit locations at the pin (a line with two matches is
   judged twice; compared case- and slash-insensitively). "hitsJudged" is refused.
   --no-verify-searches skips running them (blindSpots, scopeText and the shape of "judged", with
-  one entry per hit, are still checked). Exits
+  one entry per hit, are still checked). --verify-searches is the default: it is accepted and
+  changes nothing. Exits
   non-zero on any mismatch or flag.`,
   sweep: `sweep <S> <pattern.json|classfile> [--unit U] [--count]
   Pattern: {"id","class","regex","flags","fields":[...],"knownInstances":[ids],"regression":bool}; a
@@ -193,7 +209,7 @@ canary gitignore <S>
   gitignore: print the S/.gitignore lines that keep canaries.jsonl, canary-plan.json and the writer's
   canaries-src/ out of git (they must never be committed), and the readers' scratch folders
   (S/<unit>/r<R>/scratch/, probe copies of the code with its secrets). The canary lines must be there
-  as written; for the scratch folders any line will do that git treats as ignoring every
+  as written, with no later "!" line re-including a canary file; for the scratch folders any line will do that git treats as ignoring every
   <unit>/r<R>/scratch/ folder (such as **/scratch/), checked on real paths with git check-ignore in a
   throwaway repo (by a glob match when git is not found). Exits non-zero when any is missing.`,
   cost: `cost <transcript.jsonl>...
@@ -217,7 +233,9 @@ cost --timeline <transcript.jsonl>
   without them, which is the figure to judge the rule on.`,
   crosscheck: `crosscheck <S> [--unit <unit>]
   List every cite two or more items share (a family to judge together: readers see one window at a
-  time and never compare items), and flag the families whose items state different numbers. Reports
+  time and never compare items), and flag the families whose items state different numbers. Cites
+  are grouped by the line cited, however the path is spelled. A unit written against a number is left
+  out (30s is 30); a number inside a word or a dotted version (v2, 1.2.3) is not compared. Reports
   only; never fails or judges.`,
   reach: `reach <S> --to <rev> [--unit <unit>]
   Before a pin move: list the files changed between the pin and <rev> inside boundaryPaths (renames
@@ -230,10 +248,14 @@ cost --timeline <transcript.jsonl>
   excluded), half from the early half of its positions and half from the late half, reproducibly from the
   seed. --extra adds picks for one reader (one that missed a canary or skims late windows). Writes
   r<R>/spotchecks.json {seed, perSlot, extra, picks: {<slot>: [{id, position, half}]}}; refuses if it
-  exists. The weighted picks are the writer's own choice and are not drawn here.`,
+  exists. With a queue.json, it draws from the files of the queue's slots that are not replaced, and
+  of each only the lines record uses (a rerun's lines in place of its parent's); without one, from
+  every agent-<slot>.jsonl. The weighted picks are the writer's own choice and are not drawn here.`,
   lock: `lock <S> acquire|release|check --session <id>|auto
   S/writer.lock {session, since}. acquire refuses if another session holds it; release refuses for
-  another session; check exits non-zero only when another session holds it. --session auto reads the
+  another session; check exits non-zero only when another session holds it. A writer.lock that does
+  not hold {"session": "<id>", ...} counts as held by another session: every action fails and says
+  to delete the file if no session holds it. --session auto reads the
   id from S/.session-hint, which the guard hook writes just before the command runs (the writer cannot
   learn its own session id), and deletes it; without the guard, or with a hint older than 60 s, it
   fails: give the id, or enable the guard.`,
@@ -412,8 +434,17 @@ function main(argv) {
 export const COMMANDS = Object.keys(HELP);
 
 // Run only when invoked as a program, so skillcheck can import COMMANDS.
-const self = fileURLToPath(import.meta.url);
-const entry = process.argv[1] ? path.resolve(process.argv[1]) : '';
+// Real paths on both sides: node resolves links for the module's own path, so a skill folder reached
+// through a symlink or junction would otherwise never match, and every command would do nothing.
+const realPath = (p) => {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return path.resolve(p);
+  }
+};
+const self = realPath(fileURLToPath(import.meta.url));
+const entry = process.argv[1] ? realPath(process.argv[1]) : '';
 if (process.platform === 'win32' ? entry.toLowerCase() === self.toLowerCase() : entry === self) {
   process.exitCode = main(process.argv.slice(2));
 }

@@ -26,6 +26,8 @@
   In one project, a long reader's depth fell from about 56 to 4.5 after its first windows. A sharp fall
   means the chunks are too long.
 - **Concurrency.** The owner sets it. Recommend starting low, at 2 (one chunk's pair), with the rest queued.
+  - `ltz queue next` launches a chunk's readers together. A chunk with more queued readers than the cap
+    can never launch, so it reports that chunk as a PROBLEM.
   - Launching many agents at once strands them all at the same usage limit: six readers launched together
     all stopped part-way, and about 25 helpers drained a limit in minutes.
   - Speed comes from the cap, not from the number of jobs. A lower cap means fewer limit stops and less
@@ -50,7 +52,9 @@
 - **Lost notifications.** Keep a fallback wakeup of 20 to 30 minutes in case a notification is lost.
 - **Resume position.** A job's resume position is read from its result file, which is appended window by
   window, so every continue is exact. After a hard stop mid-window, continue from the first missing position,
-  which `ltz queue status` reports.
+  which `ltz queue status` reports. A file that lacks no position but holds a duplicate or stray line has
+  no resume position: `status` shows `resume none (not clean: ...)`, and `mark done`, `replace` and
+  `dropped-by-owner` refuse it until those lines are removed.
 
 ## Limits and credits: wait, never fail
 - **In the same session, never kill a stopped agent and never relaunch it.** Mark it stopped-limit (with its
@@ -62,7 +66,8 @@
 
   Never check credits more often than that; they cool down for hours. For a usage limit, schedule one wake at
   the reset time.
-- **During a known limit wait, launch nothing new.** Queued jobs wait for the reset.
+- **During a known limit wait, launch nothing new.** Queued jobs wait for the reset. While a recorded
+  reset is still ahead, `ltz queue next` lists nothing to launch.
 - **After the wait,** send each stopped agent "continue from position P" with SendMessage. Then resume
   launching queued jobs up to the cap.
 - **If a continue fails** on a limit or credits, wait again. The loop never gives up and never drops work. A
@@ -82,11 +87,11 @@
 
 ## When a fresh launch is allowed
 There are five cases:
-- **evidence trimmed, unrendered or failed** in a reader's file (`references/briefs.md`, "When a check
+- **cites trimmed or never rendered, or a render that errored,** in a reader's file (`references/briefs.md`, "When a check
   fails"): that range is re-run with a fresh agent. A range that is only incomplete is continued, not
   re-run;
-- **a reader that skims** (it misses a canary, admits shortcuts, or `record` flags its ok notes as templated): a fresh agent gives its range a
-  supplementary read;
+- **a reader that skims** (it misses a canary, admits shortcuts, or `record` flags its ok notes as templated): a fresh agent gives a
+  supplementary read to its whole range or, after admitted shortcuts, to the ranges it names;
 - **a rerun of an owner-dropped tail**, with the owner's OK (`references/round.md`, step 8);
 - **a reader whose context is full**, so a continue fails: a fresh agent with its brief continues from its resume
   position (`queue replace`, below);

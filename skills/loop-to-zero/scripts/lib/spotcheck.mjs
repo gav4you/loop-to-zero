@@ -4,7 +4,7 @@
 // the seed to r<R>/spotchecks.json. Weighted picks are the writer's own and are not drawn here.
 import fs from 'node:fs';
 import path from 'node:path';
-import { fail, readJson, readJsonl, writeJson, parsePosInt, prng, hashString } from './util.mjs';
+import { fail, readJson, readJsonl, writeJson, parsePosInt, parseRound, prng, hashString } from './util.mjs';
 import { loadConfig, requireUnit, requireRoundDir } from './state.mjs';
 
 function draw(pool, n, rnd) {
@@ -27,8 +27,31 @@ export function spotcheck({ S, unit, R, seed, perSlot, extra = [] }) {
   if (fs.existsSync(outP)) fail(`refusing: ${outP} already exists (one draw per round)`);
   const list = readJson(path.join(rd, 'list.json'), 'list.json');
   const pos = new Map(list.map((id, i) => [id, i + 1]));
-  const files = fs.readdirSync(rd).filter((f) => /^agent-.+\.jsonl$/.test(f)).sort();
-  if (!files.length) fail('spotcheck: no reader result files (agent-<slot>.jsonl) in this round');
+  let files = fs.readdirSync(rd).filter((f) => /^agent-.+\.jsonl$/.test(f)).sort();
+  // With a queue, the draw follows what record uses: the files of the queue's slots that are not
+  // "replaced", and of each only the positions it supplies once reruns are merged in (the latest
+  // rerun covering a position supplies it). A file the queue does not hold, a replaced slot's file
+  // and lines a rerun superseded are left out. Without a queue, every agent-<slot>.jsonl is drawn from.
+  let supplied = null; // slot -> Set(position), when there is a queue
+  const qP = path.join(rd, 'queue.json');
+  if (fs.existsSync(qP)) {
+    const q = readJson(qP, 'queue.json');
+    const qs = (q && Array.isArray(q.slots) ? q.slots : []).filter((s) => s && typeof s === 'object' && typeof s.slot === 'string');
+    const live = qs.filter((s) => s.state !== 'replaced' && Number.isInteger(s.from) && Number.isInteger(s.to));
+    const parents = live.filter((s) => typeof s.parent !== 'string');
+    supplied = new Map();
+    for (const par of parents) {
+      const sources = [par, ...live.filter((s) => s.parent === par.slot)];
+      for (const s of sources) supplied.set(s.slot, new Set());
+      for (let p = par.from; p <= par.to; p++) {
+        let owner = par.slot;
+        for (const s of sources.slice(1)) if (p >= s.from && p <= s.to) owner = s.slot;
+        supplied.get(owner).add(p);
+      }
+    }
+    files = files.filter((f) => supplied.has(f.replace(/^agent-/, '').replace(/\.jsonl$/, '')));
+  }
+  if (!files.length) fail(`spotcheck: no reader result files (agent-<slot>.jsonl) in this round${supplied ? ' for the slots in queue.json' : ''}`);
   const slots = files.map((f) => f.replace(/^agent-/, '').replace(/\.jsonl$/, ''));
   const more = new Map();
   for (const e of [].concat(extra || [])) {
@@ -40,7 +63,7 @@ export function spotcheck({ S, unit, R, seed, perSlot, extra = [] }) {
   const picks = {};
   const notes = [];
   for (const [i, slot] of slots.entries()) {
-    const rows = readJsonl(path.join(rd, files[i]), { strict: false }).rows.map((r) => r.obj).filter((o) => o && pos.has(o.id));
+    const rows = readJsonl(path.join(rd, files[i]), { strict: false }).rows.map((r) => r.obj).filter((o) => o && pos.has(o.id) && (!supplied || supplied.get(slot).has(pos.get(o.id))));
     if (!rows.length) continue;
     const ps = rows.map((o) => pos.get(o.id));
     const lo = Math.min(...ps);
@@ -61,6 +84,6 @@ export function spotcheck({ S, unit, R, seed, perSlot, extra = [] }) {
   const lines = Object.entries(picks).map(([slot, xs]) => `${slot}: ${xs.map((x) => `${x.id} (${x.position}, ${x.half})`).join(', ')}`);
   return {
     output: [...lines, ...notes.map((x) => `NOTE: ${x}`)].join('\n'),
-    summary: `spotcheck ${unit} r${R}: seed ${sd}, ${K} per reader${more.size ? ` (+${[...more].map(([k, v]) => `${k} ${v}`).join(', ')})` : ''} -> ${outP}`,
+    summary: `spotcheck ${unit} r${parseRound(R)}: seed ${sd}, ${K} per reader${more.size ? ` (+${[...more].map(([k, v]) => `${k} ${v}`).join(', ')})` : ''} -> ${outP}`,
   };
 }

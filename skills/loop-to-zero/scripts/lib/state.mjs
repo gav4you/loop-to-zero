@@ -1,17 +1,19 @@
 // Reading the state folder S/: config, items, round folders, canaries.
 import fs from 'node:fs';
 import path from 'node:path';
-import { fail, readJson, readJsonl, sha256File, validName, parseRound, readText } from './util.mjs';
+import { fail, readJson, readJsonl, sha256File, sha256FileLf, validName, parseRound, readText } from './util.mjs';
 import { evidenceSources } from './sources.mjs';
 
-// Unit statuses. Every status starting with "closed" is treated as closed; any other as open.
+// Unit statuses. Every status starting with "closed" is treated as closed; "open" and "final-check"
+// (and a unit with no status) as open. loadConfig refuses a status that is not in this list.
 export const UNIT_STATUSES = [
   'open', 'final-check',
   'closed', 'closed-leads-pending', 'closed-owner-questions-open', 'closed-known-wrongs', 'closed-by-stopping-rule',
 ];
 
 // Every config.json key the tools read (top level, then unit and evidence-source fields).
-// test/run.mjs checks this list against the code in both directions.
+// test/run.mjs checks this list against the code in both directions. loadConfig refuses a key that
+// is in none of the three lists, so a misspelled key cannot be silently ignored.
 export const CONFIG_KEYS = [
   'evidence', 'windowSize', 'itemFields', 'units', 'universalWords', 'itemsRoot',
   'maskSecrets', 'maskKeys', 'maskAllow', 'maskExclude', 'boundaryPaths',
@@ -31,13 +33,34 @@ export function loadConfig(S) {
   if (!S) fail('state folder <S> is required');
   if (!fs.existsSync(S) || !fs.statSync(S).isDirectory()) fail(`state folder not found: ${S}`);
   const cfg = readJson(path.join(S, 'config.json'), 'S/config.json');
+  const isObject = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  if (!isObject(cfg)) fail('config.json must be a JSON object ({"evidence": {...}, "units": {...}, ...})');
+  const knownKeys = (obj, keys, where) => {
+    for (const k of Object.keys(obj)) if (!keys.includes(k)) fail(`${where}unknown key ${JSON.stringify(k)}. The keys are: ${keys.join(', ')}`);
+  };
+  knownKeys(cfg, CONFIG_KEYS, 'config.json: ');
   evidenceSources(cfg); // validates one source or a list of prefixed sources
+  if (Array.isArray(cfg.evidence)) cfg.evidence.forEach((s, i) => knownKeys(s, SOURCE_CONFIG_KEYS, `config.json: evidence[${i}]: `));
+  else knownKeys(cfg.evidence, SOURCE_CONFIG_KEYS, 'config.json: evidence: ');
   cfg.windowSize = cfg.windowSize ?? 16;
   if (!Number.isInteger(cfg.windowSize) || cfg.windowSize < 1) fail('config.json: windowSize must be a positive integer');
   cfg.itemFields = cfg.itemFields ?? ['title', 'plan', 'reason'];
   if (!Array.isArray(cfg.itemFields) || !cfg.itemFields.length) fail('config.json: itemFields must be a non-empty array');
+  if (cfg.units !== undefined && !isObject(cfg.units)) fail('config.json: "units" must be an object, {"<unit>": {"status", "itemFiles"}}');
   cfg.units = cfg.units ?? {};
-  cfg.universalWords = Array.isArray(cfg.universalWords) && cfg.universalWords.length ? cfg.universalWords : DEFAULT_UNIVERSAL_WORDS;
+  for (const [name, u] of Object.entries(cfg.units)) {
+    if (!isObject(u)) fail(`config.json: unit ${name} must be an object, {"status", "itemFiles"}`);
+    knownKeys(u, UNIT_CONFIG_KEYS, `config.json: unit ${name}: `);
+    // A unit with no status counts as open. A status outside the list is refused: a mistyped closed
+    // status would otherwise be read as open.
+    if (u.status !== undefined && !UNIT_STATUSES.includes(u.status)) {
+      fail(`config.json: unit ${name}: "status" must be one of ${UNIT_STATUSES.join(', ')} (got ${JSON.stringify(u.status)})`);
+    }
+  }
+  if (cfg.universalWords !== undefined && !(Array.isArray(cfg.universalWords) && cfg.universalWords.length && cfg.universalWords.every((w) => typeof w === 'string' && w.trim()))) {
+    fail('config.json: "universalWords" must be a non-empty array of non-empty strings, such as ["only", "every"] (leave the key out to use the default list)');
+  }
+  cfg.universalWords = cfg.universalWords ?? DEFAULT_UNIVERSAL_WORDS;
   return cfg;
 }
 
@@ -77,6 +100,8 @@ export function checkItems(rows, what) {
   for (const { lineNo, obj } of rows) {
     if (typeof obj.id !== 'string' || !obj.id) fail(`${what} line ${lineNo}: item has no string "id"`);
     if (seen.has(obj.id)) fail(`${what} line ${lineNo}: duplicate id ${obj.id}`);
+    // A string here would be shown as "cites: (none)", with no evidence rendered.
+    if (obj.cites !== undefined && !Array.isArray(obj.cites)) fail(`${what} line ${lineNo}: item ${obj.id}: "cites" must be an array (got ${JSON.stringify(obj.cites)})`);
     seen.add(obj.id);
   }
   return rows.map((r) => r.obj);
@@ -109,6 +134,9 @@ export function verifySnapshot(rd) {
   if (!fs.existsSync(snap)) fail(`snapshot.jsonl is missing in ${rd}`);
   const want = readSnapshotHash(rd);
   const got = sha256File(snap);
+  // A copy that differs only in line endings (a git checkout that turned "\n" into "\r\n") holds the
+  // same items: it still matches the hash taken when the snapshot was written.
+  if (want !== got && sha256FileLf(snap) === want) return want;
   if (want !== got) fail(`snapshot.jsonl was changed after the snapshot (sha256 ${got} != recorded ${want})`);
   return got;
 }
@@ -156,6 +184,7 @@ export function loadCanaryPlan(rd) {
   const p = path.join(rd, 'canary-plan.json');
   if (!fs.existsSync(p)) return {};
   const plan = readJson(p, 'canary-plan.json');
+  if (!plan || typeof plan !== 'object' || Array.isArray(plan)) fail('canary-plan.json must be a JSON object ({"<slot>": [{"canaryId", "atPosition"}]})');
   for (const [slot, list] of Object.entries(plan)) {
     if (!Array.isArray(list)) fail(`canary-plan.json: ${slot} must map to an array`);
     for (const e of list) {

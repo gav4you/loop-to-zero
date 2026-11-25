@@ -8,11 +8,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fail, globToRegExp, normPath, listRounds, readJsonl, LtzError } from './util.mjs';
-import { splitLines } from './evidence.mjs';
+import { splitLines, checkDirPin, isBinary } from './evidence.mjs';
 import { loadConfig, requireUnit } from './state.mjs';
 import { evidenceSources, routeSource, pinRecord, loadPinRecord, pinDifference, configAtPin } from './sources.mjs';
 
 const squash = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** The warning for files a search's scope held that are not text: its count does not cover them. */
+export function notTextWarning(skipped) {
+  const xs = [...skipped].sort();
+  return `the searches skipped ${xs.length} file(s) in their scope that are not text (binary, or UTF-16), so no count covers them: ` +
+    `${xs.slice(0, 5).join(', ')}${xs.length > 5 ? `, and ${xs.length - 5} more` : ''}; a claim about such a file needs it exported as UTF-8 text`;
+}
 
 /** A value as text: the string, or every string field of an object (a whole item, for "*"). */
 export function textOf(v) {
@@ -47,6 +54,7 @@ export function searches({ S, rounds, atCurrent }) {
   const cfg = loadConfig(S);
   const units = !rounds || rounds === 'all' ? Object.keys(cfg.units) : rounds.split(',').map((u) => requireUnit(cfg, u.trim()));
   const scanner = new PinScanner(cfg);
+  const skippedAll = new Set(); // files in a search's scope that are not text
   // Each round is re-run at the pin its snapshot recorded (pin.json), so a pin moved since does not
   // show up as a too-narrow scope. A round with no pin.json is re-run at the current pin.
   const nowPin = pinRecord(cfg);
@@ -72,8 +80,22 @@ export function searches({ S, rounds, atCurrent }) {
       } else if (!rec) noPin++;
       else if (pinDifference(rec, nowPin)) {
         const k = JSON.stringify(rec);
-        if (!scanners.has(k)) scanners.set(k, new PinScanner(configAtPin(cfg, rec)));
+        if (!scanners.has(k)) {
+          // The recorded pin must still be readable: a folder whose files changed since cannot be.
+          let sc = new PinScanner(configAtPin(cfg, rec));
+          try {
+            sc.files();
+          } catch (err) {
+            if (!(err instanceof LtzError)) throw err;
+            sc = err.message;
+          }
+          scanners.set(k, sc);
+        }
         roundScanner = scanners.get(k);
+        if (typeof roundScanner === 'string') {
+          if (rows.some((x) => x.obj && x.obj.search !== undefined)) problems.push(`${unit}/${r.name}: its searches cannot be re-run at the pin it recorded: ${roundScanner}`);
+          continue;
+        }
         ownPin++;
       }
       // The field's final text in this round: the last "new" logged for that id and field.
@@ -99,6 +121,7 @@ export function searches({ S, rounds, atCurrent }) {
           problems.push(`${where}: ${err.message}`);
           continue;
         }
+        for (const f of res.skipped) skippedAll.add(f);
         if (typeof e.hits === 'number' && e.hits === res.hits) continue;
         const line = `${where}: /${e.search.regex}/ logged hits ${JSON.stringify(e.hits)} over ${JSON.stringify(e.search.paths || 'the boundary')}; boundary-wide ${res.hits} ${res.unit}`;
         const noted = typeof e.scopeNote === 'string' && e.scopeNote.trim();
@@ -112,10 +135,12 @@ export function searches({ S, rounds, atCurrent }) {
     }
   }
   if (!structured && !problems.length) fail(`no structured fixlog searches in ${units.join(', ')}; nothing to re-run`);
+  const warnings = skippedAll.size ? [notTextWarning(skippedAll)] : [];
   if (bounded.length) out.push('bounded by a scopeNote (not counted as failures):', ...bounded.map((b) => `  ${b}`));
   return {
     output: out.join('\n'),
     problems,
+    warnings,
     failed: differ > 0 || problems.length > 0,
     summary:
       `searches: ${structured} structured search(es) re-run over ${scanner.boundary ? 'boundaryPaths' : 'every file (no boundaryPaths)'} at ${scanner.describe()}; ` +
@@ -162,9 +187,18 @@ export class PinScanner {
     for (const s of this.sources) {
       let own;
       if (s.type === 'git') {
-        const out = execFileSync('git', ['-C', s.repo, 'ls-tree', '-r', '-z', '--name-only', s.pin], { maxBuffer: MAX_BUFFER, stdio: ['ignore', 'pipe', 'pipe'] });
-        own = out.toString('utf8').split('\0').filter(Boolean);
+        // --full-tree lists paths from the repository's top level even when "repo" names a folder inside
+        // it, which is how "git cat-file <pin>:<path>" (and so render) reads them. Only blobs are files:
+        // a submodule's entry is a commit.
+        const out = execFileSync('git', ['-C', s.repo, 'ls-tree', '-r', '-z', '--full-tree', s.pin], { maxBuffer: MAX_BUFFER, stdio: ['ignore', 'pipe', 'pipe'] });
+        own = out.toString('utf8').split('\0').filter(Boolean)
+          .map((e) => /^\d+ (\w+) [0-9a-f]+\t([\s\S]+)$/.exec(e))
+          .filter((m) => m && m[1] === 'blob')
+          .map((m) => m[2]);
       } else {
+        // A folder pinned by sha256 is read only while it still matches that hash: a search over a
+        // folder that has changed since is not a search at the pin.
+        checkDirPin(s);
         own = walk(path.resolve(s.root)).map(normPath);
       }
       for (const f of own) {
@@ -204,19 +238,18 @@ export class PinScanner {
           const header = buf.slice(off, nl).toString('utf8');
           off = nl + 1;
           const m = /^\S+ (\S+) (\d+)$/.exec(header);
-          if (!m) {
-            this.texts.set(p, null);
-            continue;
-          }
+          // A file the pin lists that git cannot read back is not a file to skip: the search would
+          // count it as scanned and read nothing.
+          if (!m) fail(`${p} is listed at the pin (${s.pin}) but git could not read it ("${header.trim()}"); the search cannot run`);
           const size = Number(m[2]);
           const body = buf.slice(off, off + size);
           off += size + 1;
-          this.texts.set(p, m[1] === 'blob' && !body.includes(0) ? body.toString('utf8') : null);
+          this.texts.set(p, m[1] === 'blob' && !isBinary(body) ? body.toString('utf8') : null);
         }
       } else {
         for (const { p, rel } of list) {
           const body = fs.readFileSync(path.join(path.resolve(s.root), rel));
-          this.texts.set(p, body.includes(0) ? null : body.toString('utf8'));
+          this.texts.set(p, isBinary(body) ? null : body.toString('utf8'));
         }
       }
     }
@@ -224,7 +257,9 @@ export class PinScanner {
   }
 
   /**
-   * Run one structured search: {hits, count, unit, scanned, narrower, locations}. locations maps each
+   * Run one structured search: {hits, count, unit, scanned, skipped, narrower, locations}. scanned counts
+   * the files read; skipped lists the files in scope that are not text (binary, or UTF-16), which no
+   * search can read. locations maps each
    * hit location to its hits there: "path:line" for count "matches" (a line with two matches holds
    * 2) or "lines", and "path" for count "files". Paths are cite paths (a source's prefix included).
    */
@@ -241,13 +276,24 @@ export class PinScanner {
     if (!['matches', 'lines', 'files'].includes(count)) fail(`search "count" must be "matches", "lines" or "files" (got ${JSON.stringify(count)})`);
     const globs = search.paths && search.paths.length ? search.paths : this.boundary || ['**'];
     const scope = this.select(globs);
+    // A search that reads no file proves nothing: 0 hits over 0 files would back any "no X" claim.
+    if (!scope.length) {
+      fail(
+        `the search's globs (${globs.join(', ')}) select no file at the pin, so it read nothing; check them ` +
+          '("**" crosses folders, "*" and "?" do not, a trailing "/" covers a folder; braces and a bare folder name are literal)',
+      );
+    }
     let matches = 0;
     let lines = 0;
     let files = 0;
     const locations = new Map();
     const at = (loc, k) => locations.set(loc, (locations.get(loc) || 0) + k);
+    const skipped = [];
     for (const [p, text] of this.read(scope)) {
-      if (text === null) continue;
+      if (text === null) {
+        skipped.push(p);
+        continue;
+      }
       let n = 0;
       const ls = splitLines(text);
       for (let i = 0; i < ls.length; i++) {
@@ -272,6 +318,13 @@ export class PinScanner {
         if (count === 'files') at(p, 1);
       }
     }
+    // Like a scope that selects no file: a scope holding no text file read nothing.
+    if (skipped.length === scope.length) {
+      fail(
+        `the search's globs (${globs.join(', ')}) select only files that are not text (binary, or UTF-16), so it read nothing: ` +
+          `${skipped.slice(0, 3).join(', ')}${skipped.length > 3 ? `, and ${skipped.length - 3} more` : ''}; export such evidence as UTF-8 text`,
+      );
+    }
     let narrower = null;
     if (this.boundary && search.paths && search.paths.length) {
       const inScope = new Set(scope);
@@ -281,7 +334,7 @@ export class PinScanner {
     }
     const hits = count === 'files' ? files : count === 'lines' ? lines : matches;
     const unit = count === 'files' ? 'matching files' : count === 'lines' ? 'matching lines' : 'matches';
-    return { hits, count, unit, scanned: scope.length, narrower, locations };
+    return { hits, count, unit, scanned: scope.length - skipped.length, skipped, narrower, locations };
   }
 }
 

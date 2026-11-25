@@ -3,8 +3,13 @@
 // This lists every cite two or more items share (a family the writer judges together) and flags the
 // families whose items state different numbers. It reports; it never fails and never judges.
 import { loadConfig, loadItems, requireUnit } from './state.mjs';
+import { parseCite } from './util.mjs';
 
-const NUM = /(?<![\w.])\d+(?:\.\d+)?(?![\w.])/g;
+// A number standing on its own: not part of a word or a dotted version ("v2", "1.2.3"). A full stop
+// that ends the sentence ("is 30.") and a unit written against the number ("30s", "5ms", "2x") do not
+// hide it; the unit is left out of what is compared.
+const UNITS = 'ns|us|\u00b5s|ms|s|sec|secs|m|min|mins|h|hr|hrs|d|w|b|kb|mb|gb|tb|kib|mib|gib|tib|x|px';
+const NUM = new RegExp(`(?<![\\w.])\\d+(?:\\.\\d+)?(?=(?:${UNITS})?(?!\\w|\\.\\d))`, 'gi');
 
 function numbersOf(it, fields) {
   const text = fields.map((f) => (typeof it[f] === 'string' ? it[f] : '')).join(' ');
@@ -18,7 +23,9 @@ export function crosscheck({ S, unit }) {
   const items = loadItems(S).filter((it) => !unit || it.unit === unit);
   const byCite = new Map();
   for (const it of items) {
-    for (const c of new Set((Array.isArray(it.cites) ? it.cites : []).map((x) => String(x).trim()).filter(Boolean))) {
+    // Grouped by what the cite renders, not by its spelling: "./config/app.json:2" and
+    // "config/app.json:2" are one family.
+    for (const c of new Set((Array.isArray(it.cites) ? it.cites : []).map((x) => String(x).trim()).filter(Boolean).map((x) => parseCite(x).norm))) {
       if (!byCite.has(c)) byCite.set(c, []);
       byCite.get(c).push(it);
     }

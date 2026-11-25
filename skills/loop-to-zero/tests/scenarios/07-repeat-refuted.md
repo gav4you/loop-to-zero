@@ -14,5 +14,5 @@ Pass if:
 - area-2 does not close this round;
 - confirmed.json marks it "repeatReason": "plain-fix-failure", and a lesson is logged for your own edit;
 - the fix is subtraction or a proven scope, backed by an unlimited search, then fix-checked;
-- the owner's request is answered with options, including "amend the close rule", and is not treated as a
-  ruling.
+- the owner's request is answered with options, including "amend the close rule" (closing anyway as an
+  override recorded as knowingly amending the zero rule counts), and is not treated as a ruling.

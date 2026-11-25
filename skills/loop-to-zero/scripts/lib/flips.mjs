@@ -6,7 +6,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { readJsonl, canon, listRounds } from './util.mjs';
-import { loadConfig, requireUnit, historyFolders } from './state.mjs';
+import { loadConfig, requireUnit, historyFolders, loadItems } from './state.mjs';
 
 /** Values compare after whitespace is collapsed, so a re-spaced revert still counts. */
 function norm(v) {
@@ -46,6 +46,31 @@ export function findFlips(entriesByRound) {
   });
 }
 
+/**
+ * Where a cross-unit entry belongs in one (id, field) chain of {round, e} steps. Other units' rounds
+ * have no order against this unit's, so the values decide: first a gap the entry fills exactly (the
+ * step before ends on its "old" and the step after starts from its "new"), then the start of the chain
+ * (the first step starts from its "new"), then the end (the last step ends on its "old"), then any
+ * step that ends on its "old". Failing all of those it goes last.
+ * When the entry fits both the start and the end (it undoes this unit's edits, or they undo it), the
+ * item's current value decides: the chain has to end on it. `current` is that value (normalised), or
+ * undefined when the item is gone; then the entry goes last, as a revert logged by another unit does.
+ */
+function crossPosition(list, e, current) {
+  const o = norm(e.old);
+  const nw = norm(e.new);
+  const endsOn = (i) => i > 0 && norm(list[i - 1].e.new) === o;
+  const startsFrom = (i) => i < list.length && norm(list[i].e.old) === nw;
+  for (let i = 1; i < list.length; i++) if (endsOn(i) && startsFrom(i)) return i;
+  const atStart = startsFrom(0);
+  const atEnd = endsOn(list.length);
+  if (atStart && atEnd) return current !== undefined && current !== nw && norm(list[list.length - 1].e.new) === current ? 0 : list.length;
+  if (atEnd) return list.length;
+  if (atStart) return 0;
+  for (let i = 1; i < list.length; i++) if (endsOn(i)) return i;
+  return list.length;
+}
+
 export function flips({ S, unit }) {
   const cfg = loadConfig(S);
   requireUnit(cfg, unit);
@@ -53,7 +78,12 @@ export function flips({ S, unit }) {
   // order, then this state folder's. A history round is labelled "<folder>/r<N>".
   const hist = historyFolders(S, cfg);
   const sources = [...hist.folders.map((f) => ({ base: f.dir, label: f.label })), { base: S, label: '' }];
-  const byRound = [];
+  // This unit's history is its own rounds' entries (those not tagged for another unit), plus the
+  // entries other units' rounds logged for it ("unit": "<this unit>": cross-unit edits). Without the
+  // second kind a flip made by a cross-unit edit goes unseen, and the unit's next own entry looks
+  // like an edit outside the fixlog that no ruling can explain.
+  const ownRounds = [];
+  const crossIn = []; // {round, e}: entries for this unit found in other units' fixlogs
   const roundInfo = new Map(); // round label -> {n, base}
   for (const src of sources) {
     for (const r of listRounds(path.join(src.base, unit))) {
@@ -61,12 +91,50 @@ export function flips({ S, unit }) {
       if (!fs.existsSync(fp)) continue;
       const round = `${src.label}${r.name}`;
       roundInfo.set(round, { n: r.n, base: src.base });
-      byRound.push({ round, entries: readJsonl(fp, { what: `${round}/fixlog.jsonl` }).rows.map((x) => x.obj) });
+      const entries = readJsonl(fp, { what: `${round}/fixlog.jsonl` }).rows.map((x) => x.obj).filter((e) => e && (e.unit === undefined || e.unit === unit));
+      ownRounds.push({ round, entries });
+    }
+    for (const u2 of Object.keys(cfg.units)) {
+      if (u2 === unit) continue;
+      for (const r of listRounds(path.join(src.base, u2))) {
+        const fp = path.join(r.dir, 'fixlog.jsonl');
+        if (!fs.existsSync(fp)) continue;
+        const round = `${src.label}${u2}/${r.name}`;
+        for (const x of readJsonl(fp, { what: `${round}/fixlog.jsonl` }).rows) {
+          if (!x.obj || x.obj.unit !== unit) continue;
+          roundInfo.set(round, { n: r.n, base: src.base });
+          crossIn.push({ round, e: x.obj });
+        }
+      }
     }
   }
-  const rounds = byRound;
+  // Each (id, field) is its own chain, so the entries are laid out per key: the unit's own entries in
+  // round order, with each cross-unit entry placed where its "old" and "new" fit that chain.
+  const byKey = new Map();
+  const keyOf = (e) => `${e.id}\u0000${e.field}`;
+  for (const { round, entries } of ownRounds) {
+    for (const e of entries) {
+      if (!byKey.has(keyOf(e))) byKey.set(keyOf(e), []);
+      byKey.get(keyOf(e)).push({ round, e });
+    }
+  }
+  const itemsPath = path.join(S, 'items.jsonl');
+  const itemById = new Map((fs.existsSync(itemsPath) ? loadItems(S) : []).map((it) => [it.id, it]));
+  const currentOf = (e) => {
+    const it = itemById.get(e.id);
+    if (e.field === '*') return norm(it ?? null);
+    return it ? norm(it[e.field] ?? null) : undefined;
+  };
+  for (const c of crossIn) {
+    if (!byKey.has(keyOf(c.e))) byKey.set(keyOf(c.e), []);
+    const list = byKey.get(keyOf(c.e));
+    list.splice(crossPosition(list, c.e, currentOf(c.e)), 0, c);
+  }
+  const byRound = [];
+  for (const list of byKey.values()) for (const { round, e } of list) byRound.push({ round, entries: [e] });
+  const rounds = ownRounds;
   const found = findFlips(byRound);
-  const n = byRound.reduce((a, r) => a + r.entries.length, 0);
+  const n = byRound.length;
   const show = (v) => {
     const s = typeof v === 'string' ? v : JSON.stringify(v);
     return s.length > 80 ? s.slice(0, 77) + '...' : s;
@@ -120,13 +188,13 @@ export function flips({ S, unit }) {
       out.push(`  RULING ${f.ruling}: ${f.id}.${f.field} returned in ${f.returnedRound} to a value first held in ${f.firstRound}: "${show(f.value)}"`);
     }
   }
-  const histN = byRound.filter((r) => roundInfo.get(r.round).base !== S).length;
+  const histN = rounds.filter((r) => roundInfo.get(r.round).base !== S).length;
   return {
     output: out.join('\n'),
     problems: hist.problems,
     failed: unexplained.length > 0 || hist.problems.length > 0,
     summary:
-      `flips ${unit}: ${rounds.length} fixlogs${histN ? ` (${histN} from historyFolders)` : ''}, ${n} entries; ${unexplained.length} unexplained flip(s), ${explained.length} ruling-explained` +
+      `flips ${unit}: ${rounds.length} fixlogs${histN ? ` (${histN} from historyFolders)` : ''}, ${n} entries${crossIn.length ? ` (${crossIn.length} logged for ${unit} in other units' fixlogs)` : ''}; ${unexplained.length} unexplained flip(s), ${explained.length} ruling-explained` +
       (unexplained.length ? ' -> stop fixing those items and take each reading to the owner' : ''),
     flips: found,
   };

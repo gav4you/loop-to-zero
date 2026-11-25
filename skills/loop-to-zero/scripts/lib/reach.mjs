@@ -69,6 +69,16 @@ export function reach({ S, to, unit }) {
 
   const before = new PinScanner(cfg);
   const after = new PinScanner({ ...cfg, evidence: { type: 'git', repo: src.repo, pin: to, prefix: src.prefix } });
+  // A boundary that selects no file at either commit would report "0 files changed" for any move.
+  if (boundary) {
+    const selects = (sc) => sc.files().some((f) => boundary.some((r) => r.test(f)));
+    if (!selects(before) && !selects(after)) {
+      fail(
+        `boundaryPaths (${cfg.boundaryPaths.join(', ')}) select no file at ${src.pin} or at ${to}; check the globs ` +
+          '("**" crosses folders, "*" and "?" do not, a trailing "/" covers a folder; braces and a bare folder name are literal)',
+      );
+    }
+  }
   const out = [];
   const problems = [];
   const totals = { cites: 0, search: 0, unsearched: 0, items: 0 };

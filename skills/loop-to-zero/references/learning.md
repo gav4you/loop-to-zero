@@ -186,8 +186,8 @@ no trial: its items go on `S/owed-rechecks.txt`.
 Never switch the readers' model, cut or reword the reader brief, or change the window size on a hunch, even to
 save cost. First run the old and the new setup side by side, uncounted, on the same chunk of the last recorded
 round (its snapshot), and compare: the confirmed wrongs each finds, false alarms, canaries if planted, and cost
-(`ltz cost --queue`). Run the trial in its own state folder (a copy of `config.json` with no `historyFolders`,
-`classes.md` and that chunk's items, snapshotted there), never in a slot of a real round, so `record` and the
+(`ltz cost --queue`). Run the trial in its own state folder (a copy of `config.json` with no `historyFolders` and with
+`decisionLog` pointing at `S/`'s log, `classes.md` and that chunk's items, snapshotted there), never in a slot of a real round, so `record` and the
 commit guard never see it. Adopt the new setup only if it finds every confirmed wrong the old one found, and take the
 comparison to the owner (it is their mode decision). It takes effect from the next snapshot, never mid-round.
 

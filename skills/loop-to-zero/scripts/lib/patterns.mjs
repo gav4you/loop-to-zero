@@ -270,6 +270,18 @@ export function replay({ S, patternFile, rounds, holdout }) {
     // Overturned to pending-owner: like a pending item, neither a recalled wrong nor a false hit.
     const pending = new Set([...conf.pending, ...overturned.filter((id) => latest.get(id) === 'pending-owner')]);
     const defects = conf.defects;
+    // An item no reader read in this round (a final-check round's unqueued chunks, a dropped range)
+    // was never judged, so a hit on it is neither a recalled wrong nor a false hit. report.json says
+    // which those are; a round without one (a rebuilt past round) is taken as read in full.
+    const unread = new Set();
+    const repP = path.join(r.dir, 'report.json');
+    if (fs.existsSync(repP)) {
+      const rep = readJson(repP, repP);
+      for (const it of Array.isArray(rep.items) ? rep.items : []) if (it && it.verdict === 'unread') unread.add(it.id);
+    }
+    // An item a later round found wrong in this round's text (its latest judgments.jsonl line for this
+    // round says "now": "wrong": an earlier miss) was wrong here too, so a hit on it is not a false hit.
+    const laterWrong = new Set([...latest].filter(([, now]) => now === 'wrong').map(([id]) => id));
     const rc = readerClasses(r.dir);
     const classOf = (id) => {
       const c = classesOf(wrongs.get(id));
@@ -277,11 +289,14 @@ export function replay({ S, patternFile, rounds, holdout }) {
     };
     patterns.forEach((p, i) => {
       const fields = patternFields(p, cfg);
-      const hit = new Set(items.filter((it) => matchItem(p, it, fields).length).map((it) => it.id));
+      const allHits = items.filter((it) => matchItem(p, it, fields).length).map((it) => it.id);
+      const hit = new Set(allHits.filter((id) => !unread.has(id)));
+      const unreadHits = allHits.filter((id) => unread.has(id));
       const ofClass = [...wrongs.keys()].filter((id) => classOf(id).includes(p.class));
       const recalled = ofClass.filter((id) => hit.has(id));
       const missed = ofClass.filter((id) => !hit.has(id));
-      const falseHits = [...hit].filter((id) => !wrongs.has(id) && !pending.has(id) && !defects.has(id));
+      const laterWrongHits = [...hit].filter((id) => !wrongs.has(id) && laterWrong.has(id));
+      const falseHits = [...hit].filter((id) => !wrongs.has(id) && !pending.has(id) && !defects.has(id) && !laterWrong.has(id));
       const otherClass = [...hit].filter((id) => wrongs.has(id) && !ofClass.includes(id));
       const t = totals[i];
       t.ofClass += ofClass.length;
@@ -301,6 +316,8 @@ export function replay({ S, patternFile, rounds, holdout }) {
           (missed.length ? ` (missed ${missed.join(', ')})` : '') +
           `; false hits ${falseHits.length}${falseHits.length ? ` (${falseHits.join(', ')})` : ''}` +
           (otherClass.length ? `; hits on other-class wrongs ${otherClass.join(', ')}` : '') +
+          (laterWrongHits.length ? `; hits on items a later round found wrong here, not false hits: ${laterWrongHits.join(', ')}` : '') +
+          (unreadHits.length ? `; hits on items not read in this round, not counted: ${unreadHits.join(', ')}` : '') +
           (overturned.length ? `; overturned, not counted: ${overturned.join(', ')}` : ''),
       );
     });

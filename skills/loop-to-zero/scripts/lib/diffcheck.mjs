@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { readJsonl, canon, listRounds, LtzError } from './util.mjs';
-import { PinScanner, isStructuredSearch, scopeTextProblem, textOf, judgedShapeProblem, compareJudged } from './searchverify.mjs';
+import { PinScanner, isStructuredSearch, scopeTextProblem, textOf, judgedShapeProblem, compareJudged, notTextWarning } from './searchverify.mjs';
 import { loadConfig, requireUnit, requireRoundDir, verifySnapshot, loadSnapshot, loadItems, loadCanaries, checkItems } from './state.mjs';
 import { addedUniversals, newClosedLists, shapeFlags, universalClauses } from './textchecks.mjs';
 import { loadPatterns, matchItem, patternFields } from './patterns.mjs';
@@ -11,6 +11,13 @@ function short(v) {
   const s = typeof v === 'string' ? v : JSON.stringify(v);
   return s === undefined ? 'undefined' : s.length > 70 ? s.slice(0, 67) + '...' : s;
 }
+
+/**
+ * A field's value for comparing with a fixlog entry: a field the item does not have compares as null,
+ * since JSON has no "undefined". So a field added to an item is logged with "old": null, and a field
+ * removed from one with "new": null.
+ */
+const val = (v) => canon(v ?? null);
 
 export function loadRegressionPatterns(S) {
   const dir = path.join(S, 'checks', 'patterns');
@@ -76,9 +83,12 @@ export function diffcheck({ S, unit, R, verifySearches = true }) {
       continue;
     }
     if (!('old' in e) || !('new' in e)) mismatches.push(`fixlog.jsonl line ${lineNo}: ${e.id}.${e.field} needs "old" and "new"`);
-    if (!snapById.has(e.id) && !curById.has(e.id)) mismatches.push(`fixlog.jsonl line ${lineNo}: ${e.id} is not an item`);
+    // An entry for another unit may log the removal of that unit's item, which is in neither this
+    // unit's snapshot nor the current items; the cross-unit check below matches it to that removal.
+    const isCross = e.unit !== undefined && e.unit !== unit;
+    if (!isCross && !snapById.has(e.id) && !curById.has(e.id)) mismatches.push(`fixlog.jsonl line ${lineNo}: ${e.id} is not an item`);
     allEntries.push(e);
-    if (e.unit !== undefined && e.unit !== unit) {
+    if (isCross) {
       if (!cross.has(e.unit)) cross.set(e.unit, []);
       cross.get(e.unit).push(e);
       continue;
@@ -98,11 +108,11 @@ export function diffcheck({ S, unit, R, verifySearches = true }) {
         mismatches.push(`${id}.${f} changed (${short(d.old)} -> ${short(d.new)}) but is not in fixlog.jsonl`);
         continue;
       }
-      if (canon(entries[0].old) !== canon(d.old)) mismatches.push(`${id}.${f}: fixlog "old" (line ${entries[0].lineNo}) is not the snapshot value`);
+      if (val(entries[0].old) !== val(d.old)) mismatches.push(`${id}.${f}: fixlog "old" (line ${entries[0].lineNo}) is not the snapshot value`);
       const last = entries[entries.length - 1];
-      if (canon(last.new) !== canon(d.new)) mismatches.push(`${id}.${f}: fixlog "new" (line ${last.lineNo}) is not the current value`);
+      if (val(last.new) !== val(d.new)) mismatches.push(`${id}.${f}: fixlog "new" (line ${last.lineNo}) is not the current value`);
       for (let i = 1; i < entries.length; i++) {
-        if (canon(entries[i].old) !== canon(entries[i - 1].new)) mismatches.push(`${id}.${f}: fixlog line ${entries[i].lineNo} "old" does not follow line ${entries[i - 1].lineNo} "new"`);
+        if (val(entries[i].old) !== val(entries[i - 1].new)) mismatches.push(`${id}.${f}: fixlog line ${entries[i].lineNo} "old" does not follow line ${entries[i - 1].lineNo} "new"`);
       }
     }
   }
@@ -140,12 +150,28 @@ export function diffcheck({ S, unit, R, verifySearches = true }) {
       mismatches.push(`${at}: "unit": "${U}" is not a unit in config.json`);
       continue;
     }
-    if (String(cfg.units[U].status || '').startsWith('closed')) continue; // the closed-unit check below flags it
+    // r0's snapshot is no baseline (setup re-extracts after it), so it is left out here.
+    const rs = listRounds(path.join(S, U)).filter((r) => r.n !== 0 && fs.existsSync(path.join(r.dir, 'snapshot.jsonl')));
+    if (String(cfg.units[U].status || '').startsWith('closed')) {
+      // The closed-unit check below flags every real change. An entry that names no change is still
+      // a mismatch: every fixlog entry must be a real change.
+      if (rs.length) {
+        const lastC = rs[rs.length - 1];
+        const spC = path.join(lastC.dir, 'snapshot.jsonl');
+        const baseC = new Map(checkItems(readJsonl(spC, { what: spC }).rows, spC).map((it) => [it.id, it]));
+        for (const e of entries) {
+          const b = baseC.get(e.id);
+          const c = curById.get(e.id);
+          const same = e.field === '*' ? val(b) === val(c) : val(b?.[e.field]) === val(c?.[e.field]);
+          if (same) mismatches.push(`fixlog.jsonl line ${e.lineNo}: ${e.id}.${e.field} is logged for closed unit ${U} but did not change since ${U}/${lastC.name}`);
+        }
+      }
+      continue;
+    }
     for (const e of entries) {
       const owner = curById.get(e.id)?.unit ?? null;
       if (owner && owner !== U) mismatches.push(`fixlog.jsonl line ${e.lineNo}: ${e.id} is an item of ${owner}, not ${U}`);
     }
-    const rs = listRounds(path.join(S, U)).filter((r) => fs.existsSync(path.join(r.dir, 'snapshot.jsonl')));
     if (!rs.length) {
       mismatches.push(`${at}: unit ${U} has no round snapshot to compare its cross-unit edits with; take a baseline first ("node <skill>/scripts/ltz.mjs snapshot <S> ${U} <R>")`);
       continue;
@@ -178,8 +204,8 @@ export function diffcheck({ S, unit, R, verifySearches = true }) {
           mismatches.push(`${U}: ${id}.${f} changed since ${U}/${last.name} but is logged neither here (with "unit": "${U}"), nor in ${U}/${last.name}/fixlog.jsonl, nor in another round's fixlog with "unit": "${U}"`);
           continue;
         }
-        if (!es.some((e) => canon(e.old) === canon(d.old))) mismatches.push(`${U}: ${id}.${f}: no logged "old" is the ${U}/${last.name} snapshot value`);
-        if (!es.some((e) => canon(e.new) === canon(d.new))) mismatches.push(`${U}: ${id}.${f}: no logged "new" is the current value`);
+        if (!es.some((e) => val(e.old) === val(d.old))) mismatches.push(`${U}: ${id}.${f}: no logged "old" is the ${U}/${last.name} snapshot value`);
+        if (!es.some((e) => val(e.new) === val(d.new))) mismatches.push(`${U}: ${id}.${f}: no logged "new" is the current value`);
         // The fields this round edits in U get the same text and regression checks as this unit's.
         if (mine.has(id) && (mine.get(id).has(f) || mine.get(id).has('*'))) {
           crossText.push({
@@ -203,6 +229,7 @@ export function diffcheck({ S, unit, R, verifySearches = true }) {
   // justifies a deliberately bounded claim.
   const nonEmpty = (s) => typeof s === 'string' && s.trim().length > 0;
   const scanner = verifySearches ? new PinScanner(cfg) : null;
+  const skippedAll = new Set(); // files in a search's scope that are not text
   let unverified = 0;
   // Every entry, this unit's and cross-unit ones, gets the search checks.
   for (const e of allEntries) {
@@ -253,6 +280,7 @@ export function diffcheck({ S, unit, R, verifySearches = true }) {
           mismatches.push(`${where}: ${err.message}`);
           continue;
         }
+        for (const f of r.skipped) skippedAll.add(f);
         if (typeof e.hits !== 'number' || e.hits !== r.hits) {
           mismatches.push(`${where}: search /${e.search.regex}/ logs hits ${JSON.stringify(e.hits)}, but the pin has ${r.hits} ${r.unit} in ${r.scanned} files`);
         }
@@ -271,6 +299,7 @@ export function diffcheck({ S, unit, R, verifySearches = true }) {
       }
     }
   }
+  if (skippedAll.size) warnings.push(notTextWarning(skippedAll));
   if (unverified) warnings.push(`${unverified} search(es) were not run at the pin (--no-verify-searches), so their hits and "judged" locations were not verified`);
 
   // Text checks on every changed string field (the whole field).

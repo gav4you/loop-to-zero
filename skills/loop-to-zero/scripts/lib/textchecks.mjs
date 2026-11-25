@@ -104,7 +104,10 @@ export function shapeFlags(oldT, newT) {
     const rest = t.slice(base.length);
     const startsSentence = /^[.!?]+\s+\S/.test(rest);
     const onlyStop = /^[.!?]*\s*$/.test(rest);
-    if (!startsSentence && !onlyStop) flags.push(`clause appended with no sentence stop: "...${rest.slice(0, 60)}"`);
+    // Only text that starts a new word or clause is an appended clause: a last word or number that
+    // just got longer ("3" -> "30", "check" -> "checkUser") is a changed value, not an appended clause.
+    const startsClause = /^[\s,;:(\-–—]/.test(rest);
+    if (!startsSentence && !onlyStop && startsClause) flags.push(`clause appended with no sentence stop: "...${rest.slice(0, 60)}"`);
   }
   if (/[.!?]\s*$/.test(o) && t.trim() && !/[.!?]["')\]]?\s*$/.test(t)) flags.push('the field lost its final sentence stop');
   return flags;

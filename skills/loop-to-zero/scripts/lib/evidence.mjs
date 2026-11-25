@@ -9,9 +9,16 @@ import { evidenceSources, routeSource } from './sources.mjs';
 const MAX_BUFFER = 512 * 1024 * 1024;
 
 export function splitLines(text) {
-  const lines = text.split(/\r?\n/);
+  // A UTF-8 byte order mark is not part of line 1: a "^" search and a key's indent would see it.
+  const lines = (text.charCodeAt(0) === 0xfeff ? text.slice(1) : text).split(/\r?\n/);
   if (lines.length && lines[lines.length - 1] === '') lines.pop();
   return lines;
+}
+
+/** True for bytes the tools cannot read as lines of text: a NUL byte, or a UTF-16 byte order mark. */
+export function isBinary(buf) {
+  if (buf.length >= 2 && ((buf[0] === 0xff && buf[1] === 0xfe) || (buf[0] === 0xfe && buf[1] === 0xff))) return true;
+  return buf.includes(0);
 }
 
 function safeRelPath(p) {
@@ -21,7 +28,8 @@ function safeRelPath(p) {
 }
 
 /** A folder's content hash: every file's relative path and content, in sorted path order. */
-export function treeHash(root) {
+export function treeHash(root, { foldEol = false } = {}) {
+  if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) fail(`evidence root not found: ${root}`);
   const files = [];
   const walk = (rel) => {
     for (const d of fs.readdirSync(path.join(root, rel), { withFileTypes: true })) {
@@ -35,7 +43,9 @@ export function treeHash(root) {
   const h = crypto.createHash('sha256');
   for (const f of files) {
     h.update(f + '\0');
-    h.update(crypto.createHash('sha256').update(fs.readFileSync(path.join(root, f))).digest('hex') + '\n');
+    let body = fs.readFileSync(path.join(root, f));
+    if (foldEol) body = Buffer.from(body.toString('latin1').replace(/\r\n/g, '\n'), 'latin1');
+    h.update(crypto.createHash('sha256').update(body).digest('hex') + '\n');
   }
   return h.digest('hex');
 }
@@ -44,6 +54,10 @@ export function treeHash(root) {
 export function checkDirPin(src) {
   if (src.type !== 'dir' || src.sha256 === undefined) return;
   const now = treeHash(path.resolve(src.root));
+  if (now === src.sha256) return;
+  // A copy that differs only in line endings (a git checkout that turned "\n" into "\r\n") reads the
+  // same, line for line: it still matches a hash taken over the "\n" files.
+  if (treeHash(path.resolve(src.root), { foldEol: true }) === src.sha256) return;
   if (now !== src.sha256) fail(`evidence dir ${src.root} has changed since it was pinned: sha256 ${now}, config "sha256" ${src.sha256}`);
 }
 
@@ -83,11 +97,13 @@ class SourceReader {
     let res;
     if (this.src.type === 'git') {
       try {
-        const buf = execFileSync('git', ['-C', this.src.repo, 'show', '--no-textconv', `${this.src.pin}:${rel}`], {
+        // cat-file blob reads the file's own bytes and fails for a folder ("git show" would print the
+        // folder's listing as if it were the file's text).
+        const buf = execFileSync('git', ['-C', this.src.repo, 'cat-file', 'blob', `${this.src.pin}:${rel}`], {
           stdio: ['ignore', 'pipe', 'pipe'],
           maxBuffer: MAX_BUFFER,
         });
-        res = { ok: true, lines: splitLines(buf.toString('utf8')) };
+        res = isBinary(buf) ? { ok: false, reason: 'binary' } : { ok: true, lines: splitLines(buf.toString('utf8')) };
       } catch {
         res = { ok: false, reason: 'not-found-at-pin' };
       }
@@ -95,7 +111,10 @@ class SourceReader {
       const abs = path.resolve(this.root, rel);
       if (!isInside(abs, this.root)) res = { ok: false, reason: 'outside-root' };
       else if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) res = { ok: false, reason: 'not-found' };
-      else res = { ok: true, lines: splitLines(fs.readFileSync(abs, 'utf8')) };
+      else {
+        const buf = fs.readFileSync(abs);
+        res = isBinary(buf) ? { ok: false, reason: 'binary' } : { ok: true, lines: splitLines(buf.toString('utf8')) };
+      }
     }
     this.cache.set(rel, res);
     return res;
@@ -137,9 +156,12 @@ export class Evidence {
 /**
  * Find the line for a section/key cite (best effort). Ranking: a markdown heading containing the
  * key, then a key-looking line (key: / "key" / key =), then any line containing it (exact case
- * before case-insensitive). Returns {line, others} (1-based) or null.
+ * before case-insensitive). A "#" line is a heading only in a markdown file (by the path's extension);
+ * elsewhere it is a comment, which must not outrank the key's own line. Returns {line, others}
+ * (1-based) or null.
  */
-export function findKey(lines, key) {
+export function findKey(lines, key, filePath) {
+  const markdown = filePath === undefined || /\.(?:md|markdown|mdown|mkd|mdx)$/i.test(filePath);
   const esc = escapeRe(key);
   const keyLike = new RegExp(`(^|[\\s"'\`{,\\[])${esc}["'\`\\]]?\\s*[:=]`);
   const lower = key.toLowerCase();
@@ -147,7 +169,7 @@ export function findKey(lines, key) {
   lines.forEach((t, i) => {
     let rank = null;
     if (t.includes(key)) {
-      if (/^\s*#{1,6}\s/.test(t)) rank = 0;
+      if (markdown && /^\s*#{1,6}\s/.test(t)) rank = 0;
       else if (keyLike.test(t)) rank = 1;
       else rank = 2;
     } else if (t.toLowerCase().includes(lower)) rank = 3;
@@ -276,8 +298,9 @@ export function isSecretKey(key, extra = []) {
 
 // A key (bare or quoted) followed by ":" (not "::") or "=" (not "=="). A key may hold several words
 // separated by spaces or tabs ("Password rotation: 90 days" in a policy's prose); its segments then
-// include each word, so "password" is found in it.
-const KEY_VALUE = /(?<![A-Za-z0-9_.\-])(["'`]?)([A-Za-z_][A-Za-z0-9_.\-]*(?:[ \t]+[A-Za-z_][A-Za-z0-9_.\-]*)*)\1\s*(?::(?!:)|=(?!=))\s*/g;
+// include each word, so "password" is found in it. A key may start with a digit ("2fa_secret") and may
+// follow a "-" ("--password=x").
+const KEY_VALUE = /(?<![A-Za-z0-9_.])(["'`]?)([A-Za-z0-9_][A-Za-z0-9_.\-]*(?:[ \t]+[A-Za-z_][A-Za-z0-9_.\-]*)*)\1\s*(?::(?!:)|=(?!=))\s*/g;
 
 // An unquoted plain number, boolean or duration ("12", "true", "30s", "1h30m", "90 days", "1 week") is
 // left visible only when the key ALSO names a setting ("password_min_length: 12", "token_ttl: 3600",
@@ -302,6 +325,26 @@ export function isAllowedKey(key, allow = []) {
   });
 }
 
+/**
+ * Index of the quote that closes a value opened just before `a`, or -1. A backslash-escaped character
+ * and a doubled quote ('it''s') do not close it.
+ */
+function closingQuote(line, a, q) {
+  for (let j = a; j < line.length; j++) {
+    if (line[j] === '\\') {
+      j++;
+      continue;
+    }
+    if (line[j] !== q) continue;
+    if (j > a && line[j + 1] === q) {
+      j++;
+      continue;
+    }
+    return j;
+  }
+  return -1;
+}
+
 /** Mask the values of secret keys in one line. Returns {text, masked}. */
 export function maskSecrets(line, extraKeys = [], allowKeys = []) {
   const re = new RegExp(KEY_VALUE.source, 'g');
@@ -310,7 +353,10 @@ export function maskSecrets(line, extraKeys = [], allowKeys = []) {
   let masked = false;
   let m;
   while ((m = re.exec(line))) {
-    if (!isSecretKey(m[2], extraKeys) || isAllowedKey(m[2], allowKeys)) continue;
+    // In a Java-style option ("-Dpassword=x") the key is what follows the "D".
+    const dOpt = m[1] === '' && m.index > 0 && line[m.index - 1] === '-' && /^D[A-Za-z_]/.test(m[2]);
+    const secret = isSecretKey(m[2], extraKeys) || (dOpt && isSecretKey(m[2].slice(1), extraKeys));
+    if (!secret || isAllowedKey(m[2], allowKeys)) continue;
     const i = m.index + m[0].length;
     if (i < last) continue;
     const q = line[i];
@@ -318,7 +364,7 @@ export function maskSecrets(line, extraKeys = [], allowKeys = []) {
     let b;
     if (q === '"' || q === "'" || q === '`') {
       a = i + 1;
-      const j = line.indexOf(q, a);
+      const j = closingQuote(line, a, q);
       b = j < 0 ? line.length : j;
     } else if (q === '[' || q === '{') {
       // A list or inline object ("passwords: [p1, p2]"): mask everything up to its matching bracket.
@@ -397,6 +443,9 @@ export function resolveCite(evidence, cite) {
     return { status: 'ok', lines: out, note };
   }
   if (cite.kind === 'lines') {
+    if (cite.from < 1) {
+      return { status: 'bad-line', lines: [], note: `line ${cite.from} is not a line of ${cite.path} (lines count from 1)` };
+    }
     if (cite.from > L.length) {
       return { status: 'beyond-eof', lines: [], note: `line ${cite.from} is beyond the end of ${cite.path} (${L.length} lines)` };
     }
@@ -406,7 +455,7 @@ export function resolveCite(evidence, cite) {
     const note = to < cite.to ? `clipped at end of file (${L.length} lines)` : '';
     return { status: 'ok', lines: out, note };
   }
-  const found = findKey(L, cite.key);
+  const found = findKey(L, cite.key, cite.path);
   if (!found) return { status: 'key-not-found', lines: [], note: `key "${cite.key}" not found in ${cite.path}` };
   const to = Math.min(found.line + KEY_BLOCK_AFTER, L.length);
   const out = [];

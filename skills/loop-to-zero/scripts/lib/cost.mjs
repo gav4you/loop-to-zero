@@ -49,6 +49,20 @@ const sumRows = (rows) =>
   }, { cacheReads: 0, cacheWrites: 0, otherInput: 0, output: 0, total: 0, messages: 0 });
 const fmtTot = (t) => `cache reads ${t.cacheReads}, cache writes ${t.cacheWrites}, other input ${t.otherInput}, output ${t.output}, total ${t.total}`;
 
+/**
+ * One key per transcript file, however its path is spelled: the real path when the file exists
+ * (links resolved), lower-cased on Windows, where letter case does not tell two files apart.
+ */
+function fileKey(p) {
+  let k = p;
+  try {
+    if (fs.existsSync(p)) k = fs.realpathSync(p);
+  } catch {
+    /* keep the path as stored */
+  }
+  return process.platform === 'win32' ? k.toLowerCase() : k;
+}
+
 /** cost --queue <S> <unit> <R>: every transcript stored in the round's queue.json, summed. */
 export function costQueue({ S, unit, R }) {
   const cfg = loadConfig(S);
@@ -57,7 +71,11 @@ export function costQueue({ S, unit, R }) {
   const qp = path.join(rd, 'queue.json');
   if (!fs.existsSync(qp)) fail(`no queue.json in ${rd}`);
   const q = readJson(qp, 'queue.json');
+  if (!q || typeof q !== 'object' || Array.isArray(q)) fail('queue.json must be a JSON object ({"groups": [...], "slots": [...]})');
   const slots = Array.isArray(q.slots) ? q.slots : [];
+  slots.forEach((s, i) => {
+    if (!s || typeof s !== 'object' || Array.isArray(s)) fail(`queue.json: slots[${i}] must be a JSON object ({"slot", "chunk", "from", "to", "state", ...})`);
+  });
   const seen = new Set();
   const out = [];
   const rows = [];
@@ -67,8 +85,9 @@ export function costQueue({ S, unit, R }) {
     const ts = Array.isArray(s.transcripts) ? s.transcripts.filter((x) => typeof x === 'string') : [];
     if (!ts.length) without.push(s.slot);
     for (const t of ts) {
-      if (seen.has(t)) continue;
-      seen.add(t);
+      const key = fileKey(t);
+      if (seen.has(key)) continue;
+      seen.add(key);
       if (!fs.existsSync(t)) {
         problems.push(`${s.slot}: transcript not found: ${t}`);
         continue;
@@ -102,7 +121,8 @@ function renderCall(msg) {
     if (!c || c.type !== 'tool_use' || !c.input) continue;
     const m = RENDER_CALL.exec(String(c.input.command || ''));
     if (!m) continue;
-    const args = m[1].trim().split(/\s+/);
+    // Split as a shell does, with quotes respected: a quoted <S> holding a space is one argument.
+    const args = m[1].match(/(?:"[^"]*"|'[^']*'|[^\s"'])+/g) || [];
     if (args[4] === 'show') continue;
     return m[1].trim().slice(0, 80);
   }

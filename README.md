@@ -33,13 +33,14 @@ To install it as a personal skill instead, copy `skills/loop-to-zero/` into `~/.
 
 - `skills/loop-to-zero/SKILL.md`: the terms, the setup checklist and the round checklist.
 - `skills/loop-to-zero/references/`: each step in detail (setup, rounds, fixing, briefs for readers and fix
-  checkers, reader modes, limits and queues, learning, asking the owner, working a defect, the state folder).
+  checkers, the starter classes, reader modes, limits and queues, learning, asking the owner, working a defect,
+  the state folder).
 - `skills/loop-to-zero/lessons.md`: the lessons the skill starts with, each marked as something that worked or
   something that went wrong.
 - `skills/loop-to-zero/scripts/`: the tools (`ltz.mjs`: snapshot, render, record, queue, sweep, diff check, replay
   and more), an optional guard hook, and their tests.
-- `skills/loop-to-zero/tests/`: the skill's own tests (a doc linter, the tool tests, eight scenarios and a
-  consistency read).
+- `skills/loop-to-zero/tests/`: the skill's own tests (a doc linter, the tool tests, 25 scenarios, a trigger test
+  and a consistency read).
 
 ## Requirements
 

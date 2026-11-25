@@ -61,7 +61,7 @@ export function citeLinesRead(log, raw) {
   const out = new Map();
   if (c.kind === 'lines') {
     const s = log.lines.get(c.path);
-    if (s) for (let n = c.from; n <= c.to; n++) if (s.has(n)) addTo(out, c.path, n);
+    if (s) for (const n of s) if (n >= c.from && n <= c.to) addTo(out, c.path, n);
   } else if (c.kind === 'key' || c.kind === 'keypath') {
     const s = log.keyLines.get(`${c.path}\n${c.key}`);
     if (s) for (const n of s) addTo(out, c.path, n);
@@ -74,7 +74,12 @@ export function mergeLineMaps(into, from) {
   return into;
 }
 
-/** file:line references in a note, e.g. "src/a.js:12" or "docs/x.md:3-5". */
+/**
+ * file:line references in a note, e.g. "src/a.js:12" or "docs/x.md:3-5". A range written backwards
+ * ("5-3") is read as 3-5, as parseCite reads a cite. The path is found by its characters, so one with
+ * a space, a bracket or a non-ASCII letter comes back cut short: use noteNamesLoggedLine to ask
+ * whether a note names a line a reader rendered.
+ */
 export function noteRefs(note) {
   const out = [];
   const re = /([\w.\/\\@+-]+):(\d+)(?:-(\d+))?/g;
@@ -82,15 +87,50 @@ export function noteRefs(note) {
   while ((m = re.exec(String(note ?? '')))) {
     const p = m[1];
     if (/^\d+$/.test(p) || !/[A-Za-z]/.test(p)) continue; // "12:30" is not a file
-    out.push({ path: normPath(p), from: Number(m[2]), to: Number(m[3] || m[2]), raw: m[0] });
+    const a = Number(m[2]);
+    const b = Number(m[3] || m[2]);
+    out.push({ path: normPath(p), from: Math.min(a, b), to: Math.max(a, b), raw: m[0], url: p.startsWith('//') });
   }
   return out;
+}
+
+/**
+ * The references of a note that can be a file:line: the path has a folder or a file extension, or is a
+ * path in `known` (paths some reader rendered, so "Makefile:12" counts once a reader rendered Makefile).
+ * A host and port ("localhost:8080", "http://host:80") or a word before a number ("node:18") is not one.
+ */
+export function fileRefs(note, known = new Set()) {
+  return noteRefs(note).filter((r) => !r.url && (known.has(r.path) || r.path.includes('/') || /\.[A-Za-z0-9]+$/.test(r.path)));
 }
 
 export function refInLog(log, ref) {
   const s = log.lines.get(ref.path);
   if (!s) return false;
-  for (let n = ref.from; n <= ref.to; n++) if (s.has(n)) return true;
+  for (const n of s) if (n >= ref.from && n <= ref.to) return true;
+  return false;
+}
+
+/**
+ * True when the note names a line this render log shows: for some logged path, the note holds
+ * "<path>:<n>" or "<path>:<a>-<b>" (either order) with a logged line in it. The logged paths are
+ * searched for in the note, so a path may hold any character (a space, brackets, "~", a comma, a
+ * non-ASCII letter). The path must start the reference: "a.md:3" is not found inside "docs/ba.md:3",
+ * though a leading "./" is allowed.
+ */
+export function noteNamesLoggedLine(log, note) {
+  const text = String(note ?? '').replace(/\\/g, '/');
+  for (const [p, set] of log.lines) {
+    let i = -1;
+    while ((i = text.indexOf(`${p}:`, i + 1)) >= 0) {
+      const before = text.slice(0, i).replace(/(?:\.\/)+$/, '');
+      if (/[\p{L}\p{N}_\/@+~.-]$/u.test(before)) continue; // the tail of a longer path
+      const m = /^(\d+)(?:-(\d+))?/.exec(text.slice(i + p.length + 1));
+      if (!m) continue;
+      const a = Number(m[1]);
+      const b = Number(m[2] || m[1]);
+      for (const n of set) if (n >= Math.min(a, b) && n <= Math.max(a, b)) return true;
+    }
+  }
   return false;
 }
 

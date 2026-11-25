@@ -41,7 +41,26 @@ const roundsIn = (dir) => {
  * notes.md.
  */
 export function scratchProbes(S) {
-  const units = new Set(['any-unit']);
+  return probeRounds(S).flatMap((x) => PROBE_FILES.map((f) => `${x}/scratch/${f}`));
+}
+
+/**
+ * The canary files whose being ignored shows that S/.gitignore still ignores them after every later
+ * line (a "!" line can re-include them): canaries.jsonl, a file in canaries-src/, and canary-plan.json
+ * in each probed round folder.
+ */
+export function canaryProbes(S) {
+  return ['canaries.jsonl', 'canaries-src/k7f2.jsonl', ...probeRounds(S).map((x) => `${x}/canary-plan.json`)];
+}
+
+/**
+ * The round folders probed, as "<unit>/r<R>" relative to S/: for each unit folder (two made-up ones,
+ * "any-unit" and the nested "any-folder/any-unit", so a line naming one unit or reaching one level
+ * only is not enough; every unit in config.json; every folder of S/, or of a folder in S/ such as a
+ * discovery state folder, that holds r<R> folders), the rounds r1, r12 and every r<R> on disk.
+ */
+function probeRounds(S) {
+  const units = new Set(['any-unit', 'any-folder/any-unit']);
   try {
     const cfg = JSON.parse(stripBom(fs.readFileSync(path.join(S, 'config.json'), 'utf8')));
     if (cfg && cfg.units && typeof cfg.units === 'object') for (const u of Object.keys(cfg.units)) if (okName(u)) units.add(u);
@@ -55,12 +74,12 @@ export function scratchProbes(S) {
       if (b.isDirectory() && okName(b.name) && roundsIn(path.join(S, a, b.name)).length) units.add(`${a}/${b.name}`);
     }
   }
-  const probes = [];
+  const out = [];
   for (const u of units) {
     const rounds = new Set(['r1', 'r12', ...roundsIn(path.join(S, ...u.split('/')))]);
-    for (const r of rounds) for (const f of PROBE_FILES) probes.push(`${u}/${r}/scratch/${f}`);
+    for (const r of rounds) out.push(`${u}/${r}`);
   }
-  return probes;
+  return out;
 }
 
 /** A gitignore glob (no leading "/", no trailing "/") as a RegExp source, by git's wildmatch rules. */
@@ -195,13 +214,24 @@ export function gitignore({ S }) {
   const bytes = fs.existsSync(p) ? fs.readFileSync(p) : Buffer.alloc(0);
   const have = bytes.toString('utf8').split(/\r?\n/).map((l) => l.trim());
   const missing = GITIGNORE_LINES.filter((l) => !have.includes(l));
-  // The scratch folders: any line git treats as ignoring every <unit>/r<R>/scratch/ folder.
-  const probes = scratchProbes(S);
-  const res = gitNotIgnored(bytes, probes) || {
+  // The scratch folders: any line git treats as ignoring every <unit>/r<R>/scratch/ folder. The canary
+  // files are probed with them, so a later "!" line that re-includes one is seen.
+  const scratch = scratchProbes(S);
+  const canaryFiles = canaryProbes(S);
+  const probes = [...scratch, ...canaryFiles];
+  const all = gitNotIgnored(bytes, probes) || {
     method: 'glob match (git not found)',
     notIgnored: probes.filter((x) => !globIgnores(bytes.toString('utf8'), x)),
   };
+  const res = { method: all.method, notIgnored: all.notIgnored.filter((x) => scratch.includes(x)) };
   const problems = [];
+  // Only when the three lines are there as written: otherwise "missing" already names them.
+  const reincluded = missing.length ? [] : all.notIgnored.filter((x) => canaryFiles.includes(x));
+  if (reincluded.length) {
+    const shown = reincluded.slice(0, 4).join(', ') + (reincluded.length > 4 ? `, and ${reincluded.length - 4} more` : '');
+    missing.push('the canary lines, undone by a later "!" line');
+    problems.push(`${p} has the canary lines, but git does not ignore the canary files: a later "!" line re-includes them; not ignored: ${shown}; remove that line`);
+  }
   if (res.notIgnored.length) {
     missing.push(`${SCRATCH_LINE} (or any line git treats as ignoring every <unit>/r<R>/scratch/ folder)`);
     const left = new Map(); // scratch folder -> its probe files not ignored
@@ -222,7 +252,7 @@ export function gitignore({ S }) {
     failed: missing.length > 0,
     summary:
       `canary gitignore: ${p} needs the ${GITIGNORE_LINES.length + 1} lines above, for any commit of S/ ` +
-      `(${missing.length ? `missing: ${missing.join(', ')}` : 'all present'}); the scratch folders were checked by ${res.method} over ${probes.length} paths`,
+      `(${missing.length ? `missing: ${missing.join(', ')}` : 'all present'}); the scratch folders and the canary files were checked by ${res.method} over ${probes.length} paths`,
     missing,
   };
 }

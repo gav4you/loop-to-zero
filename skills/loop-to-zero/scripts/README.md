@@ -3,7 +3,7 @@
 This is a tool kit for the loop-to-zero skill. It needs Node 18 or later, uses ESM, and has no packages:
 nothing to install. Every command prints a short summary and exits non-zero on any failure, problem,
 mismatch or flag, except the report-only commands (`crosscheck`, and `reach`, which exits non-zero only on a
-problem): their exit status says nothing about what they list, so judge every cite group or reach group they print.
+problem): their exit status says nothing about what they list, so judge every flagged cite group and every reach group they print.
 
 Loops run from the project folder, so every command is written with the skill's path, here
 `<skill>`:
@@ -31,10 +31,10 @@ verdicts, `repeatReason` and `foundBy` values, and the config keys. It reports e
 |---|---|
 | `a` | `ltz <word>` or `ltz.mjs <word>` where `<word>` is not a command. |
 | `b` | A unit status or queue state token in code (`closed-*`, `stopped-*`, `dropped-*`, `final-*`; inline code or code blocks) that the code doesn't define. A `*` family is fine when some defined token has that prefix. |
-| `c` | A verdict value (in `"verdict": "<value>"` or "verdict `<value>`") that isn't `ok`, `wrong`, `pending-owner`, `defect`, `unread` or `outside-bar`. Also a misspelling of `pending-owner` (with an underscore or in camelCase), and a `repeatReason` or `foundBy` value the code doesn't accept. |
+| `c` | A verdict value (in `"verdict": "<value>"` or "verdict `<value>`") that isn't `ok`, `wrong`, `pending-owner`, `defect`, `unread` or `outside-bar`. Also a misspelling of `pending-owner` (with an underscore or in camelCase), and a `repeatReason` or `foundBy` value the code doesn't accept. A value is read whole, up to its closing quote or backtick, and split at `\|`, `,`, `/` and spaces. |
 | `d` | A config key the code doesn't read: `config.<key>`, a camelCase name in backticks right next to "config" (config `<key>`, config key `<key>`, `<key>` in `config.json`), or a camelCase key in a JSON block that follows a `config.json` mention. |
-| `e` | A file name in backticks (`.md`, `.json`, `.jsonl`, `.txt`) that is neither listed in `references/state-template.md` nor a real skill file. Placeholders like `<unit>` and `*` match anything, and a name inside a placeholder (`<pattern.json\|classfile>`) is skipped. So are Claude Code's own files: a path starting with `.claude/` or `~/`. |
-| `f` | A pointer such as `references/<file>.md` ("Section") or `references/<file>.md`, "Section" whose file is missing, or whose section is not one of its headings or bold run-in labels (the section may wrap onto the next line). |
+| `e` | A file name in backticks (`.md`, `.json`, `.jsonl`, `.txt`) that is neither listed in `references/state-template.md` nor a real skill file. A state-template name matches by its last segment. One whose last segment is only a placeholder plus an extension (`drafts/<id>.md`) matches with its folder (`drafts/A01.md`), not every name with that extension. A skill file is named by a path that ends its real path (`README.md`, `hooks/README.md`). Placeholders like `<unit>` and `*` match anything, and a name inside a placeholder (`<pattern.json\|classfile>`) is skipped. So are Claude Code's own files (a path starting with `.claude/` or `~/`) and a cite into the evidence (`docs/C#/readme.md:Install`). |
+| `f` | A pointer such as `references/<file>.md` ("Section") or `references/<file>.md`, "Section" whose file is missing, or whose section neither equals nor starts one of its headings or bold run-in labels (the section may wrap onto the next line). |
 | `file` | One of the files above is missing. |
 
 Its summary counts what each check examined, so a clean run shows that it checked something.
@@ -49,22 +49,22 @@ Its summary counts what each check examined, so a clean run shows that it checke
 ## Commands
 | Command | What it does |
 |---|---|
-| `node <skill>/scripts/ltz.mjs snapshot <S> <unit> <R> [--chunk-size N] [--order <file>]` | Copies the unit's items into `r<R>/snapshot.jsonl` and `S/classes.md` into `r<R>/classes.md`, and writes `list.json`, `chunks.json` and `snapshot.sha256`. `--order` takes a file of ids (one per line, or a JSON array) and writes `list.json` in that order, for example a discovery reading order; it must be a permutation of the unit's ids, or it is refused. It also writes `pin.json`: the evidence this round reads (each git source's pin resolved to its commit, or each folder with its sha256). For `r0` the list and chunk hold the first window only. Refuses once reading has started (any result file, render log or window file). With `"requireRulingEntries": true`, also refuses while a ruling id of the decision log is not found in the "accepted by ruling" section (see "Rulings"). |
+| `node <skill>/scripts/ltz.mjs snapshot <S> <unit> <R> [--chunk-size N] [--order <file>]` | Copies the unit's items into `r<R>/snapshot.jsonl` and `S/classes.md` into `r<R>/classes.md`, and writes `list.json`, `chunks.json` and `snapshot.sha256`. `--order` takes a file of ids (one per line, or a JSON array) and writes `list.json` in that order, for example a discovery reading order; it must be a permutation of the unit's ids, or it is refused. It also writes `pin.json`: the evidence this round reads (each git source's pin resolved to its commit, or each folder with its sha256). A git pin that does not resolve to a commit is refused, and nothing is written. For `r0` the list and chunk hold the first window only. Refuses once reading has started (any result file, render log or window file). With `"requireRulingEntries": true`, also refuses while a ruling id of the decision log is not found in the "accepted by ruling" section (see "Rulings"). |
 | `node <skill>/scripts/ltz.mjs render <S> <unit> <R> <slot> <from> <count> [--list f]` | Writes `r<R>/w-<slot>-<from>.txt`: each item in full and every cited line at the pin (see "Cites"). Logs each line to `render-<slot>.jsonl`, masks secret values (see "Masking") and reports how many cited lines it masked. |
 | `node <skill>/scripts/ltz.mjs render <S> <unit> <R> <slot> show <cite>...` | The same as `show`. |
 | `node <skill>/scripts/ltz.mjs show <S> <unit> <R> <slot> <cite>...` | Prints those lines at the pin, logs them to the same render log, and reports the masked count. |
-| `node <skill>/scripts/ltz.mjs record <S> <unit> <R> --chunk-readers c1=c1-a,c1-b ...` | Checks coverage (with any rerun's lines merged in; see "Re-runs and supplementary reads"), pending reasons and repeats, then writes `report.json` and `measure.json`, including `fullDepth`, `countsAsZero` (see "Counting a round as zero") and the fix checker's results (`fixChecker`). It writes nothing if any check fails. Every chunk needs readers, except in a `final-check` unit, where chunks left out (or every chunk, with no `--chunk-readers`) are reported not read (see "Final-check rounds"). |
+| `node <skill>/scripts/ltz.mjs record <S> <unit> <R> --chunk-readers c1=c1-a,c1-b ...` | Checks coverage (with any rerun's lines merged in; see "Re-runs and supplementary reads"), pending reasons and repeats, then writes `report.json` and `measure.json`, including `fullDepth`, `countsAsZero` (see "Counting a round as zero") and the fix checker's results (`fixChecker`). It writes nothing if any check fails. Its summary gives the counts, each repeat kept wrong, the canary scores and the remaining-wrongs estimate. Every chunk needs readers, except in a `final-check` unit, where chunks left out (or every chunk, with no `--chunk-readers`) are reported not read (see "Final-check rounds"). Every reader `queue.json` holds must be named, unless its slot is closed as `replaced`: one left out is a PROBLEM. A rerun slot is never named: its lines come in under its parent. |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> init --pairs c1=c1-a,c1-b ...` | Creates `queue.json`. Every chunk must be queued, except for a `final-check` unit, which may queue a subset of chunks or none (see "Final-check rounds"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> init --opaque [--per-chunk N] [--chunks c2,...]` | Creates `queue.json` with short random slot names, N per chunk (default 2), and prints the `--chunk-readers` arguments for `record` (see "Opaque slot names"). `--chunks` queues only those chunks, for a `final-check` unit only. |
-| `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> next --cap N` | Lists stopped jobs to continue, then slots to launch within the cap: pairs whole, reruns one by one. |
+| `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> next --cap N` | Lists stopped jobs to continue, then slots to launch within the cap: pairs whole, reruns one by one. During a known limit wait it lists nothing to launch, and a chunk with more queued readers than the cap is a PROBLEM (see "Queue"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> mark <slot> <state> [--agent id] [--transcript path] [--reset <date-time>] [--ruling id]` | Sets a job's state. `done` is refused unless the result file covers the range. `replaced` closes an abandoned slot. `dropped-by-owner` needs `--ruling` with its decision id (see "Dropped ranges"). `--transcript` stores the agent's transcript path (see "Transcripts and cost"). `--reset <date-time>` records when a limit resets (for `stopped-limit`; `next` waits until then). It takes an ISO 8601 date and time, `YYYY-MM-DDTHH:MM`, with optional `:SS`, fractional seconds, and `Z` or a `+HH:MM`/`-HH:MM` offset, such as `2026-11-10T03:00` (local time, with no `Z` or offset). Anything else is refused: a bare clock time (`03:00`), a date with no time (`2026-11-10`), a date with no year (`Nov 10 03:00`), or an invalid date or time (such as `2026-11-31T03:00`, or `24:00`, which ISO 8601 allows). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> replace <slot> --agent <newId> [--from P] [--transcript path]` | Puts a fresh agent on the same slot after an account change, in a new session, or when a continue fails because the agent's context is full. The slot stays open (see "Replacing an agent"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> rerun <slot> --from P --to Q` | Adds a new slot, with an opaque name and its parent recorded, that reads positions P-Q of that slot again. `record` uses its lines there (see "Re-runs and supplementary reads"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status` | Prints each slot's state, result lines, resume position, any dropped range and earlier agents. |
-| `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given (see "The diff check" and "Searches"). |
+| `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--verify-searches\|--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given; `--verify-searches` is the default, so it is accepted and changes nothing (see "The diff check" and "Searches"). |
 | `node <skill>/scripts/ltz.mjs searches <S> [--rounds <unit>,...\|all] [--at-current]` | Re-runs every structured fixlog search of those rounds over `boundaryPaths`, each round at the pin its `pin.json` recorded (with `--at-current`, at the current pin), and reports each scope that was too narrow (see "Searches"). |
 | `node <skill>/scripts/ltz.mjs reach <S> --to <rev> [--unit <unit>]` | Before a pin move, lists the files changed between the pin and <rev> inside `boundaryPaths` and, per unit, the items that cite one, the universal items whose last structured search finds different hits at <rev>, and the universal items with no search to re-run (see "Reach"). |
-| `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share, and flags the cite groups whose items state different numbers. Reports only: it exits 0 whatever it flags. |
+| `node <skill>/scripts/ltz.mjs crosscheck <S> [--unit <unit>]` | Lists every cite two or more items share (grouped by the line cited, however the path is spelled), and flags the cite groups whose items state different numbers. A unit written against a number is left out (`30s` is 30), and a number inside a word or a dotted version (`v2`, `1.2.3`) is not compared. Reports only: it exits 0 whatever it flags. |
 | `node <skill>/scripts/ltz.mjs sweep <S> <pattern.json\|classfile> [--unit U] [--count]` | Prints hits; with `--count`, only hit counts per pattern and unit. Refuses a pattern that misses a known instance (see "Sweeps"). |
 | `node <skill>/scripts/ltz.mjs flips <S> <unit>` | Reports an (id, field) whose value returns to one it held earlier, in `S/`'s rounds or a `historyFolders` round. Exits non-zero for an unexplained flip (see "Flips"). |
 | `node <skill>/scripts/ltz.mjs rulings <S>` | Lists every ruling id in the decision log that is not found, as whole text, in `S/classes.md`'s "accepted by ruling" section, and exits non-zero if any is missing (see "Rulings"). |
@@ -75,7 +75,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs cost --queue <S> <unit> <R>` | Sums every transcript path stored in that round's `queue.json` (see "Transcripts and cost"). |
 | `node <skill>/scripts/ltz.mjs cost --timeline <transcript.jsonl>` | Prints each message's tokens with its timestamp, and sums the startup and each render window (see "Transcripts and cost"). |
 | `node <skill>/scripts/ltz.mjs replay <S> <pattern.json\|classfile> --rounds <unit>[,..\|all] [--holdout <unit>/r<R>,...]` | Reports a pattern's recall and false hits on past rounds, a `historyFolders` round's included. A wrong later overturned in the `judgments.jsonl` of the state folder holding its round is not counted (see "Replay"). `--holdout` also reports them without the rounds the rule was written from. |
-| `node <skill>/scripts/ltz.mjs spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K>]` | Draws each reader's random spot-checks from its ok items (K per slot, 5 by default, plus any `--extra`), half early and half late in its range (the odd one early), reproducibly from the seed, and writes `r<R>/spotchecks.json`. |
+| `node <skill>/scripts/ltz.mjs spotcheck <S> <unit> <R> --seed N [--per-slot K] [--extra <slot>=<K>]` | Draws each reader's random spot-checks from its ok items (K per slot, 5 by default, plus any `--extra`), half early and half late in its range (the odd one early), reproducibly from the seed, and writes `r<R>/spotchecks.json`. With a `queue.json`, it draws from the files of the queue's slots that are not `replaced`, and of each only the lines `record` uses (a rerun's lines in place of its parent's there); a file the queue does not hold is left out. Without one, it draws from every `agent-<slot>.jsonl`. |
 | `node <skill>/scripts/ltz.mjs lock <S> acquire\|release\|check --session <id>\|auto` | Manages the single-writer lock `S/writer.lock`; `--session auto` takes the id from the guard (see "The writer's lock"). |
 
 The `<skill>/scripts/hooks/guard.mjs` PreToolUse hook is documented in `hooks/README.md`. The guard works
@@ -91,12 +91,17 @@ An item's `cites` (and a reader's) take four forms:
 |---|---|
 | `path:12` | That line. |
 | `path:20-25` | That range, clipped at the end of the file. |
-| `path:Key` | The best line holding `Key` (a markdown heading first, then a `Key:`/`Key =` line, then any line), plus the 10 lines after it. |
+| `path:Key` | The best line holding `Key` (in a `.md` file a markdown heading first; then a `Key:`/`Key =` line; then any line), plus the 10 lines after it. In any other file a `#` line is a comment, not a heading. |
 | `path#a.b.c` | A nested key in JSON or YAML, found by indentation (best effort). `a` is the shallowest match in the file, and each later key must be a direct child of the one before it. The line of the last key is shown with its block: its deeper-indented lines, and a closing bracket at its own indent. A key written inline on its parent's line (`"grpc": { "port": 9090 }`) resolves to that line. The block is clipped at 200 lines. |
 
-A cite that cannot be rendered (missing file, a line past the end, a key not found, a path no evidence
-source claims) is marked in the window and logged as an attempt, so a reader may cite exactly what was
-tried.
+A cite that cannot be rendered (a missing file, a folder, a file that is not text, a line before 1 or
+past the end, a key not found, a path no evidence source claims) is marked in the window and logged as
+an attempt, so a reader may cite exactly what was tried. A file is not text when it holds a NUL byte or
+starts with a UTF-16 byte order mark (status `binary`): export such evidence as UTF-8. A UTF-8 byte
+order mark is dropped, so it is not part of line 1.
+
+A `#` in a folder name is part of the path (`src/C#/a.cs:1`, `docs/C#/readme.md:Install`). A file whose
+own name holds `#` cannot be cited: what follows the `#` is read as a key path.
 
 ## Evidence sources
 `config.evidence` is either one source or a list of sources. A single object, as below, is the source
@@ -120,15 +125,18 @@ How paths are routed:
 - **No match.** A path that no source claims (no `""` prefix and no match) is not rendered (`no-source`).
 - **Same everywhere.** `render`, `show`, `diffcheck`'s search verification and `searches` all route the
   same way.
-- **Prefix rules.** A prefix is a relative folder; a trailing `/` is added if missing. Two sources may
-  not share a prefix.
+- **Prefix rules.** A prefix is a relative folder; a trailing `/` is added if missing, and `.` is the
+  empty prefix. Two sources may not share a prefix.
+- **Git paths.** A git source's paths, in cites and in search globs, count from the repository's top
+  level, also when `repo` names a folder inside it.
 - **Folders shadowed.** A file a source holds under another source's longer prefix belongs to that
   other source.
 
 ## Masking
 Rendered evidence lines are masked by default. For each `key: value` or `key=value` (`::` and `==` are
 left alone), the key is split into segments at `_`, `-`, `.`, spaces and camelCase boundaries,
-lower-cased.
+lower-cased. A key may start with a digit (`2fa_secret`) and may follow a `-` (`--password=x`); in
+`-Dpassword=x` the key is what follows the `D`.
 - **A key may be several words**, as in a policy's prose: everything from the first word before the
   `:` or `=` back to the start of the line or the previous value. So in "Password rotation: 90 days"
   the key is "Password rotation", with the segments `password` and `rotation`. In "The admin password
@@ -163,7 +171,7 @@ plural, in any case (`90 days`, `1 week`). The setting segments are:
 `maskAllow` is never masked, whatever its value.
 
 How much of a value is masked:
-- a quoted value: inside its quotes;
+- a quoted value: inside its quotes (a backslash-escaped or doubled quote does not end it);
 - a `[...]` list or `{...}` inline object: up to its matching bracket;
 - any other value: up to `,` `;` `}` `]` `)`, a ` #` comment, or the end of the line. Spaces do not end
   it, so "Password: correct horse battery" is masked whole. A plain value is judged on that whole text,
@@ -201,12 +209,13 @@ lines. Item text is never masked.
     current value;
   - every entry here for that unit must be a real change since its snapshot (entries in other rounds
     only explain);
-  - a unit with no snapshot is a mismatch (take a baseline first).
+  - a unit with no snapshot is a mismatch (take a baseline first). r0's snapshot is no baseline: setup
+    re-extracts after it.
 
   The fields this round edits in that unit get the universal-clause, new-list, shape and regression
   checks below, cleared only by a search on this round's entry for that id and field. The unit's own
   fixes are left to its own diffcheck. A closed unit named this way is flagged by the closed-unit check
-  instead.
+  instead, and an entry for it that names no change since its latest snapshot is a mismatch.
 - **Universal clauses.** Each changed field is split into clauses: at sentence stops, `;`, `:`,
   parentheses, line breaks and spaced dashes, but not at commas. These are flagged:
   - every changed clause (in the new text, not in the old) that holds a universal word, whether the
@@ -226,7 +235,8 @@ lines. Item text is never masked.
   example", "e.g." or "among others" in its clause. It is cleared like a universal clause: by a fixlog
   `search` with `hits` for that id and field.
 - **Shape.** Stacked parentheticals `) (`, a sentence over 60 words, a clause appended with no sentence
-  stop, or a field that lost its final stop.
+  stop (text added after the old text that starts a new word or clause; a last word or number that only
+  got longer, "3" to "30", is not one), or a field that lost its final stop.
 - **Regression patterns.** A changed item still matching a pattern in `S/checks/patterns/*.json`
   with `"regression": true`.
 - **Closed units.** A unit is closed when its `status` starts with `closed`:
@@ -267,7 +277,9 @@ item states that bound.
 
 **The structured search.** It has a `regex` (a JS regex) and these optional fields:
 - `flags`;
-- `paths`: globs; without them, `boundaryPaths` from `config.json`, or every file;
+- `paths`: globs (the dialect is under `config.json`, "File formats"); without them, `boundaryPaths` from
+  `config.json`, or every file. A search whose globs select no file at the pin fails: it read nothing, so its 0
+  hits back nothing;
 - `count`, which sets what `hits` counts:
   - `"matches"`, the default: every match, so `RATE * RATE` counts 2;
   - `"lines"`: matching lines, the way `rg -c` counts;
@@ -286,7 +298,8 @@ non-empty `why` ([] for 0 hits).
   folder evidence;
 - it applies the same JS regex line by line, so the count means exactly what the regex means (git
   grep's regex dialect would differ);
-- binary files are skipped.
+- files that are not text (a NUL byte, or a UTF-16 byte order mark) are skipped. They are not counted
+  as scanned, a warning names them, and a search whose scope holds no text file fails.
 
 **`diffcheck` (searches verified by default).** Each of these fails the check:
 
@@ -318,7 +331,9 @@ scopes:
   the last `new` logged for that field in the round. Otherwise they count as differing.
 - Free-text searches are counted but cannot be re-run.
 - Nothing is compared with the current items, so past and closed rounds work.
-- Each round runs at the pin its `pin.json` recorded. `--at-current` runs every round at the current pin
+- Each round runs at the pin its `pin.json` recorded. A folder source whose files no longer match the
+  `sha256` the round recorded cannot be read at that pin: its round is a PROBLEM, not a re-run (`diffcheck`
+  refuses such a folder the same way). `--at-current` runs every round at the current pin
   instead, after a pin move: it says how many rounds were snapshotted at another pin, and a difference there
   may be the evidence moving, judged at the new evidence.
 - It exits non-zero when any differs, or when there is no structured search to re-run.
@@ -336,7 +351,8 @@ owner decides (`references/round.md`, "Between rounds only"):
   structured search to re-run, each with the words it holds. The writer checks the third group by
   hand or counts it in.
 - It needs a single git evidence source, reports only, and exits non-zero only on a problem (a bad
-  `<rev>`, or a logged search that cannot run, which is then counted in the third group).
+  `<rev>`, `boundaryPaths` that select no file at either commit, or a logged search that cannot run, which
+  is then counted in the third group).
 
 ## Sweeps
 `node <skill>/scripts/ltz.mjs sweep <S> <pattern.json|classfile> [--unit U] [--count]` runs one pattern,
@@ -373,6 +389,11 @@ summary says it was counted only.
 ## Flips
 `node <skill>/scripts/ltz.mjs flips <S> <unit>` reports any (id, field) whose value returns to one it
 held earlier, across `S/<unit>/r*/fixlog.jsonl`.
+- **Cross-unit edits.** The unit's history also holds the entries other units' rounds logged for it
+  (`"unit": "<unit>"` in their fixlogs), and leaves out its own rounds' entries tagged for another unit.
+  Such an entry is placed where its `old` and `new` fit the field's chain; where both ends fit, the
+  item's current value in `S/items.jsonl` decides, since the chain has to end on it. Its round is
+  labelled with the unit that logged it, such as `u1/r4`.
 - **History folders.** With `historyFolders` in `config.json`, it reads each folder's
   `<folder>/<unit>/r*/fixlog.jsonl` first, in config order, and then `S/`'s rounds. So a field that
   returns to a value it held during discovery is reported. A history round is labelled with its
@@ -400,6 +421,26 @@ Any other flip fails the command.
 `replaced`, `dropped-by-owner`. `done`, `replaced` and `dropped-by-owner` are closed; every other state
 is open, `queued` included. The guard blocks item commits while any job in any round is open.
 
+**What `next` lists.** Stopped jobs to continue come first, then slots to launch within the cap.
+Running and stopped jobs count against the cap. A chunk's queued readers launch together or not at
+all, and a rerun launches on its own.
+- **During a known limit wait, `next` lists nothing to launch.** A wait is known while a
+  `stopped-limit` job has a recorded reset (`--reset`) that is still ahead. `next` then prints the
+  `wait` line for that job, any `continue` lines, and one `hold` line with the number of queued
+  slots and the latest such reset. The summary counts the held slots. A `stopped-limit` job with no
+  reset recorded, or with a reset in the past, holds nothing back.
+- **A chunk with more queued readers than the cap itself can never launch.** `next` reports it as a
+  PROBLEM naming the chunk, its reader count and the cap, and exits non-zero. A chunk that only
+  waits for free places is not a problem.
+
+**The queue's lock file.** `init`, `mark`, `replace` and `rerun` each hold the lock file
+`queue.json.lock`, beside `queue.json`, while they read, change and write the queue. So commands
+started at the same moment do not lose each other's update.
+- A command waits up to 10 seconds for the lock. Then it fails with a message naming the lock file,
+  and writes nothing.
+- A lock file older than 30 seconds was left by a crashed command, and is replaced.
+- `next` and `status` only read, and take no lock.
+
 **Replacing an agent.** After an account change, in a new session, or when its context is full, an old agent cannot be continued.
 Then, in this order:
 1. Run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status`. The slot's `resume` value is FROM:
@@ -416,7 +457,11 @@ Then, in this order:
 
 What `replace` does:
 - the slot stays open (`running`) with the new agent, and the old agent goes into `agentHistory`;
-- a `done` or `dropped-by-owner` slot is refused.
+- a `done` or `dropped-by-owner` slot is refused;
+- a slot whose result file lacks no position but is not clean (it holds a duplicate, a line outside
+  the range or an unparseable line) is refused. Such a slot has no resume position: `status` shows
+  `resume none (not clean: ...)`, `next` lists it as `unclean` when it is stopped, and `mark <slot> done`
+  says to remove those lines.
 
 Use `mark <slot> replaced` only to close an abandoned slot that nobody will read.
 
@@ -425,6 +470,8 @@ When the owner approves dropping the rest of a reader's range:
 - run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> mark <slot> dropped-by-owner --ruling <id>`.
   `--ruling` takes its decision id in the decision log (usually `P-n`). The tool records the slot's
   uncovered tail (`dropped: {from, to, ruling}`); a slot that already covers its range is refused.
+  So is a slot whose result file lacks no position but is not clean (a duplicate, a line outside the
+  range or an unparseable line): no position is missing, so there is no tail to drop.
 - `record` then does not require those positions. The chunk is reported as `fullDepth: false`, with
   its `droppedRanges`, in `measure.json`, unless reruns read the whole dropped tail; several reruns
   may share it ("Re-runs and supplementary reads").
@@ -449,7 +496,8 @@ read that file. Leads are confirmed by the writer, with a `foundBy`.
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
   empty, `finalCheck: true`). Without a `queue.json` at all, `record` works the same.
-- **`record`** accepts chunks with no readers in `--chunk-readers`, and no `--chunk-readers` at all.
+- **`record`** accepts chunks with no readers in `--chunk-readers`, and no `--chunk-readers` at all,
+  for chunks the queue holds no reader for. A reader the queue holds must be named, as in any round (a rerun slot aside: name its parent).
   - Their items are reported `unread`, with the note `not read (final check)`, unless confirmed,
     pending or a defect.
   - A confirmed id there is counted as found by none, by its `foundBy`, as usual.
@@ -462,7 +510,7 @@ read that file. Leads are confirmed by the writer, with a `foundBy`.
 
 ### Re-runs and supplementary reads
 `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> rerun <slot> --from P --to Q` adds a new slot that
-reads positions P-Q of `<slot>` again: a re-run of evidence that was trimmed, unrendered or failed,
+reads positions P-Q of `<slot>` again: a re-run of a range whose cites were trimmed or never rendered, or whose render errored,
 a supplementary read of a skimming reader's range, or (with the owner's OK) a read of an
 owner-dropped tail.
 - **The new slot.** It gets an opaque name and records its `parent`, and starts `queued`. The output
@@ -475,10 +523,13 @@ owner-dropped tail.
 - **In `record`.** Name only the parents in `--chunk-readers`; a rerun slot named there is refused.
   `record` builds each parent's lines as a merged view:
   - for P-Q, it takes the rerun's lines in place of the parent's; where reruns overlap, the latest
-    wins. A wrong the parent marked there that the rerun doesn't mark leaves the union; `record`
-    warns with its id, and the writer confirms or drops it (`references/briefs.md`);
+    wins. A wrong the parent, or an earlier rerun, marked there that the line now used doesn't mark
+    leaves the union; `record` warns with its id, and the writer confirms or drops it
+    (`references/briefs.md`);
   - each file must cover exactly the positions it supplies, once, so the parent's lines inside a
-    rerun's range, and an earlier rerun's lines a later one supersedes, are not needed or used;
+    rerun's range, and an earlier rerun's lines a later one supersedes, are not needed or used. A
+    file that supplies no position (a parent whose whole range was re-read, or a rerun wholly
+    superseded) need not exist, nor its render log; when it exists, its wrongs still get that warning;
   - a line outside a rerun's own P-Q is a PROBLEM;
   - each line is checked against the render log of the slot whose file it came from (a rerun's own
     `render-<slot>.jsonl`), for rendering, cites and the file:line of a `wrong` note, and `cites_read`
@@ -512,9 +563,15 @@ owner-dropped tail.
 The writer cannot learn its own session id, so it can pass `--session auto` instead:
 - the guard hook (`hooks/README.md`) runs before the command, sees the session id, and writes it to
   `S/.session-hint` with the time;
-- `lock` reads the hint, deletes it, and uses that id, which it prints;
+- `lock` reads the hint, deletes it, and uses that id, which it prints. When an agent runs the command, the
+  hint also carries its agent id: the lock then belongs to that agent, and `check` and `release` with
+  `--session auto` compare both. A session id given by hand is compared on the session alone;
 - with no hint (no guard), an unreadable one, or one older than 60 seconds, it fails: give the id, or
   enable the guard. A stale hint is deleted too, and a hint is never used twice.
+
+A `writer.lock` that does not hold `{"session": "<id>", ...}` (an empty or damaged file, `null`, `{}`)
+counts as held by another session, as the guard treats it. `check`, `acquire` and `release` then fail,
+and the message says to delete the file if no session holds it.
 
 ## Round 0
 `r0` is the cost-measurement read: one test reader reads one window under the draft bar, and its
@@ -576,6 +633,12 @@ on that round's confirmed wrongs of the pattern's class, and the false hits.
   order decides "latest") has `now` equal to `ok` or `pending-owner`. So an overturn in one folder
   never reaches a same-numbered round of another. Overturned to `ok`, a hit on it is a false hit;
   overturned to `pending-owner`, it is neither a recalled wrong nor a false hit, like a pending item.
+- **Earlier misses.** An item whose latest `judgments.jsonl` line for the round has `now` equal to `wrong`
+  (a later round found it wrong in text this round had read) was wrong in this round too: a hit on it is
+  listed apart, not counted as a false hit.
+- **Items no reader read.** When the round has a `report.json`, a hit on an item it marks `unread` (a
+  final-check round's unqueued chunk, a dropped range) is listed apart and counts as neither a recalled
+  wrong nor a false hit.
 - **Matching a line.** As in `flips`: the line's `unit` is that unit, or the line has no `unit`, and its
   `round` is the round's number (`2` or `"r2"`).
 
@@ -618,6 +681,12 @@ All `.jsonl` files hold one JSON object per line.
 ```
 
 Notes on these fields:
+- **Keys and shapes.** Every `ltz` command that reads `config.json` refuses one that is not a JSON
+  object, and one that holds a key the tools do not read: at the top level, in a unit (`status`,
+  `itemFiles`) or in an evidence source (`type`, `repo`, `pin`, `root`, `prefix`, `sha256`). The message
+  names the key and lists the accepted ones, so a misspelled key is not ignored. `units` must be an
+  object of unit objects. `universalWords`, when present, must be a non-empty array of non-empty
+  strings. The guard reads `config.json` on its own and does not make these checks.
 - **Unit statuses:**
   - `open`;
   - `final-check`: a closed unit reopened, with the owner's OK, for the final targeted check of its
@@ -633,14 +702,20 @@ Notes on these fields:
 
   Every status that starts with `closed` counts as closed: the guard blocks edits to its item files
   that no open unit also lists (see "The guard works per file" in `hooks/README.md`), and diffcheck
-  flags any change to its items. Any other status, `final-check` included, counts as open.
+  flags any change to its items. `open` and `final-check` count as open, and so does a unit with no
+  `status`. Any other status is refused by every `ltz` command that reads `config.json`, with the
+  list of accepted statuses.
 - **Evidence.** `evidence` is one source, or a list of prefixed sources (see "Evidence sources"). For
   folder evidence, use `{"type": "dir", "root": "<path>", "sha256": "<hash>"}`. `snapshot` prints the
   folder's hash while `sha256` is unset (a warning); once it is set, `snapshot`, `render` and `show` refuse
   the folder if any file in it has changed, been added or been removed since. The hash covers every file's
-  relative path and content.
+  relative path and content. A copy whose files differ only in line endings (`\r\n` for `\n`) still
+  matches. A folder that does not exist is refused.
 - Set `itemsRoot` when the items live in a different repo from the evidence.
-- `boundaryPaths` are globs describing the evidence boundary, used by searches.
+- `boundaryPaths` are globs describing the evidence boundary, used by searches. The glob dialect is small:
+  `**` crosses folders, `*` and `?` do not, and a trailing `/` covers a folder (`src/` is `src/**`). Every
+  other character is literal: braces (`*.{js,md}`) do not expand, and a bare folder name (`src`) matches
+  only a file of that name. Globs that select no file at the pin make a search, and `reach`, fail.
 - `ownerQuestionsBlock` and `defectsBlock` are the owner's close decisions (process decisions; see "Counting a round as
   zero").
 - `historyFolders` lists other state folders (relative to `S/`, such as a discovery state folder) whose
@@ -648,24 +723,25 @@ Notes on these fields:
 
 **Item files:**
 - **`S/items.jsonl`, `r<R>/snapshot.jsonl`:** `{"id", "unit", "type"?, <itemFields>..., "cites": [<cites>]}`.
+  - `cites` is a list. Any other value, such as one cite as a string, is refused.
   - `type` is optional: `"requirement"` (the item states what must hold) or `"description"` (it
     describes the evidence).
   - The tools pass `type` through to the snapshot and the windows. `diffcheck` holds a
     `"requirement"` item's changes to a copying-error basis or a ruling (see "The diff check"); the
     other tools ignore it. `snapshot` warns about any other value.
 - **`r<R>/pin.json`:** `{"sources": [{"type", "prefix", "repo", "pin", "commit"} | {"type", "prefix", "root", "sha256"}]}`, written by `snapshot`. `searches` re-runs the round's logged searches at this pin, and `record` warns when the config's pin has moved since. A round with no `pin.json` (snapshotted before it existed) is read at the current pin.
-- **`r<R>/snapshot.sha256`:** `<sha256>  snapshot.jsonl`. `render`, `record` and `diffcheck` refuse a snapshot that no longer matches it.
+- **`r<R>/snapshot.sha256`:** `<sha256>  snapshot.jsonl`. `render`, `record` and `diffcheck` refuse a snapshot that no longer matches it. A copy that differs only in line endings (`\r\n` for `\n`, as a git checkout with `core.autocrlf` makes) still matches.
 - **`r<R>/list.json`:** `["<id>", ...]`, in list order. Position 1 is the first id.
 - **`r<R>/chunks.json`:** `{"c1": {"from": 1, "to": 64}, ...}`. Each position is in exactly one chunk. The default size is about 70 items, cut on window multiples, and a tail shorter than half a chunk joins the chunk before it.
 - **`--list` file** (the fix-checker input, `r<R>/fixcheck-<K>-<part>-input.jsonl`, where `<K>` is the fix-check iteration): a JSONL of **full items** in the item format, one per line, with ids unique.
   - **A changed item** carries `"changed"`: one `{"field", "old"?, "new"}`, or an array of them when several fields changed. Each is rendered on its own line (`changed[1]: <field>: <new>  (was: <old>)`). A `changed` that is empty, or lacks `field` or `new`, is refused.
   - **A named item** has no `changed` field. It is an item the new text names, added for context, and its window heading is marked `(named item, for context)`.
   - `render --list` shows each item's text from this file, not from the snapshot.
-  - Positions count the file's lines, from 1.
+  - Positions count the file's items, from 1. A blank line is skipped and takes no position.
   - Bad JSON, a missing id or a duplicate id is refused.
 
 **Reader files:**
-- **`r<R>/agent-<slot>.jsonl`** (reader results): `{"unit", "id", "verdict": "ok|wrong", "class": [...], "note", "cites": [...]}`. A `wrong` note names a `file:line` that the reader rendered, unless it starts "self-contradiction:" and quotes the clashing figures.
+- **`r<R>/agent-<slot>.jsonl`** (reader results): `{"unit", "id", "verdict": "ok|wrong", "class": [...], "note", "cites": [...]}`. A `wrong` note names a `file:line` that the reader rendered, unless it starts "self-contradiction:" and quotes the clashing figures. The path is looked for among the paths in the reader's render log, so it may hold any character (a space, brackets, a non-ASCII letter), and a range may be written in either order.
 - **`r<R>/fixcheck-<K>-<part>.jsonl`** (fix-checker results, iteration `<K>`, in the reader schema): `record` reads them into `measure.json`'s `fixChecker`. A line without an `id`, or with a verdict other than `ok` or `wrong`, is a PROBLEM, and so is a `fixcheck-*.jsonl` file not named this way.
 - **`r<R>/render-<slot>.jsonl`** (render log, written only by render and show):
   - `{"t": "item", "id"}`: an item shown in a window;
@@ -690,7 +766,9 @@ Notes on these fields:
   - `pending`, `withdrawn`, `outsideBar`, `ruledKept`, `rejected` and `defects` are reserved keys.
   - **`rejected`** lists every reader wrong the writer did not confirm (a false alarm), each with a note that
     names a file:line answering the refuter (for a "self-contradiction:" wrong, the item's own file:line, with its
-    figures shown to agree), or starts "history:" and names the earlier reasoned ok. A reader
+    figures shown to agree), or starts "history:" and names the earlier reasoned ok. The file:line needs a
+    path with a folder or a file extension, or one a reader of the round rendered (`localhost:8080` and
+    `node:18` are not one), and "history:" needs text after it. A reader
     wrong (canaries aside) that is not confirmed, pending, a defect, withdrawn, outside the bar or rejected is
     a PROBLEM, and so is a note with neither, or an id also in the wrongs, `pending`, `defects`, `withdrawn` or `outsideBar`
     (`ruledKept` may hold the same id: the other reader's ruled ok, kept). One no reader marked gives a
@@ -769,8 +847,12 @@ Notes on these fields:
     - **It goes in `pending`, for the owner, only for** a dispute over a rule's meaning
       (`rule-meaning`), a boundary that is silent on the refuter's evidence kind (`boundary-silent`),
       or wording a ruling approved (`ruled-wording`).
-    - Any other `repeatReason`, one without a `repeatNote`, or one whose `rulingsChecked` fails the
-      checks below, is a PROBLEM.
+    - Any other `repeatReason` is a PROBLEM on any entry, a repeat or not. On a repeat, one without a
+      `repeatNote`, or one whose `rulingsChecked` fails the checks below, is a PROBLEM too. A valid
+      `repeatReason` on an id that no earlier round's standing wrong names gives a warning, and is not
+      counted as a repeat.
+    - **Where repeats show.** `record`'s summary names each repeat kept wrong, with its reason and the
+      earlier rounds; `report.json` carries them on the item, and `measure.json` lists them in `repeats`.
   - **`rulingsChecked`**, on a repeat kept wrong with a `repeatReason`, is a list:
     `[{"ruling": "<ruling id>", "why": "<why it does not cover this item>"}, ...]`. It names every bar
     ruling in the decision log, superseded and withdrawn ones too (their why can be "superseded by
@@ -808,7 +890,8 @@ Notes on these fields:
     `{"verdict": null, "dropped": true, "ruling"}`, and an entry taken from a rerun carries
     `"rerun": "<slot>"`;
   - for a wrong item, `foundBy` (the slots that marked it wrong), `foundByWriter` (the confirmed
-    entry's own `foundBy`, when it has one) and `class` (the entry's classes, when it has any).
+    entry's own `foundBy`, when it has one) and `class` (the entry's classes, when it has any); for a
+    repeat kept wrong, also `repeatReason` and `repeatOf` (the earlier rounds that confirmed it).
 - **`r<R>/measure.json`:**
   - `unit`, `round`, `snapshotSha256`, `caveat` (the estimate caveat, as in each `estimate`);
   - `fullPass`, `fullDepth`, `countsAsZero`, `zeroBlockers`, `closeRules`;
@@ -834,15 +917,22 @@ Notes on these fields:
   - `total` holds:
     - the chunks' counts, summed (the `.<slot>` ones stay per slot), except `unionSize`; of the id
       lists, only `outsideBarIds`;
-    - `estimate`: `{N, foundByReaders, remaining, range, lowConfidence, lowConfidenceChunks, chunksEstimated,
-      chunksNotEstimated, caveat}`, the chunks' estimates and ranges summed;
+    - `estimate`: `{N, foundByReaders, remaining, range, estimated, reason?, lowConfidence, lowConfidenceChunks,
+      chunksEstimated, chunksNotEstimated, caveat}`, the chunks' estimates and ranges summed. With no chunk
+      estimated (one reader per chunk), `estimated` is false, `reason` says why, `lowConfidence` is true,
+      and the summary says the remaining wrongs were not estimated: the 0 is no estimate;
     - `pending`, `pendingByReason`, `unread`, `fullDepth`, `chunksNotFullDepth`, `countsAsZero`.
   - `reruns`: `[{slot, parent, chunk, from, to, state, positionsTaken}]`, every rerun merged in.
+  - `repeats`: `[{id, repeatReason, of}]`, every repeat kept wrong with a `repeatReason`; `of` lists the
+    earlier rounds that confirmed it.
   - `ruledOks`: `[{id, slot, ruling, refs}]`, every `ok` whose note starts `ruled: <ruling id>` (the
     reader and fix-checker briefs' form for wording a ruling approved where the evidence differs). They
     come from the lines the merged view uses, and then from the fix checker's result files
     `fixcheck-<K>-<part>.jsonl`, whose `slot` is the file's name (such as `fixcheck-1-p1`; `<part>` names a part of the fix set). `refs`
-    are the note's file:line references. Each one is printed as a warning, not a PROBLEM, unless its id
+    are the note's file:line references. With config `rulingIdPattern` set, the ruling is that pattern's
+    match at the start of what follows `ruled:`, so an id holding brackets, a comma or a semicolon
+    (`R-4(a)`) is taken whole; otherwise it runs to the first space, comma, semicolon or bracket.
+    Each one is printed as a warning, not a PROBLEM, unless its id
     is in `pending` with `pendingReason` `ruled-wording`, or listed in `confirmed.json`'s `ruledKept`
     with the same ruling (the owner kept the ruling).
   - `fixChecker`: one entry per fix-check iteration, `[{iteration, itemsChecked, wrongs, wrongIds,
@@ -850,9 +940,9 @@ Notes on these fields:
     `itemsChecked` counts distinct ids. `inputItems` and `notJudged` come from the matching
     `fixcheck-<K>-<part>-input.jsonl`; `notRun` marks an input with no results yet. It is empty until
     a fix checker has run, which is normal at a round's first `record`.
-  - `canaries.<slot>`: `{planted, plantedWrong, plantedOk, caught, missed, falseAlarms, okCorrect, notJudged, detail}`.
+  - `canaries.<slot>`: `{planted, plantedWrong, plantedOk, caught, missed, falseAlarms, okCorrect, notJudged, detail}`. `record`'s summary prints each slot's score, with a warning for each canary missed, falsely alarmed on or not judged (the reader's file has no line for it).
   - **The estimate** is Chapman: N = ((n1+1)(n2+1)/(m+1)) − 1, and remaining = N − (n1 + n2 − m). It uses the first two readers listed for a chunk. It is a low estimate: readers share a brief, so they are not independent, and `foundByNone` adds to it.
-  - **Templated ok notes:** `record` warns when one reader file's ok notes share one text on 5 or more items (file:line refs and numbers ignored, case and spacing folded), naming the ids. A warning only: the writer gives that range a supplementary read.
+  - **Templated ok notes:** `record` warns when one reader file's ok notes share one text on 5 or more items (file:line refs and numbers ignored, case and spacing folded), naming the ids; blank notes count as one text. A warning only: the writer gives that reader's whole range a supplementary read.
 - **`r<R>/queue.json`:** `{opaque?, groups: [{chunk, slots}], slots: [{slot, chunk, from, to, state, agent, reset, parent?, created?, transcripts?, dropped?, agentHistory?, history}]}`.
   - States are `queued`, `running`, `stopped-limit`, `stopped-credits`, `stopped-context`, `done`, `replaced` and `dropped-by-owner`.
   - `done`, `replaced` and `dropped-by-owner` are closed; every other state is open, `queued` included.
@@ -866,9 +956,9 @@ Notes on these fields:
   |---|---|---|
   | `id` | yes | The item's id. |
   | `unit` | for another unit's item | That item's unit: a cross-unit edit, checked against that unit's latest snapshot (see "The diff check"). |
-  | `field` | yes | The field edited; `"*"` logs a whole item added or removed. |
-  | `old` | yes | The value before the edit. The first entry for a field must equal the snapshot's value, and each later entry's `old` must equal the previous entry's `new`. |
-  | `new` | yes | The value after the edit. The last entry for a field must equal the current value. |
+  | `field` | yes | The field edited; `"*"` logs a whole item added or removed (another unit's item too, with its `unit`). |
+  | `old` | yes | The value before the edit. The first entry for a field must equal the snapshot's value, and each later entry's `old` must equal the previous entry's `new`. `null` stands for "the item had no such field": a field added to an item is logged with `"old": null`. |
+  | `new` | yes | The value after the edit. The last entry for a field must equal the current value. `null` stands for "no such field" here too: a field removed from an item is logged with `"new": null`. |
   | `search` | when the new text keeps or adds a universal | The backing search: structured (`{"regex", "flags"?, "paths"?, "count"?}`), or free text only with `--no-verify-searches` (see "Searches"). |
   | `hits` | with `search` | Its count, a number (0 allowed), in the search's `count` unit. |
   | `judged` | with a structured `search` | One `{"at", "why"}` per hit the writer judged at the pin: `at` is the hit's `path:line` (`path` for `count` `"files"`), `why` a non-empty reason. At the pin the locations must be exactly the hits (see "Searches"). `hitsJudged` is refused. |
@@ -898,21 +988,25 @@ Notes on these fields:
   ```
   `node <skill>/scripts/ltz.mjs canary gitignore <S>` prints them, says which are missing, and exits
   non-zero if any is:
-  - **The canary lines** must be there as written.
+  - **The canary lines** must be there as written, and no later `!` line may re-include a canary file:
+    the tool probes `canaries.jsonl`, a file in `canaries-src/` and each probed round's
+    `canary-plan.json` along with the scratch folders.
   - **The scratch line** may be any line that git treats as ignoring every round folder's `scratch/`
     folder, a discovery folder's included, such as `scratch/` or `**/scratch/` (not `*/r*/scratch/`, which
     misses `discovery/<unit>/r<R>/scratch/`). The tool checks this on real paths: it copies
     `S/.gitignore` into a throwaway repo in the system temp folder (with no global, system or
     excludes-file rules) and runs `git check-ignore`.
   - **The paths it probes.** It probes three files in the scratch folder of rounds `r1`, `r12` and
-    every round on disk, for each of these units: a made-up one, every unit in `config.json`, and
-    every folder of `S/` (or of a folder in `S/`, such as a discovery state folder) that holds round
-    folders. So a line naming one unit, one round or one file type is refused, and so is `**/scratch/`
-    negated by a later `!` line.
+    every round on disk, for each of these units: two made-up ones (one of them a folder deeper, as a
+    discovery state folder's units are), every unit in `config.json`, and every folder of `S/` (or of
+    a folder in `S/`, such as a discovery state folder) that holds round folders. So a line naming one
+    unit, one round or one file type is refused, and so are a line that reaches one level only
+    (`*/r*/scratch/`) and `**/scratch/` negated by a later `!` line.
   - **Without git**, it matches the probe paths against the lines itself, by git's rules: `#`
     comments, `!` negation, a trailing `/` for folders only, a leading or middle `/` that anchors the
     line to `S/`, `*`, `?`, `[...]`, `**` and `\` escapes. A file inside an ignored folder is ignored,
     and the last matching line decides. The summary says which method ran.
-- **`S/writer.lock`:** `{"session", "since"}`. See `hooks/README.md` for what the lock protects.
-- **`S/.session-hint`:** `{"session", "at"}`, written by the guard just before a `lock ... --session auto`
+- **`S/writer.lock`:** `{"session", "agent"?, "since"}`. `agent` is there when an agent took the lock with
+  `--session auto`. See `hooks/README.md` for what the lock protects and who counts as its holder.
+- **`S/.session-hint`:** `{"session", "agent"?, "at"}`, written by the guard just before a `lock ... --session auto`
   command and deleted by `lock` (see "The writer's lock").

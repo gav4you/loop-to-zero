@@ -25,7 +25,8 @@ These words make a claim universal:
 - never, no, none, nothing, nobody;
 - sole, exclusively, any;
 - "no caller", "nothing reads", "exists only", "appears only";
-- "N per …".
+- "N per …" (readers read it literally; the tools' universal check matches whole words, so `diffcheck` and
+  `reach` do not flag it, and config `universalWords` cannot add it).
 
 Read them literally. A universal is wrong if anything in the evidence boundary refutes it, unless the item
 bounds it.
@@ -100,10 +101,11 @@ paraphrase of a rule. Re-check every line against later rulings before each roun
 
 ## A class found mid-pass (open bar)
 The writer:
-1. sweeps every item, in every unit, for it as soon as `references/round.md`, step 2, lets sweeps run (a count-only
+1. writes its sweep patterns to `S/checks/patterns/` first, before the sweep and before any fix, then sweeps every
+   item, in every unit, for it as soon as `references/round.md`, step 2, lets sweeps run (a count-only
    `ltz sweep --count` may run now);
 2. confirms its hits as any sweep's (`references/round.md`, step 4);
-3. replays it (`ltz replay`) if there is history, adds its name, definition, what makes it wrong, fix form, "Is not" line and "Ok
-   example" line to `S/classes.md` once the current round's last fix check is done (like a wording change:
-   `references/learning.md`), and its sweep patterns to `S/checks/patterns/`;
+3. replays it (`ltz replay`) if there is history, and adds its name, definition, what makes it wrong, fix form, "Is not"
+   line and "Ok example" line to `S/classes.md` once the current round's last fix check is done (like a wording
+   change: `references/learning.md`). Only that entry waits: the patterns are already stored;
 4. logs a lesson in `S/lessons.md` ("the research missed a class").

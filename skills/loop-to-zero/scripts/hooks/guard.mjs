@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Claude Code PreToolUse hook for a loop-to-zero state folder. Node >= 18, no dependencies.
-// INERT unless env LTZ_STATE names a state folder holding config.json, or a file .ltz-state in the
-// hook's cwd holds that path. When active it blocks (exit 2, reason on stderr):
+// INERT unless env LTZ_STATE names a state folder holding config.json, or a file .ltz-state holds
+// that path. The file is looked for in the hook's cwd, then in each parent folder up to the root,
+// then in CLAUDE_PROJECT_DIR. When active it blocks (exit 2, reason on stderr):
 //   - a git commit (Bash or PowerShell) that would include item files (staged, or -a / pathspec
 //     changes) while any S/*/r*/queue.json has an open job (any state but done, replaced or
 //     dropped-by-owner; queued counts); when the staged set cannot be determined, it is blocked too;
@@ -35,30 +36,82 @@ function isState(p) {
   }
 }
 
-export function findState(cwd, env = process.env) {
-  const fromEnv = env.LTZ_STATE && env.LTZ_STATE.trim();
-  if (fromEnv && isState(path.resolve(cwd || '.', fromEnv))) return path.resolve(cwd || '.', fromEnv);
+/** The folders a .ltz-state file is looked for in: cwd, each parent folder up to the root, then CLAUDE_PROJECT_DIR. */
+function markerFolders(cwd, project) {
+  const out = [];
   if (cwd) {
-    const marker = path.join(cwd, '.ltz-state');
+    for (let d = path.resolve(cwd); ; d = path.dirname(d)) {
+      out.push(d);
+      if (path.dirname(d) === d) break;
+    }
+  }
+  if (project) out.push(path.resolve(project));
+  return out;
+}
+
+export function findState(cwd, env = process.env) {
+  // The hook's cwd follows a "cd" and is the worktree root inside a worktree; CLAUDE_PROJECT_DIR stays put.
+  const project = env.CLAUDE_PROJECT_DIR && env.CLAUDE_PROJECT_DIR.trim();
+  const fromEnv = env.LTZ_STATE && env.LTZ_STATE.trim();
+  // A relative LTZ_STATE resolves against CLAUDE_PROJECT_DIR when that is set, else against cwd.
+  if (fromEnv && isState(path.resolve(project || cwd || '.', fromEnv))) return path.resolve(project || cwd || '.', fromEnv);
+  for (const dir of markerFolders(cwd, project)) {
+    const marker = path.join(dir, '.ltz-state');
     try {
-      if (fs.existsSync(marker)) {
-        const line = stripBom(fs.readFileSync(marker, 'utf8')).split(/\r?\n/).map((s) => s.trim()).find(Boolean);
-        if (line) {
-          const p = path.resolve(cwd, line);
-          if (isState(p)) return p;
-        }
+      if (!fs.existsSync(marker)) continue;
+      const line = stripBom(fs.readFileSync(marker, 'utf8')).split(/\r?\n/).map((s) => s.trim()).find(Boolean);
+      if (line) {
+        // A relative path in the file resolves against the folder that holds the file.
+        const p = path.resolve(dir, line);
+        if (isState(p)) return p;
       }
     } catch {
-      /* unreadable marker: inert */
+      /* unreadable marker: look in the next folder */
     }
   }
   return null;
 }
 
 const ARG = `(?:"[^"]*"|'[^']*'|\\S+)`;
-const GIT_COMMIT_SRC = `\\bgit(?:\\.exe)?((?:\\s+(?:-C\\s+${ARG}|-c\\s+${ARG}|--[\\w-]+(?:=${ARG})?|-[A-Za-z]+))*)\\s+commit\\b`;
+// Global git options before the subcommand. --git-dir, --work-tree, --namespace and --exec-path may
+// have their value as a separate word.
+const GIT_OPTS = `((?:\\s+(?:-C\\s+${ARG}|-c\\s+${ARG}|--(?:git-dir|work-tree|namespace|exec-path)\\s+${ARG}|--[\\w-]+(?:=${ARG})?|-[A-Za-z]+))*)`;
+// "commit" must end there: commit-tree and commit-graph are other commands. The quote after git
+// closes a quoted path to it ("C:/Program Files/Git/cmd/git.exe" commit).
+const GIT_COMMIT_SRC = `\\bgit(?:\\.exe)?["']?${GIT_OPTS}\\s+commit(?![\\w-])`;
 export function isGitCommit(cmd) {
   return new RegExp(GIT_COMMIT_SRC, 'i').test(cmd || '');
+}
+
+/** A line continuation is not a line end: backslash-newline in Bash (dropped), backtick-newline in PowerShell (a space). */
+function joinContinuations(cmd, tool) {
+  return tool === 'PowerShell' ? cmd.replace(/`\r?\n/g, ' ') : cmd.replace(/\\\r?\n/g, '');
+}
+
+/** Where a # comment starts in a shell segment (an unquoted # at the start of a word), or the segment's length. */
+function commentStart(seg) {
+  let q = null;
+  for (let i = 0; i < seg.length; i++) {
+    const ch = seg[i];
+    if (q) {
+      if (ch === q) q = null;
+    } else if (ch === '"' || ch === "'") q = ch;
+    else if (ch === '#' && (i === 0 || /\s/.test(seg[i - 1]))) return i;
+  }
+  return seg.length;
+}
+
+/** A path taken from a command. On Windows, Git Bash's /c/Users/x is the drive path c:/Users/x. */
+function shellPath(p) {
+  return process.platform === 'win32' ? p.replace(/^\/([A-Za-z])(?:\/|$)/, '$1:/') : p;
+}
+
+function isDir(p) {
+  try {
+    return fs.statSync(p).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 function tokenize(s) {
@@ -92,7 +145,11 @@ function splitSegments(s) {
 }
 
 const CD_SEG = /^(?:cd|chdir|pushd|Set-Location|sl)(?:\s+(?:-Path|-LiteralPath|\/d))?\s+(.+)$/i;
-const GIT_SEG = new RegExp(`(?:^|[\\s&(])git(?:\\.exe)?((?:\\s+(?:-C\\s+${ARG}|-c\\s+${ARG}|--[\\w-]+(?:=${ARG})?|-[A-Za-z]+))*)(?:\\s+([\\w-]+))?([\\s\\S]*)$`, 'i');
+// git as a command word, which must end there ("gitfix.sh" and "git-cz" are other commands). It is
+// bare anywhere in the segment, or quoted or with a path when it comes first (PowerShell's call
+// operator & or an opening paren may stand before it).
+const GIT_WORD = `(?:(?:^|[\\s&(])git(?:\\.exe)?|(?:^|[&(]\\s*)(?:"(?:[^"]*[\\\\/])?git(?:\\.exe)?"|'(?:[^']*[\\\\/])?git(?:\\.exe)?'|[^\\s"'&|;()]*[\\\\/]git(?:\\.exe)?))(?=\\s|$)`;
+const GIT_SEG = new RegExp(`${GIT_WORD}${GIT_OPTS}(?:\\s+([\\w-]+))?([\\s\\S]*)$`, 'i');
 const VALUE_SHORT = new Set(['m', 'F', 'C', 'c', 't']);
 const VALUE_LONG = new Set(['--message', '--file', '--reuse-message', '--reedit-message', '--fixup', '--squash', '--author', '--date', '--template', '--cleanup', '--trailer']);
 // Git subcommands that cannot change what is staged.
@@ -112,7 +169,7 @@ function gitGlobals(optsText, dir) {
   let undetermined = null;
   const g = tokenize(optsText);
   for (let i = 0; i < g.length; i++) {
-    if (g[i] === '-C' && g[i + 1] !== undefined) d = path.resolve(d, g[++i]);
+    if (g[i] === '-C' && g[i + 1] !== undefined) d = path.resolve(d, shellPath(g[++i]));
     else if (/^--(git-dir|work-tree)\b/.test(g[i])) undetermined = `${g[i].split('=')[0]} is not followed`;
     else if (g[i] === '-c') i++;
   }
@@ -136,14 +193,14 @@ function parseCommitArgs(args) {
     }
     if (a.startsWith('--')) {
       const [name, val] = a.split(/=(.*)/s);
-      if (name === '--all') c.all = true;
+      if (name === '--all' || name === '--patch' || name === '--interactive') c.all = true;
       else if (name === '--pathspec-from-file') c.undetermined = '--pathspec-from-file is not followed';
       else if (VALUE_LONG.has(name) && val === undefined) i++;
       continue;
     }
     if (a.startsWith('-') && a.length > 1) {
       for (let j = 1; j < a.length; j++) {
-        if (a[j] === 'a') c.all = true;
+        if (a[j] === 'a' || a[j] === 'p') c.all = true; // -p picks changes from the working tree
         if (VALUE_SHORT.has(a[j])) {
           if (j === a.length - 1) i++;
           break;
@@ -191,11 +248,12 @@ export function parseCommits(cmd, cwd) {
     if (cd) {
       const d = tokenize(cd[1])[0];
       if (!d || d === '-') pre.undetermined = `cannot follow "cd ${d || ''}"`;
-      else dir = path.resolve(dir, d === '~' ? home() : d);
+      else dir = path.resolve(dir, d === '~' ? home() : shellPath(d));
       continue;
     }
     const gm = GIT_SEG.exec(seg);
-    if (!gm) {
+    // The word git inside a # comment is not a git command ("cp new.md docs/spec.md # git").
+    if (!gm || gm.index >= commentStart(seg)) {
       pre.otherCommands = true;
       continue;
     }
@@ -239,19 +297,29 @@ function committedFiles(c) {
     });
   const top = git(['rev-parse', '--show-toplevel']).trim();
   const names = (s) => s.split('\0').filter(Boolean).map((n) => path.resolve(top, n));
-  const files = names(git(['diff', '--cached', '--name-only', '-z']));
-  const needWorkTree = c.all || c.paths.length || c.addAll;
+  // --no-renames: a renamed file is listed under its old name too, so a renamed item file is seen.
+  const files = names(git(['diff', '--cached', '--name-only', '--no-renames', '-z']));
+  // A folder given to git add/stage/rm/mv: its working-tree changes and untracked files go with it.
+  const addDirs = c.adds.filter(isDir).map(normForCompare);
+  const needWorkTree = c.all || c.paths.length || c.addAll || addDirs.length;
   if (needWorkTree && c.otherCommands) {
     const e = new Error('another command runs before the commit in the same command, so the working tree it would commit is unknown; run the commit as its own command');
     e.undetermined = true;
     throw e;
   }
   if (needWorkTree) {
-    const wt = names(git(['diff', '--name-only', '-z']));
+    const wt = names(git(['diff', '--name-only', '--no-renames', '-z']));
+    // The untracked files of the whole tree, named from its top level, whichever folder the commit runs in.
+    const untracked = c.addAll || addDirs.length ? names(git(['ls-files', '--others', '--exclude-standard', '--full-name', '-z', '--', ':/'])) : [];
     if (c.all || c.addAll) files.push(...wt);
-    if (c.addAll) files.push(...names(git(['ls-files', '--others', '--exclude-standard', '-z'])));
+    if (c.addAll) files.push(...untracked);
+    for (const f of addDirs.length ? [...wt, ...untracked] : []) {
+      const nf = normForCompare(f);
+      if (addDirs.some((d) => nf === d || nf.startsWith(d + '/'))) files.push(f);
+    }
     if (c.paths.length) {
-      const specs = c.paths.map((p) => ({ glob: /[*?[]/.test(p), abs: normForCompare(path.resolve(c.dir, p)) }));
+      // A glob, or a pathspec starting with ":" (":/docs", ":(top)docs"), is not matched: every change counts.
+      const specs = c.paths.map((p) => ({ glob: /[*?[]/.test(p) || p.startsWith(':'), abs: normForCompare(path.resolve(c.dir, p)) }));
       for (const f of wt) {
         const nf = normForCompare(f);
         if (specs.some((s) => s.glob || nf === s.abs || nf.startsWith(s.abs + '/'))) files.push(f);
@@ -321,6 +389,7 @@ export function commitItemFiles(cmd, cwd, cfg) {
 // exists), and it never blocks: a hint that cannot be written makes the lock command fail instead.
 export const SESSION_HINT = '.session-hint';
 const LTZ_TOKEN = /(?:^|[\\/])ltz(?:\.mjs)?$/i;
+const NODE_TOKEN = /(?:^|[\\/])node(?:\.exe)?$/i;
 
 /** The state folders (absolute) that "ltz ... lock <S> <action> --session auto" commands name. */
 export function lockAutoTargets(cmd, cwd) {
@@ -330,12 +399,15 @@ export function lockAutoTargets(cmd, cwd) {
     const cd = CD_SEG.exec(seg);
     if (cd) {
       const d = tokenize(cd[1])[0];
-      if (d && d !== '-') dir = path.resolve(dir, d === '~' ? home() : d);
+      if (d && d !== '-') dir = path.resolve(dir, d === '~' ? home() : shellPath(d));
       continue;
     }
-    const t = tokenize(seg);
-    const i = t.findIndex((x) => LTZ_TOKEN.test(x));
-    if (i < 0 || t[i + 1] !== 'lock') continue;
+    // The ltz token is the command's own first word, or follows node (PowerShell's call operator &
+    // may come first). Text that only names the command, or a # comment, runs nothing.
+    const t = tokenize(seg.slice(0, commentStart(seg)));
+    let i = t[0] === '&' ? 1 : 0;
+    if (NODE_TOKEN.test(t[i] || '')) i++;
+    if (!LTZ_TOKEN.test(t[i] || '') || t[i + 1] !== 'lock') continue;
     const pos = [];
     let session = null;
     for (let j = i + 2; j < t.length; j++) {
@@ -344,7 +416,7 @@ export function lockAutoTargets(cmd, cwd) {
       else if (t[j].startsWith('--')) continue;
       else pos.push(t[j]);
     }
-    if (session === 'auto' && pos.length >= 2 && ['acquire', 'release', 'check'].includes(pos[1])) out.push(path.resolve(dir, pos[0]));
+    if (session === 'auto' && pos.length >= 2 && ['acquire', 'release', 'check'].includes(pos[1])) out.push(path.resolve(dir, shellPath(pos[0])));
   }
   return out;
 }
@@ -358,7 +430,8 @@ export function writeSessionHints(input) {
     for (const S of lockAutoTargets(cmd, input.cwd || process.cwd())) {
       try {
         if (!fs.statSync(S).isDirectory()) continue;
-        fs.writeFileSync(path.join(S, SESSION_HINT), JSON.stringify({ session: input.session_id.trim(), at: new Date().toISOString() }) + '\n');
+        const agent = typeof input.agent_id === 'string' && input.agent_id.trim() ? { agent: input.agent_id.trim() } : {};
+        fs.writeFileSync(path.join(S, SESSION_HINT), JSON.stringify({ session: input.session_id.trim(), ...agent, at: new Date().toISOString() }) + '\n');
         written.push(S);
       } catch {
         /* the lock command will say the hint is missing */
@@ -370,14 +443,83 @@ export function writeSessionHints(input) {
   return written;
 }
 
-const SEARCH_HEAD = /\b(?:grep|egrep|fgrep|rg|findstr|Select-String|sls)\b[\s\S]*?\|\s*(?:head\b|(?:Select-Object|select)\b[^|]*?\s-f(?:i(?:r(?:s(?:t)?)?)?)?\b)/i;
+// A search piped into a truncating command. Each command is read on its own (they are separated by
+// ; && || & and newlines), with quoted text blanked. Inside one command, a pipeline stage whose
+// command word is a search tool must not be followed by a stage whose command word is head, or
+// Select-Object / select with -First.
+const SEARCH_WORD = /^(?:\S*[\\/])?(?:grep|egrep|fgrep|rg|findstr|select-string|sls)(?:\.exe)?$/i;
+const HEAD_WORD = /^(?:\S*[\\/])?head(?:\.exe)?$/i;
+const SELECT_WORD = /^(?:[\w.]+\\)?(?:select-object|select)$/i; // a module-qualified name too
+const FIRST_OPT = /\s-f(?:i(?:r(?:s(?:t)?)?)?)?(?![\w-])/i;
+// Words that only lead in to the command after them: VAR=value, "command", shell keywords, and
+// commands that run their arguments as a command.
+const LEAD_WORD = /^(?:\w+=\S*|command|sudo|env|time|nohup|nice|exec|do|then|else|elif|if|while|until|!|%|foreach|foreach-object)$/i;
+const XARGS_WORD = /^(?:\S*[\\/])?xargs(?:\.exe)?$/i;
+const GIT_CMD_WORD = /^(?:\S*[\\/])?git(?:\.exe)?$/i;
+
+/** The words of one pipeline stage, from its command word on. A PowerShell "$x =" before it is dropped. */
+function stageWords(stage) {
+  const w = stage.replace(/^\s*\$[\w:.]+\s*[+-]?=\s*/, '').trim().split(/\s+/).filter(Boolean);
+  let i = 0;
+  while (i < w.length && LEAD_WORD.test(w[i])) i++;
+  return w.slice(i);
+}
+function isSearchStage(w) {
+  if (!w.length) return false;
+  if (SEARCH_WORD.test(w[0])) return true;
+  // xargs runs the command named after its options, and "git grep" is a search.
+  if (XARGS_WORD.test(w[0])) return w.slice(1).some((x) => SEARCH_WORD.test(x));
+  if (GIT_CMD_WORD.test(w[0])) {
+    const rest = w.slice(1);
+    return /^grep$/i.test(rest.find((x, j) => !x.startsWith('-') && !/^-[Cc]$/.test(rest[j - 1] || '')) || '');
+  }
+  return false;
+}
+const isTruncatingStage = (w) => w.length > 0 && (HEAD_WORD.test(w[0]) || (SELECT_WORD.test(w[0]) && FIRST_OPT.test(` ${w.slice(1).join(' ')}`)));
+
 export function isSearchIntoHead(cmd) {
-  return SEARCH_HEAD.test(cmd || '');
+  const text = String(cmd || '')
+    .replace(/"[^"]*"|'[^']*'/g, '""') // quoted text is an argument, not a command
+    .replace(/\$\(|[(){}`]/g, ' ') // a subshell, a group or a script block starts a command like any other
+    .replace(/\|[ \t]*\r?\n/g, '| ') // a pipe at the end of a line goes on to the next line,
+    .replace(/\r?\n\s*\|/g, ' |'); // and so does a pipe that starts the next line
+  // A & that is part of a redirect (2>&1, &>) or of |& separates nothing.
+  for (const command of text.split(/;|&&|\|\||\r?\n|(?<![<>|&])&(?![>&])/)) {
+    let searching = false;
+    for (const stage of command.split(/\|&?/)) {
+      const w = stageWords(stage);
+      if (searching && isTruncatingStage(w)) return true;
+      if (isSearchStage(w)) searching = true;
+    }
+  }
+  return false;
 }
 
+// Paths are compared as real paths, so a file reached through a junction or a symlink, or by a
+// Windows short name, is the same file. A path that does not exist takes the real path of its
+// nearest existing parent folder, and keeps the rest as written.
+function realPath(p) {
+  const abs = path.resolve(p);
+  const rest = [];
+  for (let dir = abs; ; ) {
+    try {
+      return path.join(fs.realpathSync.native(dir), ...rest);
+    } catch {
+      const parent = path.dirname(dir);
+      if (parent === dir) return abs; // nothing on the way exists: the path as written
+      rest.unshift(path.basename(dir));
+      dir = parent;
+    }
+  }
+}
+const NORM_CACHE = new Map();
 function normForCompare(p) {
-  let s = path.resolve(p).replace(/\\/g, '/').replace(/\/+$/, '');
-  if (process.platform === 'win32') s = s.toLowerCase();
+  let s = NORM_CACHE.get(p);
+  if (s === undefined) {
+    s = realPath(p).replace(/\\/g, '/').replace(/\/+$/, '');
+    if (process.platform === 'win32') s = s.toLowerCase();
+    NORM_CACHE.set(p, s);
+  }
   return s;
 }
 
@@ -446,13 +588,22 @@ function writerFile(cfg, S, target, cwd) {
   return null;
 }
 
-/** The lock, when a session other than this one holds it (an unreadable lock counts as held). */
-function otherHolder(S, sessionId) {
+/**
+ * The lock, when someone other than this caller holds it (an unreadable lock counts as held). Claude
+ * Code runs an agent under the session_id of the conversation that launched it, with an agent_id of
+ * its own. So the holder is a session and, when the lock records one, an agent: a call that carries
+ * an agent_id the lock does not record comes from an agent the writer launched (a reader, a fix
+ * checker), not from the writer.
+ */
+function otherHolder(S, sessionId, agentId) {
   const p = path.join(S, 'writer.lock');
   if (!fs.existsSync(p)) return null;
   const lock = readJson(p);
   if (!lock || !lock.session) return { session: '(unreadable writer.lock)', since: '?' };
-  return lock.session !== sessionId ? lock : null;
+  const caller = typeof agentId === 'string' && agentId.trim() ? agentId.trim() : null;
+  const holderAgent = typeof lock.agent === 'string' && lock.agent ? lock.agent : null;
+  if (lock.session === sessionId && holderAgent === caller) return null;
+  return { ...lock, agent: holderAgent, sameSession: lock.session === sessionId, caller };
 }
 
 function activeJobs(S) {
@@ -531,11 +682,14 @@ export function check(input, S) {
   const ti = input.tool_input || {};
   const cwd = input.cwd || process.cwd();
   const isShell = SHELL_TOOLS.has(tool);
-  const cmd = isShell ? String(ti.command || '') : '';
+  const cmd = isShell ? joinContinuations(String(ti.command || ''), tool) : '';
   const commit = isShell && isGitCommit(cmd);
   const write = WRITE_TOOLS.has(tool);
-  const holder = write || commit ? otherHolder(S, input.session_id) : null;
-  const lockText = holder ? `S/writer.lock is held by session ${holder.session} since ${holder.since}` : '';
+  const holder = write || commit ? otherHolder(S, input.session_id, input.agent_id) : null;
+  const lockText = holder
+    ? `S/writer.lock is held by session ${holder.session}${holder.agent ? ` (agent ${holder.agent})` : ''} since ${holder.since}` +
+      (holder.sameSession ? ` (this call comes from ${holder.caller ? `agent ${holder.caller}` : 'the main conversation'} of that session, which is not the holder)` : '')
+    : '';
 
   if (commit) {
     const jobs = activeJobs(S);
@@ -609,7 +763,7 @@ function main() {
   if (!S) return 0;
   let reasons;
   try {
-    if (!input || typeof input !== 'object') throw new Error('the hook input was not JSON, so nothing could be checked');
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('the hook input was not JSON, so nothing could be checked');
     reasons = check(input, S);
   } catch (e) {
     throw new Error(`${e && e.message ? e.message : e} (state folder ${S})`);
@@ -619,8 +773,18 @@ function main() {
   return 2;
 }
 
-const self = fileURLToPath(import.meta.url);
-const entry = process.argv[1] ? path.resolve(process.argv[1]) : '';
+// Run main only when this file is the script node was given. Both paths are compared as real paths:
+// node resolves links for import.meta.url but not for argv[1], so through a junction or a symlink
+// to the skill folder the two differ as written.
+const realOrResolved = (p) => {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return path.resolve(p);
+  }
+};
+const self = realOrResolved(fileURLToPath(import.meta.url));
+const entry = process.argv[1] ? realOrResolved(process.argv[1]) : '';
 const same = process.platform === 'win32' ? entry.toLowerCase() === self.toLowerCase() : entry === self;
 if (same) {
   try {

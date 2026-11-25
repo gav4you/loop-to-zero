@@ -100,15 +100,22 @@ export function skillcheck(root) {
   const files = lintedFiles(root);
   const real = walk(root);
   const realSet = new Set(real);
-  const realBase = new Set(real.map((r) => r.split('/').pop()));
 
-  // [e] allowlist: every file name state-template.md lists.
+  // [e] allowlist: every file name state-template.md lists, by its last segment. A name whose last
+  // segment is only a placeholder plus an extension (drafts/<id>.md) is kept with its parent folder
+  // and matched against a name's last two segments: alone it would match every name with that
+  // extension. With no parent folder it names no file and is left out.
+  const isPlaceholderOnly = (base) => !base.replace(PLACEHOLDER, '').replace(/\.(md|jsonl|json|txt)$/, '').replace(/[-_.]/g, '');
   const tplPath = path.join(root, 'references', 'state-template.md');
   const allow = [];
   if (fs.existsSync(tplPath)) {
-    for (const m of fs.readFileSync(tplPath, 'utf8').matchAll(FILE_TOKEN)) allow.push(m[0].split('/').pop());
+    for (const m of fs.readFileSync(tplPath, 'utf8').matchAll(FILE_TOKEN)) {
+      const segs = m[0].split('/');
+      if (!isPlaceholderOnly(segs[segs.length - 1])) allow.push(segs[segs.length - 1]);
+      else if (segs.length > 1) allow.push(segs.slice(-2).join('/'));
+    }
   }
-  const allowRes = allow.map((a) => ({ name: a, re: placeholderRe(a) }));
+  const allowRes = allow.map((a) => ({ name: a, re: placeholderRe(a), segments: a.split('/').length }));
   // Returns null when the name is known (or not a file name), else the name to report.
   const fileUnknown = (token, dir) => {
     // Inside a placeholder such as <pattern.json|classfile> or <transcript.jsonl>: not a file name.
@@ -119,10 +126,15 @@ export function skillcheck(root) {
     if (/^(?:~\/|\.claude\/)/.test(token)) return null;
     const t = token.slice(closes > opens ? token.lastIndexOf('>') + 1 : 0).replace(/^~\//, '').replace(/^\//, '');
     const base = t.split('/').pop();
-    if (!base.replace(PLACEHOLDER, '').replace(/\.(md|jsonl|json|txt)$/, '').replace(/[-_.]/g, '')) return null; // a pure placeholder
-    if (realSet.has(t) || realSet.has(path.posix.normalize(path.posix.join(dir, t))) || realBase.has(base)) return null;
-    const mine = placeholderRe(base);
-    return allowRes.some((a) => a.re.test(base) || mine.test(a.name)) ? null : (closes > opens ? '...' : '') + t;
+    if (isPlaceholderOnly(base)) return null; // a pure placeholder
+    // A skill file: the path as written (less leading <placeholder>/ folders) ends a real file's path.
+    const tail = t.replace(/^(?:(?:<[^>]*>|\{[^}]*\})\/)+/, '');
+    if (realSet.has(t) || realSet.has(path.posix.normalize(path.posix.join(dir, t))) || real.some((r) => r === tail || r.endsWith(`/${tail}`))) return null;
+    const known = (name) => {
+      const mine = placeholderRe(name);
+      return allowRes.some((a) => a.segments === name.split('/').length && (a.re.test(name) || mine.test(a.name)));
+    };
+    return known(base) || known(t.split('/').slice(-2).join('/')) ? null : (closes > opens ? '...' : '') + t;
   };
 
   for (const file of files) {
@@ -168,7 +180,9 @@ export function skillcheck(root) {
       for (const m of line.matchAll(/"verdict"\s*:\s*"([^"]*)"/g)) {
         for (const v of values(m[1])) if (!VERDICTS.includes(v)) add(file, ln, 'c', `verdict "${v}" is not one of ${VERDICTS.join(', ')}`);
       }
-      for (const m of line.matchAll(/\bverdicts?\s*(?:is\s+|of\s+|:\s*|=\s*|\(\s*)?`([a-z][a-z|-]*)`/gi)) {
+      // The value is the whole code span after the word. A backtick right after the word closes the
+      // word's own span (`verdict`: `ok`), so it is never taken as the start of the value.
+      for (const m of line.matchAll(/\bverdicts?(?:`|(?!`))\s*(?:is\s+|of\s+|:\s*|=\s*|\(\s*)?`([^`]+)`/gi)) {
         for (const v of values(m[1])) if (!VERDICTS.includes(v)) add(file, ln, 'c', `verdict "${v}" is not one of ${VERDICTS.join(', ')}`);
       }
       for (const c of codeParts) {
@@ -177,9 +191,11 @@ export function skillcheck(root) {
         }
       }
       for (const [key, allowed] of [['repeatReason', REPEAT_REASONS], ['foundBy', FOUND_BY]]) {
-        const re = new RegExp(`\`?"?${key}"?\`?\\s*[:=]?\\s*["\`]([a-z][a-z|-]*)["\`]`, 'g');
+        // The key in its own code span or quotes, or bare; then the value, whole, in quotes or a code
+        // span. The key's own closing quote or backtick is never taken as the start of the value.
+        const re = new RegExp(`(?:\`"?${key}"?\`|"${key}"|\\b${key}(?!["\`\\w]))\\s*[:=]?\\s*(["\`])([^"\`]+)\\1`, 'g');
         for (const m of line.matchAll(re)) {
-          for (const v of values(m[1])) if (!allowed.includes(v)) add(file, ln, 'c', `${key} "${v}" is not accepted by the code (${allowed.join(', ')})`);
+          for (const v of values(m[2])) if (!allowed.includes(v)) add(file, ln, 'c', `${key} "${v}" is not accepted by the code (${allowed.join(', ')})`);
         }
       }
 
@@ -217,6 +233,8 @@ export function skillcheck(root) {
       if (!fenced) {
         for (const s of spans(line)) {
           for (const m of s.text.matchAll(FILE_TOKEN)) {
+            // A cite into the evidence (`docs/C#/readme.md:Install`) names no skill or state file.
+            if (/^:\w/.test(s.text.slice(m.index + m[0].length))) continue;
             seen.e++;
             const bad = fileUnknown(m[0], dir);
             if (bad) add(file, ln, 'e', `file name "${bad}" is neither in references/state-template.md nor a skill file`);
@@ -238,7 +256,7 @@ export function skillcheck(root) {
       if (m[2]) {
         const want = norm(m[2]);
         const hs = headings(fs.readFileSync(path.join(root, target), 'utf8'));
-        if (!hs.some((h) => h === want || h.startsWith(want) || h.includes(want))) add(file, ln, 'f', `${m[1]} has no heading "${m[2].replace(/\s+/g, ' ')}"`);
+        if (!hs.some((h) => h === want || h.startsWith(want))) add(file, ln, 'f', `${m[1]} has no heading "${m[2].replace(/\s+/g, ' ')}"`);
       }
     }
   }
@@ -272,8 +290,18 @@ function main(argv) {
   return findings.length ? 1 : 0;
 }
 
-const self = fileURLToPath(import.meta.url);
-const entry = process.argv[1] ? path.resolve(process.argv[1]) : '';
+// Run main only when this file is the script node was given. Both paths are compared as real paths:
+// node resolves links for import.meta.url but not for argv[1], so through a junction or a symlink
+// to the skill folder the two differ as written.
+const realOrResolved = (p) => {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return path.resolve(p);
+  }
+};
+const self = realOrResolved(fileURLToPath(import.meta.url));
+const entry = process.argv[1] ? realOrResolved(process.argv[1]) : '';
 if (process.platform === 'win32' ? entry.toLowerCase() === self.toLowerCase() : entry === self) {
   process.exitCode = main(process.argv.slice(2));
 }

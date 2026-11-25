@@ -48,10 +48,11 @@ Map the project's own words onto these, and use the project's words with the own
 | canary | A planted test item (known wrong or known ok), shown only inside readers' windows. |
 | ruling / decision log | A ruling is an owner decision about how items are judged (a bar ruling, numbered like `R-n`). A process decision (`P-n`) covers how the loop runs, including the close rules and the approval of the class set (its content is `classes.md` itself). The decision log holds both, verbatim, and is the master copy. Readers never open it. |
 | zero rule | A unit closes only on a full-depth pass with 0 confirmed wrongs. |
-| supplementary read | A fresh agent (in solo mode, you after a context reset: `references/modes.md`) re-reads a range whose reader skimmed. Like a re-run of trimmed or unrendered evidence, it is recorded with `ltz queue rerun` (`references/queue-and-outages.md`). |
+| supplementary read | A fresh agent (in solo mode, you after a context reset: `references/modes.md`) re-reads a range whose reader skimmed. Like a re-run of a range whose cites were trimmed or never rendered, it is recorded with `ltz queue rerun` (`references/queue-and-outages.md`). |
 | named item | An item the new text of a fix names, given to the fix checker for context. |
 | snapshot | The unit's items frozen at a round's start (`snapshot.jsonl`, hashed). Readers judge it. |
 | full depth | Every item read in full, with every cited line rendered. Never filtered, tiered or skimmed. |
+| skim | What a reader did when it misses a canary, admits shortcuts or unchecked areas, or `record` flags its ok notes as templated. A supplementary read comes before the pass counts: of the reader's whole range (its slot's FROM to TO) after a canary miss or templated notes, and of the ranges it names after admitted shortcuts. A late fall in lines read per item alone is not a skim: that reader gets extra spot-check picks, and the next snapshot shorter chunks (`references/round.md`, step 3). |
 | measure / found by none | `measure.json`'s counts. "Found by none" means confirmed by the writer's own check (`spot-check`, which also covers a raise no other value names, such as a stronger reviewer's), a sweep, a mapped outside finding (`audit`), the fix checker in old text (`fixcheck`) or the extract (`extract`), not by any reader. |
 | r0 | The setup's cost-measurement read of one window. Its verdicts don't count. |
 | stopping rule | An owner-approved condition for closing a unit other than a zero pass. A unit closed that way is `closed-by-stopping-rule`, unless it closes with a confirmed wrong unfixed or over a dropped range (then `closed-known-wrongs`: `references/round.md`, "Closed statuses"). |
@@ -60,15 +61,17 @@ Map the project's own words onto these, and use the project's words with the own
 | outside finding | An audit's or review's finding, mapped to items and confirmed as `foundBy: "audit"` (`references/setup.md`, "Existing outside findings"). Not an outside report: a user report, ticket, incident note or log, which is only something to reproduce (`references/debugging.md`). |
 | origin | Where a wrong came from: pre-existing text, your own edit, a new class, a missing ruling, writer misjudgment (a verdict of yours later overturned; `references/learning.md`), or evidence moved (only a new pin refutes it; `references/round.md`, "Between rounds only"). |
 | writer's lock | `S/writer.lock`: only one session writes to a loop (`ltz lock`). |
-| session | One Claude Code conversation. The writer and each agent are separate sessions. |
+| session | One Claude Code conversation. The writer and each agent count as separate sessions: each has its own context, and under the writer's lock an agent is not the writer, though Claude Code runs it under the writer's session id (`scripts/hooks/README.md`, "The writer lock"). |
 | handoff | `S/HANDOFF.md`: the paste-ready prompt to resume in a new session. |
 | hand-back | In solo mode: the point where the writer's steps resume after the round's reading sessions, or after a fix-check session (`references/modes.md`). |
 | item type / softening | Whether items describe the evidence or state requirements, and whether fixes may hedge ("such as"). Both are setup questions. |
 | hooks | An optional guard (`scripts/hooks/`) that refuses unsafe commits and edits. |
 | job / slot | One reader's run over one chunk, and its name in `queue.json` (opaque, from `queue init --opaque`, so a reader can't infer another). A fix checker is not queued: it renders under the name `fixcheck-<K>-<part>`, where `<part>` names a part of the fix set (about 70 changed items), and its cost is counted with `ltz cost <transcript>`. |
 | stronger reviewer | A more capable model or advisor, used if available to re-judge the find list. It is a second opinion, not a cold read, and never replaces the fix checker. |
+| external reviewer | A model that is not a Claude agent, used as the reader mode: it reads the chunks, checks the fixes, or both, as the owner set at setup question 6, under the same briefs (`references/modes.md`). Not the stronger reviewer. |
 | sibling / family | Items that share a class, subject, cited range or named file with a confirmed wrong. |
 | history check | The confirm check that looks an item up in its earlier verdicts, reasoned oks as well as wrongs (`references/fixing.md`, "History"). |
+| reasoned ok | An ok whose note says why the claim holds: the claim tested hardest and the line that holds it. A blank note, or one text repeated across items, is not one. |
 | flip | A field returning to a value it held in an earlier round (`ltz flips`). |
 | probes | Running the code (or a config loader or parser) in a scratch copy to test a claim, if the owner allows it. |
 | reader guidance | Notes that state what to bound, carried to readers only in `classes.md`'s "Reader guidance" section. Never new facts. |
@@ -84,8 +87,8 @@ Map the project's own words onto these, and use the project's words with the own
 - the writer may also record `pending-owner` (an item one of the three exceptions below sends to the owner), or `defect` (a
   behaviour defect in the evidence itself, or a requirement item the evidence doesn't meet), or `outside-bar`
   (a wrong outside a frozen bar, listed for the owner). None counts as a wrong.
-- **An item the evidence plainly refutes is always `wrong`** (or `defect`, when it is a requirement the evidence
-  doesn't meet or a policy-vs-config mismatch: see `defect` above), even on a repeat, when the refuter is inside
+- **An item the evidence plainly refutes is always `wrong`** (or `defect`, when it states a requirement the
+  evidence doesn't meet, a policy its config differs from included: see `defect` above), even on a repeat, when the refuter is inside
   the bar (on an open bar, a class found mid-pass included) and the evidence boundary. It is never parked as `pending-owner`. Three exceptions make it
   `pending-owner`, each recorded with a `pendingReason`:
   - a rule's meaning is in dispute (readers and writer read it differently, or its own text admits two readings), and

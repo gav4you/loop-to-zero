@@ -12,6 +12,7 @@ function normPrefix(p, where) {
   if (p === undefined || p === null || p === '') return '';
   if (typeof p !== 'string') fail(`${where}: "prefix" must be a string`);
   let s = normPath(p);
+  if (s === '.') s = ''; // "." is the source's own folder: every path
   if (s && !s.endsWith('/')) s += '/';
   if (s.split('/').includes('..') || s.startsWith('/')) fail(`${where}: "prefix" must be a relative folder (got ${JSON.stringify(p)})`);
   return s;

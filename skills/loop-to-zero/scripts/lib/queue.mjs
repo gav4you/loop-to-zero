@@ -45,9 +45,81 @@ function ctx(S, unit, R) {
 
 function loadQueue(rd) {
   const q = readJson(queuePath(rd), 'queue.json');
+  if (!q || typeof q !== 'object' || Array.isArray(q)) fail('queue.json must be a JSON object ({"groups": [...], "slots": [...]})');
   if (!Array.isArray(q.slots) || !Array.isArray(q.groups)) fail('queue.json is malformed (needs "slots" and "groups")');
+  q.slots.forEach((s, i) => {
+    if (!s || typeof s !== 'object' || Array.isArray(s)) fail(`queue.json: slots[${i}] must be a JSON object ({"slot", "chunk", "from", "to", "state", ...})`);
+    if (typeof s.slot !== 'string' || typeof s.state !== 'string') fail(`queue.json: slots[${i}] needs a "slot" name and a "state" (got slot ${JSON.stringify(s.slot)}, state ${JSON.stringify(s.state)})`);
+  });
   return q;
 }
+
+// queue.json.lock, beside queue.json: every subcommand that writes queue.json holds it for its whole
+// read-change-write, so two commands started together cannot lose each other's update.
+const LOCK_WAIT_MS = 10 * 1000; // how long a command waits for the lock before it fails
+const LOCK_STALE_MS = 30 * 1000; // a lock file older than this was left by a crashed command
+const LOCK_RETRY_MS = 25;
+const sleepMs = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+/** Run fn while holding the round's queue.json.lock; the lock file is removed afterwards, also on a failure. */
+function withQueueLock(rd, fn) {
+  const lp = `${queuePath(rd)}.lock`;
+  const until = Date.now() + LOCK_WAIT_MS;
+  for (;;) {
+    let why;
+    try {
+      fs.writeFileSync(lp, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }) + '\n', { flag: 'wx' });
+      break;
+    } catch (e) {
+      // EEXIST: another command holds the lock. On Windows a lock file that is being removed at this
+      // moment refuses the create with EPERM, EBUSY or EACCES for an instant. Anything else is an error.
+      const busy = e.code === 'EEXIST' || (process.platform === 'win32' && ['EPERM', 'EBUSY', 'EACCES'].includes(e.code));
+      if (!busy) throw e;
+      why = e.code === 'EEXIST' ? 'another queue command holds it' : `it could not be created (${e.code})`;
+    }
+    try {
+      // A stale lock file is removed here, and the next try (this command's or another's) takes its place.
+      if (Date.now() - fs.statSync(lp).mtimeMs > LOCK_STALE_MS) fs.rmSync(lp, { force: true });
+    } catch {
+      /* gone already, or being removed: the next try sees */
+    }
+    if (Date.now() >= until) {
+      fail(
+        `could not take the queue's lock file ${lp} within ${LOCK_WAIT_MS / 1000} seconds: ${why}. Nothing was written. ` +
+          `Run the command again; a lock file left by a crashed command is replaced once it is ${LOCK_STALE_MS / 1000} seconds old`,
+      );
+    }
+    sleepMs(LOCK_RETRY_MS);
+  }
+  try {
+    return fn();
+  } finally {
+    try {
+      fs.rmSync(lp, { force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      /* left behind: it is replaced once it is stale */
+    }
+  }
+}
+/** A writing subcommand: fn(args, ctx) runs whole under the round's lock. */
+const locked = (fn) => (args) => {
+  const c = ctx(args.S, args.unit, args.R);
+  return withQueueLock(c.rd, () => fn(args, c));
+};
+
+/** What makes a result file not clean when it lacks no position: unparseable, duplicate or stray lines. */
+function notCleanWhy(pr) {
+  const why = [];
+  if (pr.errors.length) why.push(`${pr.errors.length} unparseable line(s)`);
+  if (pr.cov.duplicates.length) why.push(`duplicate positions ${pr.cov.duplicates.map((d) => d.pos).join(', ')}`);
+  if (pr.cov.outside.length) why.push(`${pr.cov.outside.length} line(s) outside its range`);
+  return why.join('; ');
+}
+/** A slot whose result file covers every position (no resume position) but is not complete. */
+const isUnclean = (pr) => pr.resume === null && !pr.complete;
+const uncleanText = (e, pr) =>
+  `no position of ${e.slot}'s range ${e.from}-${e.to} is missing, but its result file is not clean (${notCleanWhy(pr)}): ` +
+  `remove the duplicate or stray lines from agent-${e.slot}.jsonl, then mark it done`;
 
 /** Progress of one slot, computed from its result file (never from a reader's word). */
 export function slotProgress(rd, list, entry, plan) {
@@ -72,8 +144,7 @@ export function opaqueName(taken) {
   fail('could not find a free opaque slot name');
 }
 
-export function init({ S, unit, R, pairs, opaque, perChunk, only }) {
-  const { cfg, rd, chunks } = ctx(S, unit, R);
+export const init = locked(function init({ unit, R, pairs, opaque, perChunk, only }, { cfg, rd, chunks }) {
   if (fs.existsSync(queuePath(rd))) fail(`refusing: ${queuePath(rd)} already exists`);
   // A final-check round (a closed unit reopened for the final targeted check) reads only the chunks
   // covering a dropped range from S/known-wrongs.txt (even one another reader read): it may queue a
@@ -121,7 +192,7 @@ export function init({ S, unit, R, pairs, opaque, perChunk, only }) {
     output: opaque && groups.length ? `slots per chunk (for record): --chunk-readers ${readersArg}` : '',
     summary: `queue init: ${slots.length} slots in ${groups.length} groups${opaque ? ' (opaque names)' : ''}${notQueued} -> ${queuePath(rd)}`,
   };
-}
+});
 
 export function next({ S, unit, R, cap }) {
   const { rd, list } = ctx(S, unit, R);
@@ -131,17 +202,25 @@ export function next({ S, unit, R, cap }) {
   const by = new Map(q.slots.map((s) => [s.slot, s]));
   const active = q.slots.filter((s) => s.state === 'running' || isStopped(s.state));
   const out = [];
+  const problems = [];
   const now = Date.now();
+  // A known limit wait: the latest recorded reset of a stopped-limit slot that is still ahead.
+  let holdUntil = null;
   for (const s of q.slots.filter((x) => isStopped(x.state))) {
     const pr = slotProgress(rd, list, s, plan);
     const pos = pr.resume ?? '(complete: check the file, then mark done)';
-    if (s.state === 'stopped-limit' && s.reset && Date.parse(s.reset) > now) {
+    const waiting = s.state === 'stopped-limit' && s.reset && Date.parse(s.reset) > now;
+    if (waiting && (holdUntil === null || Date.parse(s.reset) > Date.parse(holdUntil))) holdUntil = s.reset;
+    if (isUnclean(pr)) {
+      out.push(`unclean  ${s.slot} (agent ${s.agent || '-'}): ${uncleanText(s, pr)}`);
+    } else if (waiting) {
       out.push(`wait     ${s.slot} (agent ${s.agent || '-'}) until ${s.reset}, then continue from position ${pos}`);
     } else {
       out.push(`continue ${s.slot} (agent ${s.agent || '-'}): SendMessage "continue from position ${pos}"`);
     }
   }
-  let free = n - active.length;
+  // During a known limit wait nothing new is listed to launch: the queued slots wait for the reset.
+  let free = holdUntil === null ? n - active.length : 0;
   const launches = [];
   const partial = q.groups.filter((g) => {
     const qd = g.slots.filter((s) => by.get(s).state === 'queued');
@@ -151,6 +230,13 @@ export function next({ S, unit, R, cap }) {
   const launchGroups = (gs) => {
     for (const g of gs) {
       const qd = g.slots.filter((s) => by.get(s).state === 'queued');
+      // A group launches whole, so one with more queued readers than the cap itself can never launch.
+      if (qd.length > n) {
+        problems.push(
+          `chunk ${g.chunk} has ${qd.length} queued readers and the cap is ${n}: a chunk's readers launch together, so it can never launch. ` +
+            `Raise --cap to ${qd.length} (the cap is the owner's decision)`,
+        );
+      }
       if (qd.length > free) continue;
       for (const s of qd) {
         const e = by.get(s);
@@ -170,9 +256,12 @@ export function next({ S, unit, R, cap }) {
   }
   launchGroups(whole);
   const queued = q.slots.filter((s) => s.state === 'queued').length;
+  const held = holdUntil !== null && queued > 0;
+  if (held) out.push(`hold     ${queued} queued slot(s) until ${holdUntil} (the limit reset): nothing is listed to launch before then`);
   return {
     output: out.join('\n'),
-    summary: `queue next (cap ${n}): ${active.length} active, ${launches.length} to launch, ${queued - launches.length} still queued`,
+    problems,
+    summary: `queue next (cap ${n}): ${active.length} active, ${launches.length} to launch, ${queued - launches.length} still queued${held ? ` (${queued} held until ${holdUntil})` : ''}`,
     launches: launches.map((e) => e.slot),
   };
 }
@@ -186,8 +275,7 @@ function addTranscript(e, transcript) {
   if (!e.transcripts.includes(abs)) e.transcripts.push(abs);
 }
 
-export function mark({ S, unit, R, slot, state, agent, reset, ruling, transcript }) {
-  const { rd, list } = ctx(S, unit, R);
+export const mark = locked(function mark({ S, unit, R, slot, state, agent, reset, ruling, transcript }, { rd, list }) {
   validName(slot, 'slot');
   if (!STATES.includes(state)) fail(`state must be one of ${STATES.join(', ')} (got ${JSON.stringify(state)})`);
   const q = loadQueue(rd);
@@ -210,7 +298,9 @@ export function mark({ S, unit, R, slot, state, agent, reset, ruling, transcript
     if (typeof ruling !== 'string' || !ruling.trim()) fail('dropped-by-owner needs --ruling <id>: its decision id in the decision log (usually P-n)');
     const pr = slotProgress(rd, list, e, plan);
     if (pr.complete) fail(`refusing: ${slot} already covers its whole range ${e.from}-${e.to}; mark it done`);
-    e.dropped = { from: pr.resume ?? e.from, to: e.to, ruling: ruling.trim() };
+    // Every position is there, with a duplicate or stray line beside them: there is no tail to drop.
+    if (isUnclean(pr)) fail(`refusing: ${uncleanText(e, pr)}`);
+    e.dropped = { from: pr.resume, to: e.to, ruling: ruling.trim() };
   }
   if (state === 'done') {
     const pr = slotProgress(rd, list, e, plan);
@@ -221,10 +311,11 @@ export function mark({ S, unit, R, slot, state, agent, reset, ruling, transcript
       if (pr.cov.missing.length) why.push(`missing positions ${fmtPositions(pr.cov.missing)}`);
       if (pr.cov.duplicates.length) why.push(`duplicate positions ${pr.cov.duplicates.map((d) => d.pos).join(', ')}`);
       if (pr.cov.outside.length) why.push(`${pr.cov.outside.length} line(s) outside its range`);
-      const pos = pr.resume ?? e.from;
       fail(
         `refusing: ${slot} does not cover its range ${e.from}-${e.to} (${why.join('; ')}). ` +
-          `Mark it stopped-context and send "continue from position ${pos}": node <skill>/scripts/ltz.mjs queue ${S} ${unit} ${R} mark ${slot} stopped-context`,
+          (pr.resume === null
+            ? `No position is missing: remove the duplicate or stray lines from agent-${slot}.jsonl, then mark it done`
+            : `Mark it stopped-context and send "continue from position ${pr.resume}": node <skill>/scripts/ltz.mjs queue ${S} ${unit} ${R} mark ${slot} stopped-context`),
       );
     }
   }
@@ -246,7 +337,7 @@ export function mark({ S, unit, R, slot, state, agent, reset, ruling, transcript
   if (e.dropped) extra = ` (positions ${e.dropped.from}-${e.dropped.to} dropped by decision ${e.dropped.ruling}; the chunk is not full depth)`;
   if (transcript !== undefined) extra += ` (transcript ${e.transcripts[e.transcripts.length - 1]})`;
   return { summary: `queue mark: ${slot} ${prev} -> ${state}${e.agent ? ` (agent ${e.agent})` : ''}${extra}` };
-}
+});
 
 /**
  * After an account change (or a new session) an old agent cannot be continued. The order: take FROM
@@ -255,8 +346,7 @@ export function mark({ S, unit, R, slot, state, agent, reset, ruling, transcript
  * position. The slot stays open (running) with the new agent; the old agent goes into agentHistory.
  * (mark ... replaced is for closing an abandoned slot, not this.)
  */
-export function replace({ S, unit, R, slot, agent, from, transcript }) {
-  const { rd, list } = ctx(S, unit, R);
+export const replace = locked(function replace({ slot, agent, from, transcript }, { rd, list }) {
   validName(slot, 'slot');
   if (typeof agent !== 'string' || !agent.trim()) fail('replace needs --agent <newId> (the fresh agent now reading this slot)');
   const q = loadQueue(rd);
@@ -266,7 +356,9 @@ export function replace({ S, unit, R, slot, agent, from, transcript }) {
   if (e.agent === agent.trim()) fail(`refusing: ${agent} is already ${slot}'s agent`);
   const pr = slotProgress(rd, list, e, loadCanaryPlan(rd));
   if (pr.complete) fail(`refusing: ${slot} already covers its range ${e.from}-${e.to}; mark it done`);
-  const resume = pr.resume ?? e.from;
+  // Every position is there, with a duplicate or stray line beside them: nothing is left to read.
+  if (isUnclean(pr)) fail(`refusing: ${uncleanText(e, pr)}`);
+  const resume = pr.resume;
   if (from !== undefined) {
     const p = parsePosInt(from, '--from');
     if (p !== resume) {
@@ -297,15 +389,14 @@ export function replace({ S, unit, R, slot, agent, from, transcript }) {
         : `agent ${e.agent} reads ${slot}; it must have been launched with FROM = ${resume} (it appends to agent-${slot}.jsonl); pass --from to have that checked`,
     summary: `queue replace: ${slot} ${prev} -> running with agent ${e.agent}; earlier agents: ${e.agentHistory.map((h) => h.agent).join(', ') || 'none'}`,
   };
-}
+});
 
 /**
  * A re-run or supplementary read of positions P-Q of a slot: a new slot with an opaque name, its
  * parent recorded. record takes the rerun's lines for P-Q in place of the parent's (the latest
  * rerun wins). The parent must be a slot of the queue's groups, not a rerun itself.
  */
-export function rerun({ S, unit, R, slot, from, to }) {
-  const { rd } = ctx(S, unit, R);
+export const rerun = locked(function rerun({ slot, from, to }, { rd }) {
   validName(slot, 'slot');
   const q = loadQueue(rd);
   const p = q.slots.find((s) => s.slot === slot);
@@ -324,7 +415,7 @@ export function rerun({ S, unit, R, slot, from, to }) {
     output: `launch a fresh agent with ${slot}'s brief on slot ${name}, FROM = ${P}, ${Q - P + 1} items (it writes agent-${name}.jsonl); then mark ${name} running --agent <id>`,
     summary: `queue rerun: new slot ${name} reads ${slot}'s positions ${P}-${Q} again (queued); record uses its lines there`,
   };
-}
+});
 
 export function status({ S, unit, R }) {
   const { rd, list } = ctx(S, unit, R);
@@ -336,7 +427,7 @@ export function status({ S, unit, R }) {
   for (const e of q.slots) {
     counts[e.state] = (counts[e.state] || 0) + 1;
     const pr = slotProgress(rd, list, e, plan);
-    const resume = pr.resume === null ? (pr.missingFile ? e.from : 'complete') : pr.resume;
+    const resume = pr.resume === null ? (pr.missingFile ? e.from : pr.complete ? 'complete' : `none (not clean: ${notCleanWhy(pr)})`) : pr.resume;
     let flag = '';
     if (e.state === 'done' && !pr.complete) {
       flag = '  !! marked done but the file no longer covers the range';

@@ -110,13 +110,18 @@ export function snapshot({ S, unit, R, chunkSize, order }) {
     if (src.sha256 === undefined) dirPinHints.push(`evidence dir ${src.root} has no "sha256"; to pin it, set "sha256": "${treeHash(path.resolve(src.root))}" on that source`);
     else checkDirPin(src);
   }
+  // A git pin that does not resolve would be recorded without its commit, and nothing could read the round.
+  const pins = pinRecord(cfg);
+  for (const src of pins) {
+    if (src.type === 'git' && !src.commit) fail(`the evidence pin ${src.pin} does not resolve to a commit in ${src.repo}; nothing was snapshotted`);
+  }
   fs.mkdirSync(rd, { recursive: true });
   const snap = path.join(rd, 'snapshot.jsonl');
   writeJsonl(snap, items);
   fs.writeFileSync(path.join(rd, 'snapshot.sha256'), `${sha256File(snap)}  snapshot.jsonl\n`);
   fs.copyFileSync(classes, path.join(rd, 'classes.md'));
   // The evidence this round reads, so later tools can tell when the pin has moved since.
-  writeJson(path.join(rd, 'pin.json'), { sources: pinRecord(cfg) });
+  writeJson(path.join(rd, 'pin.json'), { sources: pins });
   writeJson(path.join(rd, 'list.json'), listIds);
   const chunks = r0 ? { c1: { from: 1, to: listIds.length } } : cutChunks(listIds.length, size);
   writeJson(path.join(rd, 'chunks.json'), chunks);

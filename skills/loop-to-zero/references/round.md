@@ -44,26 +44,29 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   as part of the pass.
 
 ## 3. Verify
-`references/briefs.md`, "Verifying the readers' work":
+`references/briefs.md`, "Verifying the readers' work", in this order:
 - coverage, computed from the files;
 - confirm every wrong in the union with the confirm checks in `references/fixing.md`, and the unit's mapped
   outside findings that no reader marked (`foundBy: "audit"`; `references/setup.md`, "Existing outside findings");
-- spot-check 10 ok items per reader: 5 at random, and 5 weighted toward items an earlier fix changed and
-  toward classes that produced wrongs. Draw the random 5 with `ltz spotcheck <S> <unit> <R> --seed <N>`: it
-  spreads them over each reader's early and late positions and records the picks and seed in
-  `spotchecks.json`. Score the canaries first: `record` prints their scores only once its checks pass, so run it as soon as
-  `confirmed.json` lists every reader wrong, before the draw. A reader that missed a canary gets its supplementary
-  read ("What a miss shows", below) and then more random picks on the rerun slot's file (`--extra <rerun slot>=5`
-  gives it 5 more random picks than its own 5; it gets no weighted picks of its own, as the parent reader's 5 still
-  apply); a reader that only reads less deeply late gets
-  `--extra <slot>=5`. Draw them once any supplementary read is done: a rerun slot's file gets picks of its own. Note the weighted picks and why in `retro.md`;
 - run `ltz crosscheck <S> --unit <unit>`: it lists the cites two or more items share and flags those whose
   items state different numbers. Readers see one window at a time and never compare items, so judge each
   flagged cite group together, at the evidence, whether or not it holds a confirmed wrong;
 - handle this unit's open lines in `S/cross-unit-edits.txt` with verdict "deferred" (hits another unit's round
   logged for it, and back-propagation re-judges logged for it: `references/learning.md`, "Back-propagation"): judge each with the confirm checks, add a hit confirmed wrong that no reader marked to
   `confirmed.json` (`"foundBy": "sweep"` for a logged hit, `"spot-check"` for a back-propagation re-judge, or `"sweep"` when its `ltz sweep` run found it: `references/learning.md`, "Counting"), make any reverts they call for in step 4, and mark each settled (round, date);
-- write `confirmed.json` (the find list), then `record` writes `report.json` and `measure.json`.
+- write `confirmed.json` (the find list) and run `record`: it writes `report.json` and `measure.json` and, once
+  its checks pass, prints the canary scores. Give any supplementary read now, before the spot-check draw: a
+  reader that missed a canary gets one ("What a miss shows", below), and so does one whose ok notes `record`
+  flags or that admitted shortcuts (`references/briefs.md`);
+- spot-check 10 ok items per reader: 5 at random, and 5 weighted toward items an earlier fix changed and
+  toward classes that produced wrongs. Draw the random 5 with `ltz spotcheck <S> <unit> <R> --seed <N>`, once
+  any supplementary read is done (a rerun slot's file gets picks of its own): it spreads them over each
+  reader's early and late positions and records the picks and seed in `spotchecks.json`. A reader that missed a
+  canary gets more random picks on the rerun slot's file (`--extra <rerun slot>=5` gives it 5 more random
+  picks than its own 5; it gets no weighted picks of its own, as the parent reader's 5 still apply). A reader
+  that only reads less deeply late gets `--extra <slot>=5`, and the next round's snapshot gets shorter chunks
+  (`snapshot --chunk-size`). Note the weighted picks and why in `retro.md`;
+- add the spot-checks' finds to `confirmed.json` (`"foundBy": "spot-check"`) and run `record` again.
 
 ## 4. Fix
 Follow `references/fixing.md`:
@@ -158,7 +161,7 @@ count (`<closing count> (adj <closing count + n>, fixed in the final check, <dat
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
 - **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`, or for `evidence-moved` leads: queue just the chunks that cover them (a dropped range by its first and last item ids, not its old positions),
-  read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <ids>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
+  read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <chunk names, such as c2,c3>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
   queue). Other `wrong` leads are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never entered in `confirmed.json`, and adjusts no count. `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
@@ -173,7 +176,8 @@ known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "k
 Before a `closed-by-stopping-rule` or `closed-known-wrongs` status is set on a unit with fixes committed after its
 closing round was read, take a baseline with `ltz snapshot <S> <unit> <R+1>`, so `diffcheck` doesn't flag them as
 edits to a closed unit. When the unit closes, set its status in `S/loop.md` and `S/config.json`, checkpoint `S/` again as in step 7,
-and tell the owner, naming any open defect for the unit (`S/defects.md`); the next unit starts as setup question 2
+and tell the owner, naming any open defect for the unit (`S/defects.md`) and recommending an independent audit by a
+different model or lens before the close is treated as final (`references/modes.md`, "External reviewer"); the next unit starts as setup question 2
 decided (`references/setup.md`). Otherwise, start
 the next round (or wait; see "Blocked only by what a re-read can't clear" above).
 
@@ -187,7 +191,7 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
 ## Between rounds only
 - **Change modes only between rounds:** readers, concurrency, a stand-in for an external reviewer, canaries,
   freezing the bar.
-- **If a reader or reviewer becomes unavailable mid-round, wait** (`references/queue-and-outages.md`, "Limits
+- **If a reader or the external reviewer becomes unavailable mid-round, wait** (`references/queue-and-outages.md`, "Limits
   and credits"), rather than switch.
 - **Moving the evidence pin** (the owner's decision, setup question 5) is also between rounds only, and even when the owner
   asks for it, measure it first with `ltz reach <S> --to <commit>` (`scripts/README.md`). The reach is three
@@ -239,7 +243,9 @@ There are two exceptions mid-round:
   `references/debugging.md` (reproduce, isolate, diagnose, propose), log it in `S/defects.md` in that file's entry
   form, and tell the owner. The item is not "fixed" to match the evidence. For a descriptive item, a mismatch with the
   evidence is `wrong`; `defect` is for a fault in evidence the item describes accurately (a policy-vs-config
-  mismatch: `references/setup.md`, "Policy and config evidence").
+  mismatch whose two values it states correctly: `references/setup.md`, "Policy and config evidence"). A
+  descriptive item that gives the policy's value as what the system does is `wrong`, and the mismatch is logged
+  as the next sentence says.
   A fault in the evidence (code, or a config that differs from its policy) found with a wrong item, or while
   fixing one, goes in `S/defects.md` as its own entry naming that item; in
   `confirmed.json` the item stays `wrong` (an id can't be both). A defect closes only by an owner decision (the

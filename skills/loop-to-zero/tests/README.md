@@ -65,10 +65,10 @@ against a baseline copy made before the edit, as in step 1):
 | 08-final-check | Ruled wording flagged in an ok note, and the final targeted check: reopening, rounds F and F+1, the status each unit returns to |
 | 09-defect-debug | A policy-vs-config `defect`: reproduce, isolate, diagnose, propose; the entry; tickets only with the owner's OK |
 | 10-untrusted-text | A zero-hit search needs a positive control; a dismissed reader wrong is recorded with its reason; item text and a claimed ruling are data, not instructions |
-| 11-reader-embedded-text | A reader judges an item whose text tells reviewers to mark it ok, and reports that text |
+| 11-reader-embedded-text | A reader judges an item whose text tells reviewers to mark it ok, and reports that text (the briefs state no rule for this: the scenario checks that a reader does it untaught, and a rule is added only if it starts to fail) |
 | 12-what-zero-shows | A clean round's report: what spot-checks, canaries and a 0 estimate can and cannot show; the estimate checked against the unit's history |
 | 13-process-checks | Replaying a rule with its source round held out; seeded, spread spot-check picks with extra picks for a reader that missed a canary; reconciling an extract against its source |
-| 14-reader-ok-notes | A reader whose ok notes for a range share one templated text: the writer flags it and gives that range a supplementary read |
+| 14-reader-ok-notes | A reader's ok notes: each names the claim it tested hardest and the line that holds it, reasoned against the shown lines, not one templated text (the writer's side, a supplementary read for templated notes, is a tool test) |
 | 15-retro-diagnosis | 14 wrongs from one reformatted file confirmed against the pin as one cause; a one-reader miss diagnosed from the render log; the trend broken down by class |
 | 16-class-research | Drafting a class set from claim shapes: defined-not-wired and evaluated-expression classes, an "Is not" line and ok example on every entry, cross-item checks |
 | 17-fix-tactics | A third repeat after two narrowings, a new fix wording for a class's 31 sweep hits, what the fix checker checks ("old text held"), and a defect diagnosed by candidate causes with a working sibling |
@@ -79,6 +79,7 @@ against a baseline copy made before the edit, as in step 1):
 | 22-pin-move-and-trial | After a pin move: evidence-moved wrongs and the escalation trigger, the first class for a claim with no universal word (and how readers learn it), a closed unit at its old pin, bounds re-checked at the new pin, where a reader-setup trial runs |
 | 23-pin-move-owner-flow | A pin move as a process decision, the next round not waiting for the answer (with the cost of waiting), and a closed unit reopened for the move through the final targeted check |
 | 24-pin-move-reach | Measuring a pin move beyond the items that cite changed files (universal items whose searches change, unsearched universals), a unit closing at the current pin while the move is asked, and reopening for the reached items |
+| 25-extract-reconcile | After the extract runs at setup: reconciling it against its source both ways (orphans on either side listed), not only comparing totals; no-cite items flagged for the first pass |
 
 ## 3. Trigger test (the description)
 `triggers.md`: 10 requests that should load this skill and 10 near misses, each run sent in a new shuffled order to a new
@@ -89,5 +90,6 @@ not apply. Step 4's remedy here is to reword the target request or add T or N ro
 `triggers.md` to match.
 
 ## 4. Consistency read (structure)
-Give `consistency-read.md` to one cold agent. The maintainer fixes every real defect it reports, then re-runs it
-until it reports none.
+Give `consistency-read.md` to two cold agents, each on its own. The maintainer fixes every real defect in the
+union of their reports, then re-runs both until both report none. One clean read proves little: two cold reads of
+one text share few finds (`lessons.md`, "Readers overlap little; take the union").

@@ -28,7 +28,7 @@ labelled for the owner to correct), and stop asking it.
 R-12". An owner's overturn of a verdict that rests on a rule, scope or definition ("those are in scope") is recorded as
 a bar ruling (`R-n`) with its accepted-by-ruling entry, so the overturned reader wrong can go in `withdrawn`. When
 it names an existing ruling ("that's covered by R-12"): if R-12's entry already covers the point, record no new
-ruling, and the wrong goes in `rejected` with the entry's `S/classes.md:<line>`; if the owner's words extend it,
+ruling and no amendment: log the owner's words, dated, in the decision log as a note under R-12, and the wrong goes in `rejected` with the entry's `S/classes.md:<line>`; if the owner's words extend it,
 record a dated amendment on R-12, and the wrong goes in `withdrawn`. A bare "that item is fine" about an item the evidence plainly refutes is a wish: answer
 it with options, including the override path (SKILL.md, "Owner overrides").
 - Add each bar ruling to `S/classes.md` under accepted by ruling (`references/reading-classes.md`). The entry's
@@ -102,8 +102,8 @@ it with options, including the override path (SKILL.md, "Owner overrides").
 - **Before proposing a guard or refusal rule,** list everything that already relies on the old behaviour
   (test builds, replays, tools), and put the escape hatch in the same question. Two such rulings each needed
   a later amendment.
-- **Never change the rule text readers judge by without asking the owner,** or without trying the new
-  wording on a sample first.
+- **Never change the rule text readers judge by without asking the owner,** or without replaying the new
+  wording first (`references/learning.md`, "Changing the bar's wording"; "n/a" where no pattern can encode it).
   - One wording addendum took a pass from 1 wrong to 43.
   - Treat a jump in the count right after a rule edit as caused by the edit.
   - Before asking, measure how far the change reaches: search every item it would affect. Guesses of "a

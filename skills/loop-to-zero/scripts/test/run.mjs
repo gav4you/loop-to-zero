@@ -1141,7 +1141,7 @@ test('canary gitignore: prints lines that really keep canary files and scratch f
   eq(g(['check-ignore', '-q', 'S/u1/r1/scratch/k7f2/copy/.env']).status, 0, 'a probe copy in scratch/ ignored');
   eq(g(['check-ignore', '-q', 'S/u1/r1/report.json']).status, 1, 'control: report.json not ignored');
   const r2 = passes(ltz(['canary', 'gitignore', S]));
-  ok(/all present\); the scratch folders were checked by git check-ignore over \d+ paths/.test(r2.out), `all present once added:\n${r2.out}`);
+  ok(/all present\); the scratch folders and the canary files were checked by git check-ignore over \d+ paths/.test(r2.out), `all present once added:\n${r2.out}`);
   fails(ltz(['canary', 'gitignore', path.join(RUN, 'no-such-S')]), /state folder not found/);
 });
 test('canary gitignore: the scratch folders need a line git treats as ignoring every <unit>/r<R>/scratch/ folder', () => {
@@ -1158,14 +1158,17 @@ test('canary gitignore: the scratch folders need a line git treats as ignoring e
     if (re) ok(re.test(r.out), `${label}: expected ${re}:\n${r.out}`);
     return r;
   };
-  let r = refused('', /not ignored: any-unit\/r1\/scratch\/, any-unit\/r12\/scratch\/, u1\/r1\/scratch\/, u1\/r12\/scratch\/, u2\/r1\/scratch\/, u2\/r12\/scratch\/; add the line \*\*\/scratch\//, 'no scratch line');
+  let r = refused('', /not ignored: any-unit\/r1\/scratch\/, any-unit\/r12\/scratch\/, any-folder\/any-unit\/r1\/scratch\/, any-folder\/any-unit\/r12\/scratch\/, u1\/r1\/scratch\/, u1\/r12\/scratch\/, u2\/r1\/scratch\/, u2\/r12\/scratch\/; add the line \*\*\/scratch\//, 'no scratch line');
   // Any line git treats the same is accepted.
-  for (const line of ['**/scratch/', 'scratch/', 'scratch', '**/scratch', '*/r*/scratch/', '**/scratch/**', '*/r[0-9]*/scratch/', '**/scratch/   ']) {
+  for (const line of ['**/scratch/', 'scratch/', 'scratch', '**/scratch', '**/r*/scratch/', '**/scratch/**', '**/r[0-9]*/scratch/', '**/scratch/   ']) {
     r = passes(gi(`${line}\n`), `"${line}" ignores every scratch folder`);
-    ok(/all present\); the scratch folders were checked by git check-ignore/.test(r.out), r.out);
+    ok(/all present\); the scratch folders and the canary files were checked by git check-ignore/.test(r.out), r.out);
   }
   // Lines that leave some scratch folder (or some file in it) unignored are refused.
-  refused('u1/r*/scratch/\nu2/r*/scratch/\n', /not ignored: any-unit\/r1\/scratch\/, any-unit\/r12\/scratch\/; /, 'only the configured units');
+  refused('u1/r*/scratch/\nu2/r*/scratch/\n', /not ignored: any-unit\/r1\/scratch\/, any-unit\/r12\/scratch\/, any-folder\/any-unit\/r1\/scratch\/, any-folder\/any-unit\/r12\/scratch\/; /, 'only the configured units');
+  // A line that reaches one level only misses a discovery state folder's rounds, on disk yet or not.
+  refused('*/r*/scratch/\n', /not ignored: any-folder\/any-unit\/r1\/scratch\/, any-folder\/any-unit\/r12\/scratch\/; /, 'one level only');
+  refused('*/r[0-9]*/scratch/\n', /not ignored: any-folder\/any-unit\/r1\/scratch\/, any-folder\/any-unit\/r12\/scratch\/; /, 'one level only, with a class');
   refused('/scratch/\n', /u1\/r1\/scratch\//, 'anchored at S/');
   refused('r*/scratch/\n', /u1\/r1\/scratch\//, 'anchored one level too high');
   refused('# **/scratch/\n', /u1\/r1\/scratch\//, 'a comment');
@@ -1175,11 +1178,11 @@ test('canary gitignore: the scratch folders need a line git treats as ignoring e
   refused('**/r1/scratch/\n', /u1\/r12\/scratch\//, 'one round');
   // A unit folder on disk that config.json does not list is probed too, with its rounds on disk.
   fs.mkdirSync(path.join(S, 'u9', 'r7'), { recursive: true });
-  refused('*/r1/scratch/\n*/r12/scratch/\n', /not ignored: u9\/r7\/scratch\/; /, 'a round on disk (u9/r7)');
+  refused('**/r1/scratch/\n**/r12/scratch/\n', /not ignored: u9\/r7\/scratch\/; /, 'a round on disk (u9/r7)');
   fs.rmSync(path.join(S, 'u9'), { recursive: true });
   // A discovery state folder's rounds inside S/ are rounds too.
   fs.mkdirSync(path.join(S, 'discovery', 'u1', 'r3'), { recursive: true });
-  refused('*/r*/scratch/\n', /not ignored: discovery\/u1\/r1\/scratch\/, discovery\/u1\/r12\/scratch\/, discovery\/u1\/r3\/scratch\/; /, 'discovery/<unit>/r<R>/scratch/');
+  refused('*/r*/scratch/\n', /not ignored: any-folder\/any-unit\/r1\/scratch\/, any-folder\/any-unit\/r12\/scratch\/, discovery\/u1\/r1\/scratch\/, discovery\/u1\/r12\/scratch\/, discovery\/u1\/r3\/scratch\/; /, 'discovery/<unit>/r<R>/scratch/');
   passes(gi('**/scratch/\n'), 'covers discovery too');
 });
 test('canary gitignore: only S/.gitignore counts, not a global excludes file or GIT_* variables', () => {
@@ -1222,7 +1225,7 @@ test('canary gitignore: without git, a glob match decides the same way', () => {
   };
   let r = passes(run('**/scratch/\n'), 'glob: accepted');
   ok(/checked by glob match \(git not found\)/.test(r.out), r.out);
-  r = fails(run('u1/r*/scratch/\n'), /not ignored: any-unit\/r1\/scratch\/, any-unit\/r12\/scratch\/, u2\/r1\/scratch\/, u2\/r12\/scratch\/; /, 'glob: one unit');
+  r = fails(run('u1/r*/scratch/\n'), /not ignored: any-unit\/r1\/scratch\/, any-unit\/r12\/scratch\/, any-folder\/any-unit\/r1\/scratch\/, any-folder\/any-unit\/r12\/scratch\/, u2\/r1\/scratch\/, u2\/r12\/scratch\/; /, 'glob: one unit');
   ok(/checked by glob match \(git not found\)/.test(r.out), r.out);
   fails(run('**/scratch/\n!**/scratch/\n'), /u1\/r1\/scratch\//, 'glob: negated');
 });
@@ -3891,6 +3894,1407 @@ test('record: a reader whose ok notes repeat one text on 5 or more items gets a 
   out = rec();
   ok(!/WARNING: c2-a: .*share one text/.test(out), `distinct notes:\n${out}`);
   ok(/WARNING: c2-b: 5 ok notes share one text/.test(out), 'control: c2-b still templated');
+});
+
+// ---- code-versus-docs audit: searches, diffcheck, flips, replay
+test('searches at the pin: globs that select no file fail (diffcheck, searches, reach)', () => {
+  // A misspelt folder, a brace glob and a bare folder name select nothing: "0 hits" over no file would
+  // back any "no X" claim.
+  const S = makeS();
+  snap(S);
+  fails(verifyRun(S, { regex: 'RATE', paths: ['scr/**'] }, 0), /MISMATCH: A01\.title \(fixlog line 1\): the search's globs \(scr\/\*\*\) select no file at the pin/, 'a misspelt folder');
+  fails(verifyRun(S, { regex: 'RATE', paths: ['src/**/*.{js,md}'] }, 0), /select no file at the pin/, 'a brace glob is a literal');
+  passes(verifyRun(S, { regex: 'RATE', paths: ['src/**'] }, 2, { at: RATE_SRC }), 'control: a glob that selects files');
+  const S2 = makeS({ config: { boundaryPaths: ['src'] } });
+  snap(S2);
+  fails(verifyRun(S2, { regex: 'RATE' }, 0), /the search's globs \(src\) select no file at the pin/, 'a bare folder name in boundaryPaths');
+  fails(ltz(['searches', S2]), /PROBLEM: u1\/r1 A01\.title \(fixlog line 1\): the search's globs \(src\) select no file at the pin/, 'searches');
+  fails(ltz(['reach', S2, '--to', 'HEAD']), /boundaryPaths \(src\) select no file at v1 or at HEAD/, 'reach');
+  const S3 = makeS({ config: { boundaryPaths: ['src/'] } });
+  snap(S3);
+  ok(/between v1 and HEAD: 1 file\(s\) \(src\/auth\.js\)/.test(passes(ltz(['reach', S3, '--to', 'HEAD']), 'control: a trailing slash covers the folder').out), 'reach control');
+});
+test('searches at the pin: a pinned folder that has changed since is not searched', () => {
+  const root = path.join(RUN, `export-${++nS}`);
+  fs.mkdirSync(path.join(root, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'src', 'a.js'), 'const RATE = 1;\nuse(RATE);\n');
+  const S = makeS({ config: { evidence: { type: 'dir', root } } });
+  const m = /set "sha256": "([0-9a-f]{64})"/.exec(snap(S).out);
+  ok(m, 'snapshot names the hash');
+  const cfgP = path.join(S, 'config.json');
+  const cfg = rj(cfgP);
+  wj(cfgP, { ...cfg, evidence: { ...cfg.evidence, sha256: m[1] } });
+  snap(S); // pin.json now records the sha256
+  const A = ['src/a.js:1', 'src/a.js:2'];
+  passes(verifyRun(S, { regex: 'RATE' }, 2, { at: A }), 'control: the folder matches its pin');
+  fs.writeFileSync(path.join(root, 'src', 'b.js'), 'RATE again\n');
+  fails(verifyRun(S, { regex: 'RATE' }, 2, { at: A }), /MISMATCH: A01\.title \(fixlog line 1\): evidence dir .* has changed since it was pinned/, 'diffcheck does not search a folder that no longer matches its sha256');
+  // The folder is pinned again at its new content: the round recorded the old sha256, which is gone.
+  const now = /has changed since it was pinned: sha256 ([0-9a-f]{64}),/.exec(ltz(['show', S, 'u1', '1', 't-a', 'src/a.js:1']).out);
+  ok(now, 'show names the current hash');
+  wj(cfgP, { ...cfg, evidence: { ...cfg.evidence, sha256: now[1] } });
+  const r = fails(ltz(['searches', S, '--rounds', 'u1']), /PROBLEM: u1\/r1: its searches cannot be re-run at the pin it recorded: evidence dir .* has changed since it was pinned/);
+  ok(!/re-run at their own snapshot pin/.test(r.out), `not reported as re-run at its own pin:\n${r.out}`);
+});
+test('diffcheck: the removal of another unit\'s item is logged as a cross-unit entry', () => {
+  const S = crossS();
+  const c02 = rjl(path.join(S, 'items.jsonl')).find((x) => x.id === 'C02');
+  editJsonl(path.join(S, 'items.jsonl'), (rows) => rows.filter((x) => x.id !== 'C02'));
+  fixlog(S, [fl('C02', '*', c02, null, { unit: 'u3' })]);
+  passes(ltz(['diffcheck', S, 'u1', '1']), 'the removed item is in neither u1\'s snapshot nor the current items, and that is fine');
+  fixlog(S, [fl('C02', '*', c02, null, { unit: 'u3' }), fl('C99', '*', { id: 'C99' }, null, { unit: 'u3' })]);
+  fails(ltz(['diffcheck', S, 'u1', '1']), /C99\.\* is logged for unit u3 but did not change since u3\/r1/, 'control: an id that was never an item');
+  fixlog(S, [fl('C02', '*', c02, null, { unit: 'u3' }), fl('Z99', 'title', 'a', 'b')]);
+  fails(ltz(['diffcheck', S, 'u1', '1']), /Z99 is not an item/, 'control: an entry of this unit still needs a real item');
+});
+test('diffcheck: a field added to an item, or removed from one, is logged with null for the missing side', () => {
+  const S = makeS();
+  snap(S);
+  setItems(S, [['A01', 'owner', 'ops']]);
+  fixlog(S, [fl('A01', 'owner', null, 'ops')]);
+  passes(ltz(['diffcheck', S, 'u1', '1']), 'a field added: "old": null');
+  fixlog(S, [fl('A01', 'owner', 'someone', 'ops')]);
+  fails(ltz(['diffcheck', S, 'u1', '1']), /A01\.owner: fixlog "old" \(line 1\) is not the snapshot value/, 'control: a wrong "old"');
+  editJsonl(path.join(S, 'items.jsonl'), (rows) => rows.map((x) => {
+    if (x.id !== 'A02') return x;
+    const { reason, ...rest } = x;
+    return rest;
+  }));
+  fixlog(S, [fl('A01', 'owner', null, 'ops'), fl('A02', 'reason', 'per the source', null)]);
+  passes(ltz(['diffcheck', S, 'u1', '1']), 'a field removed: "new": null');
+});
+test('diffcheck: an entry naming a closed unit must still be a real change', () => {
+  const S = makeS();
+  snap(S);
+  passes(ltz(['snapshot', S, 'u2', '1']), 'u2 baseline');
+  fixlog(S, [fl('B01', 'title', 'closed one', 'closed one, edited', { unit: 'u2' })]);
+  fails(ltz(['diffcheck', S, 'u1', '1']), /MISMATCH: fixlog\.jsonl line 1: B01\.title is logged for closed unit u2 but did not change since u2\/r1/);
+  setItems(S, [['B01', 'title', 'closed one, edited']]);
+  const r = fails(ltz(['diffcheck', S, 'u1', '1']), /B01: item of closed unit u2 changed since u2\/r1/, 'control: a real change is flagged by the closed-unit check');
+  ok(!/did not change since/.test(r.out), r.out);
+});
+test('diffcheck: r0\'s snapshot is no baseline for another unit\'s cross-unit edits', () => {
+  const S = makeS({
+    items: [...ITEMS, { id: 'C01', unit: 'u3', title: 'third one', plan: 'keep', reason: 'r', cites: [] }],
+    config: { units: { u1: { status: 'open', itemFiles: [] }, u2: { status: 'closed', itemFiles: [] }, u3: { status: 'open', itemFiles: [] } } },
+  });
+  snap(S);
+  passes(ltz(['snapshot', S, 'u3', '0']), 'u3 has only its r0');
+  setItems(S, [['C01', 'title', 'edited']]);
+  fixlog(S, [fl('C01', 'title', 'third one', 'edited', { unit: 'u3' })]);
+  fails(ltz(['diffcheck', S, 'u1', '1']), /unit u3 has no round snapshot to compare its cross-unit edits with/);
+  passes(ltz(['snapshot', S, 'u3', '1']), 'a baseline');
+  setItems(S, [['C01', 'title', 'changed text']]);
+  fixlog(S, [fl('C01', 'title', 'edited', 'changed text', { unit: 'u3' })]);
+  passes(ltz(['diffcheck', S, 'u1', '1']), 'control: with a round 1 baseline it is compared');
+});
+test('diffcheck: a last word or number that only got longer is not an appended clause', () => {
+  const S = makeS();
+  snap(S);
+  const change = (id, from, to) => {
+    setItems(S, [['A10', 'title', 'retries is 3'], ['A01', 'title', 'login calls check'], [id, 'title', to]]);
+    fixlog(S, [fl(id, 'title', from, to)]);
+    return ltz(['diffcheck', S, 'u1', '1']);
+  };
+  passes(change('A10', 'retries is 3', 'retries is 30'), '"3" -> "30" is a changed value');
+  passes(change('A10', 'retries is 3', 'retries is 3.5'), '"3" -> "3.5"');
+  passes(change('A01', 'login calls check', 'login calls checkUser'), '"check" -> "checkUser"');
+  fails(change('A01', 'login calls check', 'login calls check and then logs'), /A01\.title: clause appended with no sentence stop: "\.\.\. and then logs"/, 'control: a new clause');
+});
+test('flips: a cross-unit edit logged in another unit\'s fixlog belongs to this unit\'s history', () => {
+  const mk = (title) => makeS({
+    items: [...ITEMS, { id: 'C01', unit: 'u3', title, plan: 'keep', reason: 'r', cites: [] }],
+    config: { units: { u1: { status: 'open', itemFiles: [] }, u2: { status: 'closed', itemFiles: [] }, u3: { status: 'open', itemFiles: [] } } },
+  });
+  // u3 changed the title, then u1's round changed it back: the item now holds the first value again.
+  const S = mk('third one');
+  wjl(path.join(RD(S, 'u3', 1), 'fixlog.jsonl'), [fl('C01', 'title', 'third one', 'third 1')]);
+  wjl(path.join(RD(S, 'u1', 1), 'fixlog.jsonl'), [fl('A01', 'title', 'X', 'Y'), fl('C01', 'title', 'third 1', 'third one', { unit: 'u3' })]);
+  const r = fails(ltz(['flips', S, 'u3']), /1 unexplained flip\(s\)/, 'the return was made by u1\'s round');
+  ok(/FLIP C01\.title: returned in u1\/r1 to a value first held in r1: "third one"/.test(r.out), r.out);
+  ok(/2 entries \(1 logged for u3 in other units' fixlogs\)/.test(r.out), r.out);
+  const r1 = passes(ltz(['flips', S, 'u1']), 'u1 has no flip of its own');
+  ok(/flips u1: 1 fixlogs, 1 entries; 0 unexplained/.test(r1.out), `the entry tagged for u3 is not u1's:\n${r1.out}`);
+  // With a ruling on the return, a later u3 entry that starts from the returned value explains nothing new.
+  wjl(path.join(RD(S, 'u1', 1), 'fixlog.jsonl'), [fl('C01', 'title', 'third 1', 'third one', { unit: 'u3', ruling: 'D-12' })]);
+  wjl(path.join(RD(S, 'u3', 3), 'fixlog.jsonl'), [fl('C01', 'title', 'third one', 'third uno')]);
+  const r2 = passes(ltz(['flips', S, 'u3']), 'ruling-explained, and no gap in u3\'s chain');
+  ok(/0 unexplained flip\(s\), 1 ruling-explained/.test(r2.out) && /RULING D-12: C01\.title returned in u1\/r1 to a value first held in r1/.test(r2.out), r2.out);
+  // The other order: u1's round edited the title first, then u3 changed it back. The same two entries,
+  // but the item now holds u3's value, so the return is u3's.
+  const S2 = mk('third 1');
+  wjl(path.join(RD(S2, 'u1', 1), 'fixlog.jsonl'), [fl('C01', 'title', 'third 1', 'third one', { unit: 'u3' })]);
+  wjl(path.join(RD(S2, 'u3', 1), 'fixlog.jsonl'), [fl('C01', 'title', 'third one', 'third 1')]);
+  const r3 = fails(ltz(['flips', S2, 'u3']), /1 unexplained flip\(s\)/);
+  ok(/FLIP C01\.title: returned in r1 to a value first held in u1\/r1: "third 1"/.test(r3.out), r3.out);
+});
+test('replay: hits on items not read in the round, or found wrong there by a later round, are not false hits', () => {
+  const S = makeS();
+  snap(S);
+  wj(path.join(RD(S), 'confirmed.json'), { A05: { note: 'docs/spec.md:8', class: 'U1' } });
+  const run = () => passes(ltz(['replay', S, patFile(S, ONLY), '--rounds', 'u1'])).out;
+  ok(/u1\/r1 U-only: recall 1\/1; false hits 1 \(A07\)/.test(run()), 'control: A07 is a false hit');
+  // A later round found A07 wrong in text round 1 had read: an earlier miss.
+  fs.writeFileSync(path.join(S, 'judgments.jsonl'), JSON.stringify({ date: '2026-01-02', unit: 'u1', round: 1, id: 'A07', was: 'ok', now: 'wrong', by: 'reader', reason: 'earlier miss' }) + '\n');
+  let out = run();
+  ok(/recall 1\/1; false hits 0; hits on items a later round found wrong here, not false hits: A07/.test(out), out);
+  fs.rmSync(path.join(S, 'judgments.jsonl'));
+  // No reader read A07 in this round (a final-check round's unqueued chunk, a dropped range).
+  wj(path.join(RD(S), 'report.json'), { unit: 'u1', round: 1, items: [{ id: 'A05', verdict: 'wrong' }, { id: 'A07', verdict: 'unread' }] });
+  out = run();
+  ok(/recall 1\/1; false hits 0; hits on items not read in this round, not counted: A07/.test(out), out);
+});
+
+// ---- code-versus-docs audit, part 1: record, spotcheck, canary, crosscheck, cites
+/** A state folder over a folder of evidence whose paths hold characters a file:line pattern cuts short. */
+function oddPathsS() {
+  const root = path.join(RUN, `dir-odd-${++nS}`);
+  const put = (rel, lines) => {
+    fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    fs.writeFileSync(path.join(root, rel), lines.join('\n') + '\n');
+  };
+  put('app/[slug]/page.tsx', ['// page', 'export default function Page() {}', '// end']);
+  put('docs/my notes.md', ['# Notes', 'The limit is 5.', 'End.']);
+  put('docs/\u00fcbersicht.md', ['# Overview', '', 'The owner is the platform team.']);
+  put('src/(auth)/login.ts', ['export function login() {}', '// end']);
+  put('src/C#/a.cs', ['class A {', '  static void Main() {}', '}']);
+  put('data/a,b.txt', ['one', 'two', 'three']);
+  const items = [
+    item('P01', 'the page takes the slug', ['app/[slug]/page.tsx:2']),
+    item('P02', 'the notes give a limit of 5', ['docs/my notes.md:2']),
+    item('P03', 'the overview names the owner', ['docs/\u00fcbersicht.md:3']),
+    item('P04', 'login takes a user', ['src/(auth)/login.ts:1']),
+    item('P05', 'Main takes no arguments', ['src/C#/a.cs:2']),
+    item('P06', 'the data file has three lines', ['data/a,b.txt:1-3']),
+  ];
+  const S = makeS({ items, config: { evidence: { type: 'dir', root } } });
+  snap(S);
+  return S;
+}
+test('record: a wrong\'s note may name a rendered path holding brackets, a space, a comma, "#" or a non-ASCII letter, and a range in either order', () => {
+  const S = oddPathsS();
+  const w = fs.readFileSync;
+  const notes = {
+    P01: 'app/[slug]/page.tsx:2 takes no slug',
+    P02: 'docs/my notes.md:2 says 5, not 6',
+    P03: 'docs/\u00fcbersicht.md:3 names the platform team',
+    P04: 'src/(auth)/login.ts:1 takes no argument',
+    P05: 'src/C#/a.cs:2 takes none',
+    P06: 'data/a,b.txt:3-1 are the three lines',
+  };
+  reader(S, 'c1-a', 1, 6, Object.fromEntries(Object.entries(notes).map(([id, note]) => [id, { verdict: 'wrong', note, class: ['C2'] }])));
+  reader(S, 'c1-b', 1, 6);
+  ok(/static void Main/.test(w(path.join(RD(S), 'w-c1-a-4.txt'), 'utf8')), 'the line under the "#" folder is rendered');
+  wj(path.join(RD(S), 'confirmed.json'), { ...Object.fromEntries(Object.keys(notes).map((id) => [id, { note: notes[id] }])), rejected: [] });
+  const rec = () => ltz(['record', S, 'u1', '1', '--chunk-readers', 'c1=c1-a,c1-b']);
+  passes(rec(), 'each note names a line its reader rendered');
+  eq(rj(path.join(RD(S), 'measure.json')).chunks.c1.foundBy['c1-a'], 6, 'all six counted as c1-a\'s finds');
+  // Controls: a line the reader did not render, and only the tail of a rendered path, are still refused.
+  const fp = path.join(RD(S), 'agent-c1-a.jsonl');
+  const keep = w(fp, 'utf8');
+  editJsonl(fp, (rows) => rows.map((x) => (x.id === 'P02' ? { ...x, note: 'docs/my notes.md:99 says 5' } : x)));
+  fails(rec(), /c1-a: P02 \(line 2\): wrong, but none of the file:line refs in its note \(notes\.md:99\) is in its render log/, 'a line never rendered');
+  editJsonl(fp, (rows) => rows.map((x) => (x.id === 'P02' ? { ...x, note: 'notes.md:2 says 5' } : x)));
+  fails(rec(), /c1-a: P02 \(line 2\): wrong, but none of the file:line refs in its note \(notes\.md:2\) is in its render log/, 'the tail of a rendered path is not that path');
+  fs.writeFileSync(fp, keep);
+  passes(rec());
+});
+test('cites: a "#" in a folder name does not make a key path', () => {
+  eq(parseCite('src/C#/a.cs:1'), { kind: 'lines', path: 'src/C#/a.cs', from: 1, to: 1, norm: 'src/C#/a.cs:1' }, 'a line cite under a "#" folder');
+  eq(parseCite('src/C#x/a.cs:3-5').kind, 'lines', 'a folder name holding "#"');
+  eq([parseCite('docs/C#/readme.md:Install').kind, parseCite('docs/C#/readme.md:Install').path], ['key', 'docs/C#/readme.md'], 'a key cite under a "#" folder');
+  // Controls: the key-path form is unchanged, a "/" inside a key included.
+  eq(parseCite('config/nested.json#server.http.port').keys, ['server', 'http', 'port'], 'a key path');
+  eq(parseCite('package.json#dependencies.@babel/core').keys, ['dependencies', '@babel/core'], 'a key holding "/"');
+});
+test('crosscheck: a number before a full stop or against a unit is seen; one line cited in two spellings is one family', () => {
+  const S = makeS({ items: [
+    item('X1', 'The timeout is 30.', ['config/app.json:2']),
+    item('X2', 'The timeout is 45.', ['./config/app.json:2']),
+    item('X3', 'retries wait 30s', ['config/app.json:3']),
+    item('X4', 'retries wait 60s', ['config\\app.json:3']),
+    item('X5', 'ships with version 1.2.3', ['docs/spec.md:1']),
+    item('X6', 'ships with version 1.2.4', ['docs/spec.md:1']),
+  ] });
+  const r = passes(ltz(['crosscheck', S]));
+  ok(/config\/app\.json:2: 2 items \(X1, X2\); numbers differ: X1 \[30\], X2 \[45\]/.test(r.out), r.out);
+  ok(/config\/app\.json:3: 2 items \(X3, X4\); numbers differ: X3 \[30\], X4 \[60\]/.test(r.out), r.out);
+  ok(/docs\/spec\.md:1: 2 items \(X5, X6\)$/m.test(r.out), 'control: a dotted version is not a number:\n' + r.out);
+  ok(/3 shared cite\(s\), 2 with differing numbers/.test(r.out), r.out);
+});
+test('record: a reader the queue holds must be named in --chunk-readers, unless its slot is closed as replaced', () => {
+  const S = baseCopy();
+  passes(ltz(['queue', S, 'u1', '1', 'init', '--pairs', 'c1=c1-a,c1-b', 'c2=c2-a,c2-b']));
+  passes(ltz(['record', S, 'u1', '1', ...READERS]), 'control: every queued reader named');
+  // c1-b marked A02 wrong; left out, its lines would not be read at all.
+  const short = ['--chunk-readers', 'c1=c1-a', 'c2=c2-a,c2-b'];
+  fs.rmSync(path.join(RD(S), 'report.json'));
+  fails(ltz(['record', S, 'u1', '1', ...short]), /PROBLEM: queue\.json holds slot c1-b \(chunk c1, state queued\), which --chunk-readers does not name, so its lines would be left out; name it, or close it with "queue <S> <unit> <R> mark c1-b replaced"/);
+  ok(!fs.existsSync(path.join(RD(S), 'report.json')), 'nothing written');
+  // A final-check unit may leave a chunk out of the queue, not a queued reader out of record.
+  const cfgP = path.join(S, 'config.json');
+  const base = rj(cfgP);
+  wj(cfgP, { ...base, units: { ...base.units, u1: { ...base.units.u1, status: 'final-check' } } });
+  fails(ltz(['record', S, 'u1', '1', '--chunk-readers', 'c2=c2-a,c2-b']), /queue\.json holds slot c1-a .*\n.*queue\.json holds slot c1-b /, 'a final-check round too');
+  wj(cfgP, base);
+  passes(ltz(['queue', S, 'u1', '1', 'mark', 'c1-b', 'replaced']));
+  passes(ltz(['record', S, 'u1', '1', ...short]), 'an abandoned slot, closed as replaced, is not needed');
+});
+test('record: a wrong marked only by a wholly superseded rerun still warns; a parent whose whole range was re-read needs no files', () => {
+  const S = baseCopy();
+  const rec = () => ltz(['record', S, 'u1', '1', ...READERS]);
+  passes(ltz(['queue', S, 'u1', '1', 'init', '--pairs', 'c1=c1-a,c1-b', 'c2=c2-a,c2-b']));
+  passes(ltz(['queue', S, 'u1', '1', 'rerun', 'c2-a', '--from', '10', '--to', '12']));
+  const [x] = rerunsOf(S, 'c2-a');
+  reader(S, x.slot, 10, 12, { A11: { verdict: 'wrong', note: 'docs/spec.md:4 names a password only', class: ['U1'] } });
+  fails(rec(), new RegExp(`A11 was marked wrong by ${x.slot} but is not confirmed`), 'control: the rerun alone, its wrong unaccounted');
+  // A second rerun of the same range marks A11 ok: the first rerun supplies no position now.
+  passes(ltz(['queue', S, 'u1', '1', 'rerun', 'c2-a', '--from', '10', '--to', '12']));
+  const y = rerunsOf(S, 'c2-a')[1];
+  reader(S, y.slot, 10, 12);
+  let r = passes(rec());
+  ok(new RegExp(`WARNING: A11 \\(position 11\\): ${x.slot} \\(rerun of c2-a\\) marked it wrong, but rerun ${y.slot}, which replaces those lines, marks it ok; it leaves the union`).test(r.out), r.out);
+  fs.rmSync(path.join(RD(S), `agent-${x.slot}.jsonl`));
+  r = passes(rec(), 'the wholly superseded rerun\'s file is not needed');
+  ok(!/A11 \(position 11\)/.test(r.out), r.out);
+  // A rerun of a parent's whole range: the parent's own result file and render log are not needed.
+  passes(ltz(['queue', S, 'u1', '1', 'rerun', 'c1-b', '--from', '1', '--to', '6']));
+  const [z] = rerunsOf(S, 'c1-b');
+  reader(S, z.slot, 1, 6, { A02: { verdict: 'wrong', note: 'src/auth.js:7 is the only return path', class: ['C2'] } });
+  passes(rec(), 'control: the parent\'s files still there');
+  fs.rmSync(path.join(RD(S), 'agent-c1-b.jsonl'));
+  fs.rmSync(path.join(RD(S), 'render-c1-b.jsonl'));
+  passes(rec(), 'the parent supplies no position, so neither file is needed');
+  eq(rj(path.join(RD(S), 'measure.json')).reruns.find((q) => q.slot === z.slot).positionsTaken, 6, 'the rerun supplies all six');
+  ok(Object.values(rj(path.join(RD(S), 'report.json')).items.find((q) => q.id === 'A02').readers).every((q) => q.verdict === 'wrong'), 'A02 still marked by both');
+});
+test('record: prints the canary scores, with a warning for each canary missed, falsely alarmed on or not judged', () => {
+  const plant = (S2) => {
+    wjl(path.join(S2, 'canaries.jsonl'), CANARIES);
+    wj(path.join(RD(S2), 'canary-plan.json'), { 'c1-a': [{ canaryId: 'A13', atPosition: 2 }, { canaryId: 'A14', atPosition: 5 }], 'c1-b': [{ canaryId: 'A13', atPosition: 3 }] });
+  };
+  const line = (id, verdict) => ({ unit: 'u1', id, verdict, class: [], note: 'src/auth.js:10 returns null', cites: ['src/auth.js:9-10'] });
+  const S = fullRound({ beforeRead: plant, canaryLinesA: { 2: [line('A13', 'ok')], 5: [line('A14', 'wrong')] } });
+  const r = passes(ltz(['record', S, 'u1', '1', ...READERS]));
+  ok(/WARNING: canary missed: c1-a: the planted wrong A13 \(before position 2\) was marked ok; that reader's range gets a supplementary read/.test(r.out), r.out);
+  ok(/WARNING: canary false alarm: c1-a: the planted ok A14 \(before position 5\) was marked wrong/.test(r.out), r.out);
+  ok(/WARNING: canary not judged: c1-b: the planted wrong A13 \(before position 3\) has no line in the reader's file/.test(r.out), r.out);
+  ok(/; canaries: c1-a caught 0 of 1, 1 false alarm\(s\) on 1 ok; c1-b caught 0 of 1, 1 not judged; /.test(r.out), r.out);
+  // Control: both caught and passed, so the scores are printed with no warning.
+  const S2 = fullRound({ beforeRead: plant, canaryLinesA: { 2: [line('A13', 'wrong')], 5: [line('A14', 'ok')] } });
+  editJsonl(path.join(RD(S2), 'agent-c1-b.jsonl'), (rows) => [...rows.slice(0, 2), line('A13', 'wrong'), ...rows.slice(2)]);
+  const r2 = passes(ltz(['record', S2, 'u1', '1', ...READERS]));
+  ok(/; canaries: c1-a caught 1 of 1, 0 false alarm\(s\) on 1 ok; c1-b caught 1 of 1; /.test(r2.out), r2.out);
+  ok(!/WARNING: canary/.test(r2.out), r2.out);
+  ok(!/canar/.test(passes(ltz(['record', baseCopy(), 'u1', '1', ...READERS])).out), 'no canaries planted: nothing printed');
+});
+test('record: blank ok notes on 5 or more items get the template warning', () => {
+  const S = baseCopy();
+  const fp = path.join(RD(S), 'agent-c2-a.jsonl');
+  editJsonl(fp, (rows) => rows.map((x) => ({ ...x, note: '' })));
+  let out = passes(ltz(['record', S, 'u1', '1', ...READERS])).out;
+  ok(/WARNING: c2-a: 6 ok notes are blank: A07, A08, A09, A10, A11, A12; a blank note is not a reading of each item, so give that reader's whole range a supplementary read/.test(out), out);
+  editJsonl(fp, (rows) => rows.map(({ note, ...x }) => x));
+  out = passes(ltz(['record', S, 'u1', '1', ...READERS])).out;
+  ok(/WARNING: c2-a: 6 ok notes are blank/.test(out), 'no "note" key at all:\n' + out);
+  editJsonl(fp, (rows) => rows.map((x, i) => (i < 2 ? { ...x, note: 'the cited line states it' } : x)));
+  out = passes(ltz(['record', S, 'u1', '1', ...READERS])).out;
+  ok(!/WARNING: c2-a: .* ok notes are blank/.test(out), 'control: four blank notes are under the threshold:\n' + out);
+});
+test('record: a "rejected" note needs a file:line that can be one, or "history:" with what it names', async () => {
+  const S = baseCopy();
+  const conf = path.join(RD(S), 'confirmed.json');
+  const rec = () => ltz(['record', S, 'u1', '1', ...READERS]);
+  const withNote = (note) => wj(conf, { ...CONFIRMED, rejected: [{ id: 'A09', note }] });
+  for (const [note, shown] of [['history:', null], ['history:   ', null], ['see http://localhost:8080', '//localhost:8080'], ['localhost:8080 answers it', 'localhost:8080'], ['node:18 is fine', 'node:18']]) {
+    withNote(note);
+    const r = fails(rec(), /PROBLEM: confirmed\.json: rejected A09 has no file:line that answers the refuter \(or a note starting "history:" that names the earlier reasoned ok\)/, JSON.stringify(note));
+    if (shown) ok(r.out.includes(`; ${shown} is not one: a file:line has a path with a folder or a file extension, or one a reader rendered`), r.out);
+  }
+  for (const note of ['config/app.json:2 is 30, as the item says', 'app.json:2 is 30', 'history: u1 r0 slot x reasoned ok on this point holds']) {
+    withNote(note);
+    passes(rec(), `control: ${note}`);
+  }
+  // A path with no folder and no extension counts once a reader rendered it.
+  const cov = await import('../lib/coverage.mjs');
+  ok(typeof cov.fileRefs === 'function', 'coverage.mjs exports fileRefs');
+  eq([cov.fileRefs('Makefile:12 has the target').length, cov.fileRefs('Makefile:12 has the target', new Set(['Makefile'])).length], [0, 1], 'a rendered path');
+});
+test('record: with one reader per chunk the summary says the remaining wrongs were not estimated', () => {
+  const S = makeS();
+  snap(S);
+  const r0 = passes(ltz(['queue', S, 'u1', '1', 'init', '--opaque', '--per-chunk', '1']));
+  for (const g of rj(path.join(RD(S), 'queue.json')).groups) reader(S, g.slots[0], g.chunk === 'c1' ? 1 : 7, g.chunk === 'c1' ? 6 : 12);
+  wj(path.join(RD(S), 'confirmed.json'), { rejected: [] });
+  const r = passes(ltz(['record', S, 'u1', '1', '--chunk-readers', .../--chunk-readers (.+)$/m.exec(r0.out)[1].split(' ')]));
+  ok(/; remaining wrongs not estimated \(needs two readers per chunk\) -> report\.json, measure\.json/.test(r.out) && !/estimated remaining/.test(r.out), r.out);
+  const e = rj(path.join(RD(S), 'measure.json')).total.estimate;
+  eq([e.estimated, e.lowConfidence, e.reason, e.chunksEstimated], [false, true, 'needs two readers per chunk', []], 'measure.json says so too');
+  // Control: two readers per chunk.
+  const S2 = baseCopy();
+  const r2 = passes(ltz(['record', S2, 'u1', '1', ...READERS]));
+  ok(/; estimated remaining \d/.test(r2.out) && !/not estimated/.test(r2.out), r2.out);
+  eq(rj(path.join(RD(S2), 'measure.json')).total.estimate.estimated, true, 'estimated');
+});
+test('record: an unknown repeatReason is a PROBLEM on any entry; an accepted repeat is named in the summary and the report', () => {
+  const S = baseCopy();
+  const conf = path.join(RD(S), 'confirmed.json');
+  wj(conf, { ...CONFIRMED, A08: { ...CONFIRMED.A08, repeatReason: 'made-up-reason' } });
+  fails(ltz(['record', S, 'u1', '1', ...READERS]), /PROBLEM: confirmed\.json: A08 has repeatReason "made-up-reason"; the accepted values are "plain-fix-failure", "new-text", "earlier-miss"/, 'not a repeat, and the value is still checked');
+  wj(conf, { ...CONFIRMED, A08: { ...CONFIRMED.A08, repeatReason: 'new-text', repeatNote: 'n', rulingsChecked: [] } });
+  const r = passes(ltz(['record', S, 'u1', '1', ...READERS]));
+  ok(/WARNING: confirmed\.json: A08 has repeatReason "new-text", but no earlier round's standing wrong names it .*; it is not counted as a repeat/.test(r.out), r.out);
+  ok(!/repeat\(s\)/.test(r.out), r.out);
+  eq(rj(path.join(RD(S), 'measure.json')).repeats, [], 'no repeat counted');
+  // A real repeat, kept wrong with its reason.
+  const S2 = baseCopy();
+  asRound2(S2);
+  wj(path.join(RD(S2, 'u1', 1), 'confirmed.json'), { A02: { note: 'src/auth.js:6', class: 'C2' } });
+  wj(path.join(RD(S2, 'u1', 2), 'confirmed.json'), { ...CONFIRMED, A02: { ...CONFIRMED.A02, repeatReason: 'plain-fix-failure', repeatNote: 'r1 edited the plan field only', rulingsChecked: [] } });
+  const r2 = passes(ltz(['record', S2, 'u1', '2', ...READERS]));
+  ok(/confirmed 3 \(1 repeat\(s\): A02 plain-fix-failure, of r1\), found by one reader/.test(r2.out), r2.out);
+  const a02 = rj(path.join(RD(S2, 'u1', 2), 'report.json')).items.find((x) => x.id === 'A02');
+  eq([a02.repeatReason, a02.repeatOf], ['plain-fix-failure', ['r1']], 'on the item in report.json');
+  eq(rj(path.join(RD(S2, 'u1', 2), 'measure.json')).repeats, [{ id: 'A02', repeatReason: 'plain-fix-failure', of: ['r1'] }], 'and in measure.json');
+});
+test('spotcheck: with a queue, draws only from the lines record uses', () => {
+  const S = baseCopy();
+  passes(ltz(['queue', S, 'u1', '1', 'init', '--pairs', 'c1=c1-a,c1-b', 'c2=c2-a,c2-b']));
+  // A rerun replaces all of c2-a's lines, a rerun replaces positions 2-5 of c1-a, and a stray file sits in the folder.
+  passes(ltz(['queue', S, 'u1', '1', 'rerun', 'c2-a', '--from', '7', '--to', '12']));
+  const [x] = rerunsOf(S, 'c2-a');
+  reader(S, x.slot, 7, 12);
+  passes(ltz(['queue', S, 'u1', '1', 'rerun', 'c1-a', '--from', '2', '--to', '5']));
+  const [y] = rerunsOf(S, 'c1-a');
+  reader(S, y.slot, 2, 5);
+  fs.copyFileSync(path.join(RD(S), 'agent-c2-b.jsonl'), path.join(RD(S), 'agent-zz99.jsonl'));
+  const r = passes(ltz(['spotcheck', S, 'u1', 'r1', '--seed', '7', '--per-slot', '2']));
+  const picks = rj(path.join(RD(S), 'spotchecks.json')).picks;
+  eq(Object.keys(picks).sort(), ['c1-a', 'c1-b', 'c2-b', x.slot, y.slot].sort(), 'no picks from the wholly replaced c2-a, nor from the stray file');
+  eq(picks['c1-a'].map((q) => q.position), [1, 6], 'c1-a: only the positions its own lines still supply');
+  ok(picks[y.slot].every((q) => q.position >= 2 && q.position <= 5), JSON.stringify(picks[y.slot]));
+  ok(/^spotcheck u1 r1: seed 7/m.test(r.out), 'the round is printed once, however it was typed:\n' + r.out);
+  const S2 = baseCopy();
+  passes(ltz(['queue', S2, 'u1', '1', 'init', '--pairs', 'c1=c1-a,c1-b', 'c2=c2-a,c2-b']));
+  fails(ltz(['spotcheck', S2, 'u1', '1', '--seed', '7', '--extra', 'zz99=1']), /--extra names zz99, which has no reader file/);
+});
+test('canary gitignore: a later "!" line that re-includes a canary file is refused; a scratch line that reaches one level only is refused', () => {
+  const S = makeS();
+  const gi = path.join(S, '.gitignore');
+  const LINES = 'canaries.jsonl\n**/canary-plan.json\ncanaries-src/\n**/scratch/\n';
+  fs.writeFileSync(gi, LINES);
+  passes(ltz(['canary', 'gitignore', S]), 'control: the four lines');
+  for (const [neg, file] of [['!canaries.jsonl', 'canaries\\.jsonl'], ['!**/canary-plan.json', 'any-unit/r1/canary-plan\\.json'], ['!canaries-src/', 'canaries-src/k7f2\\.jsonl']]) {
+    fs.writeFileSync(gi, LINES + neg + '\n');
+    fails(ltz(['canary', 'gitignore', S]), new RegExp(`PROBLEM: .*\\.gitignore has the canary lines, but git does not ignore the canary files: a later "!" line re-includes them; not ignored: .*${file}`), neg);
+  }
+  // No nested state folder has a round yet, and "*/r*/scratch/" already misses one.
+  fs.writeFileSync(gi, 'canaries.jsonl\n**/canary-plan.json\ncanaries-src/\n*/r*/scratch/\n');
+  fails(ltz(['canary', 'gitignore', S]), /does not ignore the readers' scratch folders.*not ignored: .*any-folder\/any-unit\/r1\/scratch\//, 'a made-up nested unit is probed');
+});
+test('record: with rulingIdPattern set, a ruled ok\'s ruling is taken whole, brackets included', () => {
+  const S = baseCopy();
+  const cfgP = path.join(S, 'config.json');
+  wj(cfgP, { ...rj(cfgP), rulingIdPattern: 'R-\\d+(?:\\([a-z]\\))?' });
+  editJsonl(path.join(RD(S), 'agent-c1-a.jsonl'), (rows) => rows.map((x) => {
+    if (x.id === 'A04') return { ...x, note: 'ruled: R-4(a) src/billing.js:2 says 0.2; the approved wording says 20 percent' };
+    if (x.id === 'A05') return { ...x, note: 'ruled: D-12. docs/spec.md:8 says only admins' };
+    if (x.id === 'A06') return { ...x, note: 'ruled: R-7, config/app.json:2 holds' };
+    return x;
+  }));
+  wj(path.join(RD(S), 'confirmed.json'), { ...CONFIRMED, ruledKept: [{ id: 'A04', ruling: 'R-4(a)' }] });
+  const r = passes(ltz(['record', S, 'u1', '1', ...READERS]), 'the ruling is compared as written');
+  eq(rj(path.join(RD(S), 'measure.json')).ruledOks.map((x) => [x.id, x.ruling]), [['A04', 'R-4(a)'], ['A05', 'D-12'], ['A06', 'R-7']], 'whole ids; one the pattern does not match is read as before');
+  ok(!/ruled ok: A04/.test(r.out) && /ruled ok: A05/.test(r.out), r.out);
+});
+test('record: a queue.json or canary-plan.json that is not an object is refused with a message', () => {
+  const S = baseCopy();
+  fs.writeFileSync(path.join(RD(S), 'queue.json'), 'null\n');
+  let r = fails(ltz(['record', S, 'u1', '1', ...READERS]), /ERROR: queue\.json must be a JSON object/);
+  eq(r.code, 1, 'a refusal, not an internal error');
+  fs.rmSync(path.join(RD(S), 'queue.json'));
+  fs.writeFileSync(path.join(RD(S), 'canary-plan.json'), 'null\n');
+  r = fails(ltz(['record', S, 'u1', '1', ...READERS]), /ERROR: canary-plan\.json must be a JSON object/);
+  eq(r.code, 1, 'a refusal, not an internal error');
+});
+
+// ---- code-versus-docs audit, part 3a: evidence at the pin, searches, snapshot, items, the entry check
+/** A state folder over a folder of evidence holding these files ({relative path: text or Buffer}). */
+function dirS(filesByPath, config = {}) {
+  const root = path.join(RUN, `dir-ev-${++nS}`);
+  for (const [rel, body] of Object.entries(filesByPath)) {
+    fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    fs.writeFileSync(path.join(root, rel), body);
+  }
+  const S = makeS({ config: { evidence: { type: 'dir', root }, ...config } });
+  snap(S);
+  return { S, root };
+}
+const showIn = (S, ...cites) => ltz(['show', S, 'u1', '1', 't-a', ...cites]);
+test('ltz: a skill folder reached through a link still runs its commands', () => {
+  const link = path.join(RUN, `link-${++nS}`);
+  fs.symlinkSync(SCRIPTS, link, 'junction');
+  const r = spawnSync(process.execPath, [path.join(link, 'ltz.mjs'), 'frobnicate'], { encoding: 'utf8', env: BASE_ENV, cwd: RUN });
+  eq(r.status, 1, `through the link the command runs and fails as it should:\n${r.stdout}${r.stderr}`);
+  ok(/unknown command/.test(r.stderr), r.stderr);
+  const h = spawnSync(process.execPath, [path.join(link, 'ltz.mjs'), 'snapshot', '--help'], { encoding: 'utf8', env: BASE_ENV, cwd: RUN });
+  ok(h.status === 0 && /snapshot <S> <unit> <R>/.test(h.stdout), 'control: help through the link');
+});
+test('searches at the pin: a git source whose repo is a folder inside its repository is read from the top level', () => {
+  const S = makeS({ config: { evidence: { type: 'git', repo: path.join(REPO, 'src'), pin: 'v1' } } });
+  snap(S);
+  ok(/V1-LINE-3/.test(passes(showIn(S, 'src/auth.js:3')).out), 'control: render reads paths from the top level');
+  fails(verifyRun(S, { regex: 'RATE' }, 0), /logs hits 0, but the pin has 2 matches/, 'the search reads the same files, so 0 hits is refused');
+  passes(verifyRun(S, { regex: 'RATE' }, 2, { at: RATE_SRC }), 'with paths from the top level');
+});
+test('evidence: a UTF-8 byte order mark is not part of line 1', () => {
+  const { S } = dirS({ 'src/bom.cs': '\uFEFFusing System;\nusing System.IO;\n', 'conf/bom1.yml': '\uFEFFserver:\n port: 8080\n host: x\n' });
+  const r = passes(showIn(S, 'src/bom.cs:1'));
+  ok(/1 \| using System;/.test(r.out) && !r.out.includes('\uFEFF'), JSON.stringify(r.out));
+  ok(/port: 8080/.test(passes(showIn(S, 'conf/bom1.yml#server.port'), 'a key path under a one-space indent').out), 'the key path resolves');
+  passes(verifyRun(S, { regex: '^using System', paths: ['src/bom.cs'] }, 2, { at: ['src/bom.cs:1', 'src/bom.cs:2'] }), 'a "^" search sees line 1');
+  fails(verifyRun(S, { regex: '^using System', paths: ['src/bom.cs'] }, 1, { at: ['src/bom.cs:2'] }), /the pin has 2 matches/);
+});
+test('evidence: a file that is not text (UTF-16, binary) is not rendered, and a search says what it skipped', () => {
+  const { S } = dirS({
+    'export/utf16.txt': Buffer.from('\uFEFFpassword: hunter2\r\nRATE = 1\r\n', 'utf16le'),
+    'export/plain.txt': 'nothing here\n',
+    'bin/blob.bin': Buffer.from([0, 1, 2, 0, 82, 65, 84, 69]),
+  });
+  const r = fails(showIn(S, 'export/utf16.txt:1-3'), /could not be shown/);
+  ok(/nothing rendered: binary/.test(r.out) && !r.out.includes('\u0000') && !/hunter2/.test(r.out), JSON.stringify(r.out));
+  fails(showIn(S, 'bin/blob.bin:1'), /nothing rendered: binary/);
+  ok(/nothing here/.test(passes(showIn(S, 'export/plain.txt:1')).out), 'control: a text file');
+  const w = passes(verifyRun(S, { regex: 'RATE', paths: ['export/**'] }, 0), '0 hits in the one text file');
+  ok(/WARNING: the searches skipped 1 file\(s\) in their scope that are not text \(binary, or UTF-16\), so no count covers them: export\/utf16\.txt;/.test(w.out), w.out);
+  fails(verifyRun(S, { regex: 'RATE', paths: ['bin/**'] }, 0), /select only files that are not text \(binary, or UTF-16\), so it read nothing: bin\/blob\.bin/);
+  ok(!/WARNING: the searches skipped/.test(passes(verifyRun(S, { regex: 'RATE', paths: ['export/plain.txt'] }, 0)).out), 'control: no warning when every file is text');
+});
+test('render: a line cite that starts before line 1 is marked not rendered, never a crash', () => {
+  const S = makeS({ items: ITEMS.map((x) => (x.id === 'A02' ? { ...x, cites: ['src/auth.js:0-2'] } : x)) });
+  snap(S);
+  passes(ltz(['render', S, 'u1', '1', 't-a', '1', '3']), 'the window is still written');
+  const w = fs.readFileSync(path.join(RD(S), 'w-t-a-1.txt'), 'utf8');
+  ok(/src\/auth\.js:0-2 .*lines count from 1/.test(w) && /nothing rendered: bad-line/.test(w) && !/undefined/.test(w), w);
+  const r = fails(showIn(S, 'src/auth.js:0'), /could not be shown/);
+  eq(r.code, 1, 'a refusal, not an internal error');
+  ok(rjl(path.join(RD(S), 'render-t-a.jsonl')).some((e) => e.t === 'cite' && e.cite === 'src/auth.js:0' && e.status === 'bad-line'), 'logged as an attempt');
+});
+test('cites: path:Key takes a "#" line for a heading only in a markdown file', () => {
+  const { S } = dirS({
+    'config/app.yml': '# Settings. The timeout below is in seconds.\nname: x\ntimeout: 30\n',
+    'docs/x.md': 'intro\ntimeout: 1\n\n\n## timeout\nbody\n',
+  });
+  ok(/key found on line 3/.test(passes(showIn(S, 'config/app.yml:timeout')).out), 'a YAML comment does not outrank the key\'s own line');
+  ok(/key found on line 5/.test(passes(showIn(S, 'docs/x.md:timeout')).out), 'control: in markdown the heading comes first');
+});
+test('masking: an escaped or doubled quote does not end a quoted value; a key may start with a digit or follow "-"', () => {
+  const M = '\u00abmasked\u00bb';
+  const m = (line) => maskSecrets(line).text;
+  eq(m('{"password": "ab\\"cd-REST", "user": "bob"}'), `{"password": "${M}", "user": "bob"}`, 'a backslash-escaped quote');
+  eq(m("password: 'it''s-a-secret'"), `password: '${M}'`, 'a doubled quote');
+  eq(m('deploy --user=bob --password=hunter2'), `deploy --user=bob --password=${M}`, 'a long option');
+  eq(m('java -jar x.jar -Dpassword=hunter2'), `java -jar x.jar -Dpassword=${M}`, 'a -D option');
+  eq(m('"2fa_secret": "JBSWY3DP"'), `"2fa_secret": "${M}"`, 'a key that starts with a digit');
+  // Controls.
+  eq(m('"password": "", "user": "bob"'), '"password": "", "user": "bob"', 'an empty value');
+  eq(m('"password": "abc", "user": "bob"'), `"password": "${M}", "user": "bob"`, 'a plain quoted value, as before');
+  eq([maskSecrets('--max-tokens=5').masked, maskSecrets('-Debug=true').masked, maskSecrets('at 12:30 the job ran').masked], [false, false, false], 'not secret keys');
+});
+test('render: a folder cited in a git source is not found, not rendered as its listing', () => {
+  const S = makeS();
+  snap(S);
+  const r = fails(showIn(S, 'src:1'), /could not be shown/);
+  ok(!/tree v1:src/.test(r.out) && /not-found-at-pin/.test(r.out), r.out);
+  ok(/RATE = 0\.2/.test(passes(showIn(S, 'src/billing.js:2')).out), 'control: a file');
+});
+test('hashes: a copy that differs only in line endings (a CRLF checkout) still matches', async () => {
+  const S = baseCopy();
+  const sp = path.join(RD(S), 'snapshot.jsonl');
+  const lf = fs.readFileSync(sp, 'utf8');
+  fs.writeFileSync(sp, lf.replace(/\n/g, '\r\n'));
+  passes(ltz(['render', S, 'u1', '1', 't-z', '1', '3']), 'the snapshot with \\r\\n line endings');
+  passes(ltz(['record', S, 'u1', '1', ...READERS]), 'record too');
+  fs.writeFileSync(sp, lf.replace(/\n/g, '\r\n').replace('login calls check', 'login calls nothing'));
+  fails(ltz(['render', S, 'u1', '1', 't-z', '1', '3']), /snapshot\.jsonl was changed after the snapshot/, 'control: a real change');
+  // A folder of evidence pinned by sha256.
+  const { treeHash } = await import('../lib/evidence.mjs');
+  const root = path.join(RUN, `dir-eol-${++nS}`);
+  fs.mkdirSync(root, { recursive: true });
+  fs.writeFileSync(path.join(root, 'a.txt'), 'one\ntwo\n');
+  const S2 = makeS({ config: { evidence: { type: 'dir', root, sha256: treeHash(root) } } });
+  snap(S2);
+  fs.writeFileSync(path.join(root, 'a.txt'), 'one\r\ntwo\r\n');
+  ok(/1 \| one/.test(passes(showIn(S2, 'a.txt:1'), 'the folder with \\r\\n line endings').out), 'rendered');
+  fs.writeFileSync(path.join(root, 'a.txt'), 'one\r\nthree\r\n');
+  fails(showIn(S2, 'a.txt:1'), /has changed since it was pinned/, 'control: a real change');
+});
+test('snapshot: a git pin that does not resolve, or a missing evidence folder, is refused with a message', () => {
+  const S = makeS({ config: { evidence: { type: 'git', repo: REPO, pin: 'no-such-tag' } } });
+  fails(ltz(['snapshot', S, 'u1', '1']), /ERROR: the evidence pin no-such-tag does not resolve to a commit in .*; nothing was snapshotted/);
+  ok(!fs.existsSync(RD(S)), 'no round folder written');
+  for (const extra of [{}, { sha256: 'a'.repeat(64) }]) {
+    const S2 = makeS({ config: { evidence: { type: 'dir', root: path.join(RUN, 'no-such-evidence-folder'), ...extra } } });
+    const r = fails(ltz(['snapshot', S2, 'u1', '1']), /ERROR: evidence root not found: /, JSON.stringify(extra));
+    eq(r.code, 1, 'a refusal, not an internal error');
+  }
+});
+test('items: "cites" that is not a list is refused', () => {
+  const S = makeS({ items: ITEMS.map((x) => (x.id === 'A01' ? { ...x, cites: 'src/auth.js:3' } : x)) });
+  fails(ltz(['snapshot', S, 'u1', '1']), /S\/items\.jsonl line 1: item A01: "cites" must be an array \(got "src\/auth\.js:3"\)/);
+  const S2 = makeS({ items: ITEMS.map(({ cites, ...x }) => (x.id === 'A01' ? x : { ...x, cites })) });
+  passes(ltz(['snapshot', S2, 'u1', '1']), 'control: an item with no "cites" at all');
+});
+test('mixed evidence: "prefix": "." is the source\'s own folder', () => {
+  const { exp } = mixedFolders();
+  const S = makeS({ config: { evidence: [{ type: 'git', repo: REPO, pin: 'v1', prefix: '.' }, { type: 'dir', root: exp, prefix: 'export' }] } });
+  snap(S);
+  ok(/V1-LINE-3/.test(passes(showIn(S, 'src/auth.js:3'), 'a path under "."').out), 'read from the git source');
+  ok(/EXPORT-LINE-1/.test(passes(showIn(S, 'export/notes.md:1')).out), 'control: the other source');
+});
+test('queue: a slot with no name or no state is refused with a message', () => {
+  const S = queued();
+  const qp = path.join(RD(S), 'queue.json');
+  const q = rj(qp);
+  passes(ltz(['queue', S, 'u1', '1', 'status']), 'control');
+  for (const drop of ['slot', 'state']) {
+    const { [drop]: gone, ...rest } = q.slots[0];
+    wj(qp, { ...q, slots: [rest, ...q.slots.slice(1)] });
+    for (const sub of [['status'], ['next', '--cap', '2']]) {
+      const r = fails(ltz(['queue', S, 'u1', '1', ...sub]), /ERROR: queue\.json: slots\[0\] needs a "slot" name and a "state"/, `${drop} missing, ${sub[0]}`);
+      eq(r.code, 1, 'a refusal, not an internal error');
+    }
+  }
+});
+
+// ---- code-versus-docs audit, part 4: the guard hook and skillcheck
+// ---- audit 4: guard.mjs and skillcheck.mjs
+// The guard now reads CLAUDE_PROJECT_DIR; the tests set it themselves, so it is dropped from what they inherit.
+delete BASE_ENV.CLAUDE_PROJECT_DIR;
+delete GIT_ENV.CLAUDE_PROJECT_DIR;
+/** Run a hook script by any path to it (the guard helper above always uses the real path). */
+function guardAuditAt(script, input, { env = {}, cwd } = {}) {
+  const r = spawnSync(process.execPath, [script], { input: JSON.stringify({ session_id: 'me', cwd, ...input }), encoding: 'utf8', env: { ...GIT_ENV, ...env }, cwd });
+  return { code: r.status, out: (r.stderr || '') + (r.stdout || '') };
+}
+const guardAuditPs = (command) => ({ tool_name: 'PowerShell', tool_input: { command } });
+/** A junction to a folder, made inside RUN. Remove it with guardAuditUnlink, which never follows it. */
+function guardAuditLink(target) {
+  const link = path.join(RUN, `link-${++nS}`);
+  fs.symlinkSync(target, link, 'junction');
+  return link;
+}
+const guardAuditUnlink = (link) => fs.rmSync(link, { force: true });
+
+test('guard (audit 4.1): run through a junction to the scripts folder, the guard and skillcheck still do their work', () => {
+  const { repo, g, env } = guardRepo();
+  fs.appendFileSync(path.join(repo, 'docs', 'spec.md'), 'edit\n');
+  g(['add', 'docs/spec.md']);
+  const link = guardAuditLink(SCRIPTS);
+  try {
+    const viaLink = path.join(link, 'hooks', 'guard.mjs');
+    eq(guardAuditAt(GUARD, bash('git commit -m x'), { env, cwd: repo }).code, 2, 'control: by its real path the guard blocks the commit');
+    const r = guardAuditAt(viaLink, bash('git commit -m x'), { env, cwd: repo });
+    eq(r.code, 2, `through the junction it blocks the same commit:\n${r.out}`);
+    ok(/would include item files .*spec\.md/.test(r.out), r.out);
+    eq(guardAuditAt(viaLink, bash('git status'), { env, cwd: repo }).code, 0, 'control: through the junction, a harmless command is allowed');
+    const missing = path.join(RUN, 'no-such-skill');
+    const sc = (script) => spawnSync(process.execPath, [script, '--root', missing], { encoding: 'utf8', env: BASE_ENV });
+    eq(sc(SKILLCHECK).status, 1, 'control: skillcheck by its real path refuses a missing folder');
+    const v = sc(path.join(link, 'skillcheck.mjs'));
+    ok(v.status !== 0 && v.status !== null, `skillcheck through the junction exits non-zero, got ${v.status}`);
+    ok(/skill folder not found/.test(v.stderr), `and says why:\n${v.stderr}`);
+  } finally {
+    guardAuditUnlink(link);
+  }
+  ok(fs.existsSync(GUARD), 'removing the junction left the scripts folder alone');
+});
+
+test('guard (audit 4.2): .ltz-state is found from a subfolder and through CLAUDE_PROJECT_DIR; a relative LTZ_STATE resolves from CLAUDE_PROJECT_DIR', () => {
+  const { S, repo, g } = guardRepo();
+  fs.appendFileSync(path.join(repo, 'docs', 'spec.md'), 'edit\n');
+  g(['add', 'docs/spec.md']);
+  const marker = path.join(repo, '.ltz-state');
+  fs.writeFileSync(marker, 'S\n'); // a relative path: it resolves from the folder that holds the file
+  const commit = bash('git commit -m x');
+  const docs = path.join(repo, 'docs');
+  const away = path.join(RUN, `away-${nS}`);
+  eq(guard(commit, { cwd: repo }).code, 2, 'control: the hook cwd is the project folder');
+  let r = guard(commit, { cwd: docs });
+  eq(r.code, 2, `after "cd docs" the marker in the parent folder still counts:\n${r.out}`);
+  ok(/would include item files .*spec\.md/.test(r.out), r.out);
+  fs.writeFileSync(path.join(docs, '.ltz-state'), 'no-such-folder\n');
+  eq(guard(commit, { cwd: docs }).code, 2, 'a nearer .ltz-state that names no state folder is passed over for the next one up');
+  fs.rmSync(path.join(docs, '.ltz-state'));
+  const cfgP = path.join(S, 'config.json');
+  wj(cfgP, { ...rj(cfgP), units: { u1: { status: 'closed', itemFiles: ['docs/spec.md'] } } });
+  r = guard({ tool_name: 'Edit', tool_input: { file_path: path.join(repo, 'docs', 'spec.md') } }, { cwd: path.join(S, 'u1', 'r1') });
+  eq(r.code, 2, `three folders down:\n${r.out}`);
+  ok(/unit u1, which is closed/.test(r.out), r.out);
+  // A folder outside the project (a worktree does not hold the git-ignored marker).
+  const fromAway = bash(`git -C "${repo}" commit -m x`);
+  eq(guard(fromAway, { cwd: away }).code, 0, 'control: no marker above the cwd and no CLAUDE_PROJECT_DIR: inert');
+  r = guard(fromAway, { cwd: away, env: { CLAUDE_PROJECT_DIR: repo } });
+  eq(r.code, 2, `the marker in CLAUDE_PROJECT_DIR counts:\n${r.out}`);
+  ok(/would include item files .*spec\.md/.test(r.out), r.out);
+  // LTZ_STATE as a relative path.
+  fs.rmSync(marker);
+  eq(guard(commit, { cwd: docs }).code, 0, 'control: marker gone, inert');
+  eq(guard(commit, { cwd: repo, env: { LTZ_STATE: 'S' } }).code, 2, 'control: a relative LTZ_STATE resolves from the cwd when CLAUDE_PROJECT_DIR is not set');
+  eq(guard(commit, { cwd: docs, env: { LTZ_STATE: 'S' } }).code, 0, 'control: from docs, without CLAUDE_PROJECT_DIR, docs/S is no state folder');
+  eq(guard(commit, { cwd: docs, env: { LTZ_STATE: 'S', CLAUDE_PROJECT_DIR: repo } }).code, 2, 'with CLAUDE_PROJECT_DIR set, a relative LTZ_STATE resolves from it');
+});
+
+test('guard (audit 4.4): a renamed item file is seen by the commit rule', () => {
+  const { repo, g, env } = guardRepo();
+  const o = { env, cwd: repo };
+  g(['mv', 'decisions.md', 'decisions-2.md']);
+  eq(guard(bash('git commit -m x'), o).code, 0, 'control: a staged rename of a non-item file');
+  g(['mv', 'docs/spec.md', 'docs/spec-renamed.md']);
+  let r = guard(bash('git commit -m x'), o);
+  eq(r.code, 2, `a staged rename of an item file:\n${r.out}`);
+  ok(/would include item files .*docs[\\/]spec\.md/.test(r.out), r.out);
+  // The working-tree listing: the item file moved on disk, the new name added with intent-to-add.
+  const second = guardRepo();
+  fs.renameSync(path.join(second.repo, 'docs', 'spec.md'), path.join(second.repo, 'docs', 'moved.md'));
+  second.g(['add', '-N', 'docs/moved.md']);
+  eq(guard(bash('git commit -m x'), { env: second.env, cwd: second.repo }).code, 0, 'control: nothing staged, so a plain commit takes no item file');
+  r = guard(bash('git commit -am x'), { env: second.env, cwd: second.repo });
+  eq(r.code, 2, `commit -a after an unstaged rename of an item file:\n${r.out}`);
+  ok(/would include item files .*docs[\\/]spec\.md/.test(r.out), r.out);
+});
+
+test('guard (audit 4.5): a project reached through a junction is protected (paths are compared as real paths)', () => {
+  const { S, repo, g, env } = guardRepo();
+  const cfgP = path.join(S, 'config.json');
+  const cfg = rj(cfgP);
+  fs.writeFileSync(path.join(repo, 'docs', 'closed.md'), 'items of the closed unit\n');
+  const link = guardAuditLink(repo);
+  try {
+    const edit = (p, e = env) => guard({ tool_name: 'Edit', tool_input: { file_path: p } }, { env: e });
+    const write = (p, e = env) => guard({ tool_name: 'Write', tool_input: { file_path: p } }, { env: e });
+    // The closed-unit rule. config.itemsRoot is the real path; the hook cwd is neither.
+    eq(edit(path.join(repo, 'docs', 'closed.md')).code, 2, 'control: the closed unit\'s item file by its real path');
+    let r = edit(path.join(link, 'docs', 'closed.md'));
+    eq(r.code, 2, `the same file through the junction:\n${r.out}`);
+    ok(/unit u2, which is closed/.test(r.out), r.out);
+    eq(edit(path.join(link, 'docs', 'spec.md')).code, 0, 'control: the open unit\'s item file through the junction');
+    eq(edit(path.join(link, 'docs', 'other.md')).code, 0, 'control: a file no unit lists, through the junction');
+    // The commit rule. config names the junction; git reports the real top level.
+    wj(cfgP, { ...cfg, itemsRoot: link, evidence: { ...cfg.evidence, repo: link } });
+    eq(guard(bash('git commit -m x'), { env: { LTZ_STATE: path.join(link, 'S') }, cwd: link }).code, 0, 'control: no item file staged');
+    fs.appendFileSync(path.join(repo, 'docs', 'spec.md'), 'edit\n');
+    g(['add', 'docs/spec.md']);
+    r = guard(bash('git commit -m x'), { env: { LTZ_STATE: path.join(link, 'S') }, cwd: link });
+    eq(r.code, 2, `item file staged, itemsRoot and cwd are the junction path:\n${r.out}`);
+    ok(/would include item files .*spec\.md/.test(r.out), r.out);
+    // The lock rule, with the state folder named one way and the file the other way.
+    wj(cfgP, cfg);
+    wj(path.join(S, 'writer.lock'), { session: 'other', since: '2026-11-05T00:00:00Z' });
+    eq(write(path.join(S, 'classes.md')).code, 2, 'control: a writer file by its real path');
+    r = write(path.join(link, 'S', 'classes.md'));
+    eq(r.code, 2, `a top-level state file through the junction:\n${r.out}`);
+    ok(/is S\/classes\.md, and S\/writer\.lock is held by session other/.test(r.out), r.out);
+    const viaLinkS = { LTZ_STATE: path.join(link, 'S') };
+    eq(write(path.join(RD(S), 'confirmed.json'), viaLinkS).code, 2, 'LTZ_STATE through the junction, the round file by its real path');
+    eq(write(path.join(link, 'S', 'u1', 'r2', 'confirmed.json')).code, 2, 'a round file whose folder does not exist yet, through the junction');
+    eq(write(path.join(link, 'S', 'u1', 'r1', 'agent-c1-a.jsonl')).code, 0, 'control: a reader output through the junction stays writable');
+    eq(write(path.join(link, 'S', 'u1', 'r2', 'agent-c1-a.jsonl'), viaLinkS).code, 0, 'control: so does one in a folder that does not exist yet');
+  } finally {
+    guardAuditUnlink(link);
+  }
+  ok(fs.existsSync(cfgP), 'removing the junction left the project alone');
+});
+
+test('guard (audit 4.6): under another session\'s lock, "git add <folder> && git commit" may not include the writer\'s files', () => {
+  const { S, repo, g, env } = guardRepo();
+  wj(path.join(RD(S), 'queue.json'), { groups: [], slots: [{ slot: 'c1-a', state: 'done' }] });
+  g(['add', '-A']);
+  g(['commit', '-q', '-m', 'state']);
+  wj(path.join(S, 'writer.lock'), { session: 'other', since: '2026-11-05T00:00:00Z' });
+  const o = { env, cwd: repo };
+  fs.mkdirSync(path.join(RD(S), 'scratch'), { recursive: true });
+  fs.writeFileSync(path.join(RD(S), 'scratch', 'notes.md'), 'x\n');
+  fs.writeFileSync(path.join(RD(S), 'agent-c1-a.jsonl'), '{}\n');
+  eq(guard(bash('git add S && git commit -m x'), o).code, 0, 'control: the folder holds only reader outputs and scratch');
+  fs.writeFileSync(path.join(RD(S), 'confirmed.json'), '{}\n'); // untracked
+  fs.appendFileSync(path.join(S, 'classes.md'), 'edit\n'); // tracked, modified
+  for (const c of ['git add S && git commit -m x', 'git add S/ && git commit -m x', 'git add S/u1 && git commit -m x', 'git add S/u1/r1/ && git commit -m x', 'git stage S/u1/r1 && git commit -m x', 'cd S/u1 && git add r1 && git commit -m x']) {
+    const r = guard(bash(c), o);
+    eq(r.code, 2, `${c}:\n${r.out}`);
+    ok(/would include the writer's files .*(confirmed\.json|classes\.md)/.test(r.out), `${c}: ${r.out}`);
+  }
+  ok(/classes\.md/.test(guard(bash('git add S && git commit -m x'), o).out), 'a modified tracked file under the folder is named');
+  ok(!/classes\.md/.test(guard(bash('git add S/u1 && git commit -m x'), o).out), 'the listing is limited to the folder');
+  eq(guard(bash('git add S/u1/r1/scratch && git commit -m x'), o).code, 0, 'control: a folder with no writer file in it');
+  eq(guard(bash('git add S/u1/r1/agent-c1-a.jsonl && git commit -m x'), o).code, 0, 'control: a single reader output');
+  eq(guard({ ...bash('git add S && git commit -m x'), session_id: 'other' }, o).code, 0, 'control: the holder may commit them');
+  const r = guard(bash('echo hi > S/u1/r1/confirmed.json && git add S && git commit -m x'), o);
+  eq(r.code, 2, 'another command before a folder add: what the folder will hold is unknown');
+  ok(/another command runs before the commit/.test(r.out), r.out);
+});
+test('guard (audit 4.6): "git add -A" in a subfolder counts the whole tree\'s untracked files', () => {
+  const { S, repo, g, env } = guardRepo();
+  wj(path.join(RD(S), 'queue.json'), { groups: [], slots: [{ slot: 'c1-a', state: 'done' }] });
+  g(['add', '-A']);
+  g(['commit', '-q', '-m', 'state']);
+  wj(path.join(S, 'writer.lock'), { session: 'other', since: '2026-11-05T00:00:00Z' });
+  fs.writeFileSync(path.join(repo, 'docs', 'notes.txt'), 'x\n');
+  eq(guard(bash('cd docs && git add -A && git commit -m x'), { env, cwd: repo }).code, 0, 'control: only a non-writer file is untracked');
+  fs.writeFileSync(path.join(RD(S), 'confirmed.json'), '{}\n');
+  const r = guard(bash('cd docs && git add -A && git commit -m x'), { env, cwd: repo });
+  eq(r.code, 2, `an untracked writer file outside the subfolder:\n${r.out}`);
+  ok(/would include the writer's files .*confirmed\.json/.test(r.out), r.out);
+});
+
+test('guard (audit 4.8): a command whose name only starts with "git" is another command before "git commit -a"', () => {
+  const { repo, env } = guardRepo();
+  const o = { env, cwd: repo };
+  eq(guard(bash('git commit -am x'), o).code, 0, 'control: no item file changed in the working tree');
+  eq(guard(bash('git status && git commit -am x'), o).code, 0, 'control: a read-only git command first');
+  for (const c of [
+    'sh fix.sh && git commit -am x', // blocked before this fix too
+    'sh gitfix.sh && git commit -am x',
+    'node gitsync.mjs; git commit -am x',
+    'python git_apply_fixes.py && git add -A && git commit -m x',
+    'gitleaks detect && git commit -am x',
+    'npx git-cz --apply && git commit -am x',
+    'cp /tmp/new.md docs/spec.md # git\ngit commit -am x',
+    'sed -i s/a/b/ docs/spec.md # git status\ngit commit -am x',
+  ]) {
+    const r = guard(bash(c), o);
+    eq(r.code, 2, `${JSON.stringify(c)}:\n${r.out}`);
+    ok(/another command runs before the commit/.test(r.out), `${c}: ${r.out}`);
+  }
+  const r = guard(guardAuditPs('pwsh gitfix.ps1; git add -A; git commit -m x'), o);
+  eq(r.code, 2, 'PowerShell');
+  ok(/another command runs before the commit/.test(r.out), r.out);
+  eq(guard(bash('git status # sh fix.sh\ngit commit -am x'), o).code, 0, 'control: a comment after a git command changes nothing');
+});
+
+test('guard (audit 4.9): more spellings of a commit are seen as a commit; commit-tree and commit-graph are not one', () => {
+  const { repo, g, env } = guardRepo();
+  const o = { env, cwd: repo };
+  const spellings = [
+    'git --namespace ns commit -m x',
+    'git --exec-path /x commit -m x',
+    '"C:/Program Files/Git/cmd/git.exe" commit -m x',
+    "'C:/Program Files/Git/cmd/git.exe' commit -m x",
+    '/usr/bin/git commit -m x',
+    'git \\\n  commit -m x',
+  ];
+  const psSpellings = ['& "C:\\Program Files\\Git\\cmd\\git.exe" commit -m x', 'git `\n  commit -m x'];
+  // With no item file staged each is allowed: it is read as a commit, not given up on.
+  for (const c of spellings) eq(guard(bash(c), o).code, 0, `control, nothing staged: ${JSON.stringify(c)}`);
+  for (const c of psSpellings) eq(guard(guardAuditPs(c), o).code, 0, `control, nothing staged (PowerShell): ${JSON.stringify(c)}`);
+  fs.appendFileSync(path.join(repo, 'docs', 'spec.md'), 'edit\n');
+  // A pathspec that starts with ":" is handled as a glob is: every working-tree change counts.
+  eq(guard(bash('git commit -m x decisions.md'), o).code, 0, 'control: an unstaged item edit, a pathspec of another file');
+  for (const c of ['git commit -m x :/docs/spec.md', 'git commit -m x ":(top)docs/spec.md"', 'git commit -m x -- :/docs']) {
+    const r = guard(bash(c), o);
+    eq(r.code, 2, `${c}:\n${r.out}`);
+    ok(/would include item files .*spec\.md/.test(r.out), `${c}: ${r.out}`);
+  }
+  g(['add', 'docs/spec.md']);
+  for (const [input, c] of [...spellings.map((c) => [bash(c), c]), ...psSpellings.map((c) => [guardAuditPs(c), c])]) {
+    const r = guard(input, o);
+    eq(r.code, 2, `item file staged: ${JSON.stringify(c)}:\n${r.out}`);
+    ok(/would include item files .*spec\.md/.test(r.out), `${c}: ${r.out}`);
+  }
+  // --git-dir and --work-tree stay blocked in every form: what the commit includes cannot be determined.
+  for (const c of ['git --work-tree . commit -m x', 'git --git-dir ../x commit -m x', 'git --git-dir .git commit -m x', 'git --git-dir=.git commit -m x', 'git --work-tree=. commit -m x']) {
+    const r = guard(bash(c), o);
+    eq(r.code, 2, `${c}:\n${r.out}`);
+    ok(/could not be determined: --(?:git-dir|work-tree) is not followed/.test(r.out), `${c}: ${r.out}`);
+  }
+  for (const c of ['git commit-tree HEAD^{tree} -m x', 'git commit-graph write --reachable', 'git -C . commit-graph verify']) eq(guard(bash(c), o).code, 0, `not a commit: ${c}`);
+});
+
+test('guard (audit 4.10): on Windows a Git Bash path (/c/...) in the command is read as a drive path', () => {
+  if (process.platform !== 'win32') return;
+  const msys = (p) => '/' + p[0].toLowerCase() + p.slice(2).replace(/\\/g, '/');
+  const { S, repo, g, env } = guardRepo();
+  fs.appendFileSync(path.join(repo, 'decisions.md'), 'D-1\n');
+  g(['add', 'decisions.md']);
+  // The hook cwd is elsewhere (the helper's default folder).
+  eq(guard(bash(`cd "${repo}" && git commit -m "D-1"`), { env }).code, 0, 'control: a Windows path, only the decision log staged');
+  let r = guard(bash(`cd ${msys(repo)} && git commit -m "D-1"`), { env });
+  eq(r.code, 0, `cd /c/... && git commit:\n${r.out}`);
+  r = guard(bash(`git -C ${msys(repo)} commit -m "D-1"`), { env });
+  eq(r.code, 0, `git -C /c/... commit:\n${r.out}`);
+  fs.appendFileSync(path.join(repo, 'docs', 'spec.md'), 'edit\n');
+  g(['add', 'docs/spec.md']);
+  for (const c of [`cd ${msys(repo)} && git commit -m x`, `git -C ${msys(repo)} commit -m x`, `cd "${msys(repo)}/docs" && git commit -m x`]) {
+    r = guard(bash(c), { env });
+    eq(r.code, 2, c);
+    ok(/would include item files .*spec\.md/.test(r.out), `${c}: ${r.out}`);
+  }
+  // The session hint.
+  const hint = path.join(S, '.session-hint');
+  guard({ ...bash(`node "${LTZ}" lock ${msys(S)} acquire --session auto`), session_id: 'sess-7' });
+  ok(fs.existsSync(hint) && rj(hint).session === 'sess-7', 'a hint for <S> given as /c/...');
+  fs.rmSync(hint);
+  guard({ ...bash(`cd ${msys(repo)} && node "${LTZ}" lock S check --session auto`), session_id: 'sess-8' });
+  ok(fs.existsSync(hint) && rj(hint).session === 'sess-8', 'a hint for a relative <S> after cd /c/...');
+});
+
+test('guard (audit 4.11): the search rule reads one pipeline at a time and looks at command words', () => {
+  const S = guardS({ running: false });
+  const env = { LTZ_STATE: S };
+  // No search is piped into a truncating command.
+  for (const c of [
+    'grep -n "login" src/auth.js; git show v1:src/auth.js | head -40',
+    'grep -c foo f && git log --oneline | head -3',
+    'grep -c foo f || ls | head -3',
+    'grep -c foo f & ls | head -3',
+    'rg -l login src > hits.txt\ncat hits.txt | wc -l\ngit log --oneline | head -5',
+    'git show v1:src/grep.js | head -40',
+    'cat notes-on-grep.txt | head -3',
+    'ls scripts/grep | head -3',
+    'git log --author=rg | head -3',
+    'node x.mjs --grep foo | head -3',
+    'npm run grep | head',
+    'echo "use rg here" | head -1',
+    'git commit -m "grep | head is blocked"',
+    'grep foo f | tail -5',
+    'head -5 f | grep foo',
+  ]) eq(guard(bash(c), { env }).code, 0, `allowed: ${JSON.stringify(c)}`);
+  for (const c of ['Select-String foo f; Get-ChildItem | Select-Object -First 3', 'Get-Content sls.txt | Select-Object -First 3', 'Select-String foo *.md | Select-Object Path | Format-List -Force']) {
+    eq(guard(guardAuditPs(c), { env }).code, 0, `allowed (PowerShell): ${c}`);
+  }
+  // A search is piped into one.
+  for (const c of [
+    'grep foo f | head -5', // blocked before this fix too, as are the next ones down to the blank line
+    'grep -rn foo . 2>&1 | head -n 20',
+    'cd src && grep -rn foo . | head',
+    'rg foo |\n head',
+    'GREP -rn foo . | HEAD -5',
+    'cat f | grep foo | tee out.txt | head',
+    'git grep foo | head',
+    'find . -name "*.md" | xargs grep -n foo | head -3',
+    'for f in a b; do grep foo $f | head -3; done',
+    'x=$(grep -rl foo . | head -1)',
+
+    'grep foo f | /usr/bin/head -5',
+    'grep foo f |& head -5',
+    'grep foo f | command head -5',
+    'grep foo f | env head -5',
+  ]) {
+    const r = guard(bash(c), { env });
+    eq(r.code, 2, `blocked: ${JSON.stringify(c)}`);
+    ok(/a search backing a bound must be unlimited/.test(r.out), r.out);
+  }
+  for (const c of ['/usr/bin/grep foo f | head -5', 'LC_ALL=C grep foo f | head', 'command grep foo f | head']) eq(guard(bash(c), { env }).code, 2, `blocked: ${c}`);
+  for (const c of [
+    'Select-String foo *.md |\n  Select-Object -First 5', // blocked before this fix too, as are the next three
+    'Select-String foo *.md | Select-Object `\n -First 5',
+    '$hits = Select-String foo *.md | Select-Object -First 5',
+    'gci -r | Select-String foo | Sort-Object Path | select -fir 2',
+    'Select-String foo *.md | Microsoft.PowerShell.Utility\\Select-Object -First 5',
+  ]) eq(guard(guardAuditPs(c), { env }).code, 2, `blocked (PowerShell): ${JSON.stringify(c)}`);
+});
+
+test('guard (audit 4.14): the session hint is written only for a command that runs ltz, not for text that names it', () => {
+  const S = makeS();
+  const hint = path.join(S, '.session-hint');
+  const wrote = (command, tool = 'Bash') => {
+    fs.rmSync(hint, { force: true });
+    guard({ tool_name: tool, tool_input: { command }, session_id: 'sess-5' }, { cwd: path.dirname(S) });
+    return fs.existsSync(hint);
+  };
+  for (const c of [
+    'node ltz.mjs lock S acquire --session auto',
+    'ltz lock S check --session auto',
+    `node.exe "${LTZ}" lock "${S}" release --session=auto`,
+    `"C:/Program Files/nodejs/node.exe" "${LTZ}" lock S acquire --session auto`,
+    `node "${LTZ}" lock S acquire --session auto # take the lock`,
+    `echo start && node "${LTZ}" lock S acquire --session auto`,
+  ]) ok(wrote(c), `control, a hint for: ${c}`);
+  ok(wrote(`& "C:\\Program Files\\nodejs\\node.exe" "${LTZ}" lock S check --session auto`, 'PowerShell'), 'control: PowerShell & with a quoted node path');
+  for (const c of [
+    'echo node ltz.mjs lock S acquire --session auto',
+    'grep -rn -e ltz lock S acquire --session auto',
+    'ls # node ltz.mjs lock S acquire --session auto',
+    'cat notes.txt ltz lock S acquire --session auto',
+  ]) ok(!wrote(c), `no hint for: ${c}`);
+});
+
+// ---- audit 4: skillcheck
+const guardAuditTpl = { 'references/state-template.md': CLEAN_SKILL['references/state-template.md'].replace('agent-<slot>.jsonl', 'agent-<slot>.jsonl, drafts/<id>.md\n  briefs/<slot>.md') };
+test('skillcheck (audit 4.7) [e]: a .md name is still checked when state-template.md lists drafts/<id>.md', () => {
+  ok(/drafts\/<id>\.md/.test(guardAuditTpl['references/state-template.md']), 'the fixture template lists the two placeholder names');
+  const withTpl = (line) => skillFixture({ ...guardAuditTpl, ...withLine(line) });
+  eq(skillcheck(withTpl('Write `S/<unit>/r<R>/drafts/A01.md`, `drafts/<id>.md`, `briefs/c1-a.md` and `S/loop.md`.')).code, 0, 'control: names the template lists');
+  for (const [line, name] of [['Write `nonsense-file.md`.', 'nonsense-file\\.md'], ['Read `S/loops.md`.', 'S/loops\\.md'], ['Write `S/HANDOF.md`.', 'S/HANDOF\\.md'], ['Write `c1-a.md` there.', 'c1-a\\.md']]) {
+    const r = skillcheck(withTpl(line));
+    ok(r.code === 1 && new RegExp(`SKILL\\.md:${LAST}: \\[e\\] file name "${name}"`).test(r.out), `${line}:\n${r.out}`);
+  }
+  // A skill file is named by a path that ends one of the skill's real paths.
+  eq(skillcheck(skillFixture(withLine('See `x.md`, `references/x.md`, `<skill>/references/x.md`, `README.md` and `<skill>/scripts/hooks/README.md`.'))).code, 0, 'control: real skill files');
+  const r = skillcheck(skillFixture(withLine('See `lessons/x.md`.')));
+  ok(r.code === 1 && /\[e\] file name "lessons\/x\.md"/.test(r.out), `only the last segment is a skill file's:\n${r.out}`);
+});
+test('skillcheck (audit 4.12) [c]: a value with other characters in it is checked too', () => {
+  for (const [line, re] of [
+    ['Give `"foundBy": "spot_check"`.', /\[c\] foundBy "spot_check" is not accepted/],
+    ['Give `"foundBy": "Sweep"`.', /\[c\] foundBy "Sweep" is not accepted/],
+    ['Give `"foundBy": "sweep2"`.', /\[c\] foundBy "sweep2" is not accepted/],
+    ['Give `"repeatReason": "new_text"`.', /\[c\] repeatReason "new_text" is not accepted/],
+    ['A verdict `not_ok` here.', /\[c\] verdict "not_ok" is not one of/],
+    ['A verdict `wrong2` here.', /\[c\] verdict "wrong2" is not one of/],
+  ]) {
+    const r = skillcheck(skillFixture(withLine(line)));
+    ok(r.code === 1 && re.test(r.out), `${line}:\n${r.out}`);
+  }
+  eq(skillcheck(skillFixture(withLine('A verdict `wrong`, `"repeatReason": "new-text|earlier-miss"`, `"foundBy": "sweep"`, `"verdict": "<value>"`, verdict `<value>`.'))).code, 0, 'control');
+});
+test('skillcheck (audit 4.13) [f]: a section name must equal a heading or start one', () => {
+  for (const s of ['ection', 'One', 'label']) {
+    const r = skillcheck(skillFixture(withLine(`See \`references/x.md\` ("${s}").`)));
+    ok(r.code === 1 && new RegExp(`\\[f\\] references/x\\.md has no heading "${s}"`).test(r.out), `"${s}" is only part of a heading:\n${r.out}`);
+  }
+  eq(skillcheck(skillFixture(withLine('See `references/x.md` ("Section One"), `references/x.md` ("Section") and `references/x.md` ("Bold").'))).code, 0, 'control: a whole heading, and the start of one');
+});
+
+// ---- code-versus-docs audit, part 4, finding 3: the writer and the agents it launches
+test('guard lock: an agent the writer launched is not the writer, though it shares the session id', () => {
+  const S = guardS({ running: false, lockedBy: 'me' });
+  const env = { LTZ_STATE: S };
+  const write = (p, extra = {}) => guard({ tool_name: 'Write', tool_input: { file_path: p }, ...extra }, { env });
+  const conf = path.join(RD(S), 'confirmed.json');
+  eq(write(conf).code, 0, 'control: the writer itself (session "me", no agent_id)');
+  const r = write(conf, { agent_id: 'a1', agent_type: 'general-purpose' });
+  eq(r.code, 2, 'an agent of the same session may not edit a writer file');
+  ok(/held by session me since .* \(this call comes from agent a1 of that session, which is not the holder\)/.test(r.out), r.out);
+  eq(write(path.join(REPO, 'docs', 'spec.md'), { agent_id: 'a1' }).code, 2, 'nor an item file');
+  eq(write(path.join(RD(S), 'agent-c1-a.jsonl'), { agent_id: 'a1' }).code, 0, 'its own result file is still allowed');
+  eq(write(path.join(RD(S), 'scratch', 'a1', 'probe.txt'), { agent_id: 'a1' }).code, 0, 'and its scratch folder');
+  // A writer that itself runs as an agent: the lock records its agent id, and only that agent holds it.
+  wj(path.join(S, 'writer.lock'), { session: 'me', agent: 'w9', since: '2026-11-05T00:00:00Z' });
+  eq(write(conf, { agent_id: 'w9' }).code, 0, 'the agent that holds the lock');
+  const main = write(conf);
+  eq(main.code, 2, 'the main conversation of that session is not the holder');
+  ok(/held by session me \(agent w9\) since .* \(this call comes from the main conversation of that session/.test(main.out), main.out);
+  eq(write(conf, { agent_id: 'a1' }).code, 2, 'nor another agent');
+  eq(write(conf, { session_id: 'other', agent_id: 'w9' }).code, 2, 'nor that agent id under another session');
+});
+test('lock --session auto: an agent that takes the lock is recorded with its agent id', () => {
+  const S = makeS();
+  const dir = path.join(RUN, `auto-agent-${++nS}`);
+  fs.mkdirSync(dir, { recursive: true });
+  const hint = path.join(S, '.session-hint');
+  const ask = (action, extra = {}) => {
+    guard({ ...bash(`node "${LTZ}" lock "${S}" ${action} --session auto`), session_id: 'sess-7', ...extra }, { cwd: dir });
+    return ltz(['lock', S, action, '--session', 'auto']);
+  };
+  guard({ ...bash(`node "${LTZ}" lock "${S}" acquire --session auto`), session_id: 'sess-7', agent_id: 'w9' }, { cwd: dir });
+  eq([rj(hint).session, rj(hint).agent], ['sess-7', 'w9'], 'the hint carries the agent id');
+  const r = passes(ltz(['lock', S, 'acquire', '--session', 'auto']));
+  ok(/lock: acquired by sess-7, agent w9 \(session id from the guard's hint\)/.test(r.out), r.out);
+  eq([rj(path.join(S, 'writer.lock')).session, rj(path.join(S, 'writer.lock')).agent], ['sess-7', 'w9'], 'and so does the lock');
+  ok(/held by this session \(sess-7, agent w9\)/.test(passes(ask('check', { agent_id: 'w9' })).out), 'the same agent');
+  fails(ask('check'), /held by another session \(sess-7, agent w9\) .*; this session is sess-7 /, 'the main conversation of that session');
+  fails(ask('check', { agent_id: 'a1' }), /held by another session \(sess-7, agent w9\) .*; this session is sess-7, agent a1/, 'another agent');
+  fails(ask('release', { agent_id: 'a1' }), /refusing: S\/writer\.lock is held by session sess-7, agent w9, not sess-7, agent a1/);
+  // A session id typed by hand carries no agent: it is compared on the session alone.
+  ok(/held by this session/.test(passes(ltz(['lock', S, 'check', '--session', 'sess-7'])).out), 'by hand');
+  passes(ask('release', { agent_id: 'w9' }));
+  ok(!fs.existsSync(path.join(S, 'writer.lock')), 'released by the agent that held it');
+  // No agent: the lock is as before.
+  passes(ask('acquire'));
+  eq(rj(path.join(S, 'writer.lock')).agent, undefined, 'no "agent" key for the main conversation');
+});
+test('guard: hook input that is JSON but not an object blocks when the guard is active; "git commit -p" counts the working tree', () => {
+  const { repo, env } = guardRepo();
+  const raw = (text, e) => spawnSync(process.execPath, [GUARD], { input: text, encoding: 'utf8', env: { ...GIT_ENV, ...e }, cwd: repo });
+  eq(raw('[]', env).status, 2, 'an array is not a hook input');
+  eq(raw('[]', {}).status, 0, 'control: inert, so nothing is checked');
+  // An unstaged item edit, a reader still reading: -p and --patch pick from the working tree, as -a does.
+  fs.appendFileSync(path.join(repo, 'docs', 'spec.md'), 'edit\n');
+  const at = (cmd) => guard(bash(cmd), { env, cwd: repo }).code;
+  eq([at('git commit -p -m x'), at('git commit --patch -m x'), at('git commit --interactive -m x'), at('git commit -a -m x')], [2, 2, 2, 2], 'blocked');
+  eq(at('git commit -m x'), 0, 'control: nothing staged, so nothing of the item file is committed');
+});
+
+// ---- code-versus-docs audit, part 3b: queue, cost, lock, config
+// ---- audit 3b: queue, cost, lock, loadConfig
+/** Run ltz without blocking, so several commands can run at the same moment. */
+function queueLtzAsync(args) {
+  return new Promise((resolve) => {
+    const c = spawn(process.execPath, [LTZ, ...args], { env: BASE_ENV, cwd: RUN, stdio: ['ignore', 'pipe', 'pipe'] });
+    let out = '';
+    c.stdout.on('data', (d) => (out += d));
+    c.stderr.on('data', (d) => (out += d));
+    c.on('close', (code) => resolve({ code, out }));
+  });
+}
+const queueSlot = (S, slot) => rj(path.join(RD(S), 'queue.json')).slots.find((s) => s.slot === slot);
+
+test('queue: four marks started at the same moment all land (queue.json.lock serialises the read-change-write)', async () => {
+  const slots = ['c1-a', 'c1-b', 'c2-a', 'c2-b'];
+  for (let trial = 1; trial <= 8; trial++) {
+    const S = queued();
+    const rs = await Promise.all(slots.map((s) => queueLtzAsync(['queue', S, 'u1', '1', 'mark', s, 'running', '--agent', `ag-${s}`])));
+    rs.forEach((r, i) => {
+      passes(r, `trial ${trial}, mark ${slots[i]}:`);
+      ok(new RegExp(`queue mark: ${slots[i]} queued -> running \\(agent ag-${slots[i]}\\)`).test(r.out), r.out);
+    });
+    eq(rj(path.join(RD(S), 'queue.json')).slots.map((s) => [s.slot, s.state, s.agent]), slots.map((s) => [s, 'running', `ag-${s}`]), `trial ${trial}: every mark that reported success is in queue.json`);
+    ok(!fs.existsSync(path.join(RD(S), 'queue.json.lock')), `trial ${trial}: the lock file is removed`);
+  }
+});
+test('queue: a held queue.json.lock makes every writing subcommand wait, then fail naming it; a lock older than 30 s is replaced', async () => {
+  const S = queued();
+  const qp = path.join(RD(S), 'queue.json');
+  const lockP = `${qp}.lock`;
+  const pairs = ['--pairs', 'c1=c1-a,c1-b', 'c2=c2-a,c2-b'];
+  passes(ltz(['queue', S, 'u1', '1', 'mark', 'c1-a', 'running', '--agent', 'ag1']), 'control: no lock held');
+  ok(!fs.existsSync(lockP), 'the lock file is removed after a mark');
+  fails(ltz(['queue', S, 'u1', '1', 'mark', 'c1-a', 'sleeping']), /state must be one of/);
+  ok(!fs.existsSync(lockP), 'and after a refused mark');
+  const S2 = makeS();
+  snap(S2);
+  const qp2 = path.join(RD(S2), 'queue.json');
+  const before = fs.readFileSync(qp, 'utf8');
+  fs.writeFileSync(lockP, 'held by the test\n');
+  fs.writeFileSync(`${qp2}.lock`, 'held by the test\n');
+  // The subcommands that only read take no lock.
+  passes(ltz(['queue', S, 'u1', '1', 'status']), 'status while the lock is held');
+  passes(ltz(['queue', S, 'u1', '1', 'next', '--cap', '2']), 'next while the lock is held');
+  const t0 = Date.now();
+  const held = await Promise.all([
+    queueLtzAsync(['queue', S, 'u1', '1', 'mark', 'c1-b', 'running', '--agent', 'ag2']),
+    queueLtzAsync(['queue', S, 'u1', '1', 'replace', 'c1-a', '--agent', 'ag9']),
+    queueLtzAsync(['queue', S, 'u1', '1', 'rerun', 'c1-a', '--from', '1', '--to', '2']),
+    queueLtzAsync(['queue', S2, 'u1', '1', 'init', ...pairs]),
+  ]);
+  ['mark', 'replace', 'rerun', 'init'].forEach((sub, i) => {
+    fails(held[i], /ERROR: .*could not take .*queue\.json\.lock within 10 seconds.*another queue command holds it/s, `${sub} with the lock held:`);
+    eq(held[i].code, 1, `${sub}: a refusal, not an internal error`);
+    ok(held[i].out.includes(i === 3 ? `${qp2}.lock` : lockP), `${sub} names the lock file:\n${held[i].out}`);
+  });
+  ok(Date.now() - t0 >= 9000, `they waited for the lock first (${Date.now() - t0} ms)`);
+  eq(fs.readFileSync(qp, 'utf8'), before, 'nothing was written');
+  ok(!fs.existsSync(qp2), 'init wrote nothing');
+  ok(fs.existsSync(lockP) && fs.existsSync(`${qp2}.lock`), "another command's lock is left alone");
+  // A lock file older than 30 seconds was left by a crashed command: it is replaced, then removed.
+  const old = new Date(Date.now() - 60 * 1000);
+  fs.utimesSync(lockP, old, old);
+  fs.utimesSync(`${qp2}.lock`, old, old);
+  passes(ltz(['queue', S, 'u1', '1', 'mark', 'c1-b', 'running', '--agent', 'ag2']), 'mark with a stale lock:');
+  eq([queueSlot(S, 'c1-b').state, fs.existsSync(lockP)], ['running', false], 'the stale lock is replaced and removed');
+  passes(ltz(['queue', S2, 'u1', '1', 'init', ...pairs]), 'init with a stale lock:');
+  eq([rj(qp2).slots.length, fs.existsSync(`${qp2}.lock`)], [4, false], 'init wrote the queue and removed the lock');
+  // A command that is waiting goes through once the lock is free.
+  fs.writeFileSync(lockP, 'held by the test\n');
+  const waiting = queueLtzAsync(['queue', S, 'u1', '1', 'mark', 'c2-a', 'running', '--agent', 'ag3']);
+  await new Promise((r) => setTimeout(r, 1500));
+  eq(queueSlot(S, 'c2-a').state, 'queued', 'not written while the lock is held');
+  fs.rmSync(lockP);
+  passes(await waiting, 'the waiting mark:');
+  eq([queueSlot(S, 'c2-a').state, fs.existsSync(lockP)], ['running', false], 'written once the lock was free');
+});
+test('queue next: during a known limit wait (a stopped-limit reset in the future) it lists nothing to launch', () => {
+  const S = queued();
+  const next = () => passes(ltz(['queue', S, 'u1', '1', 'next', '--cap', '4']));
+  const mark = (...a) => passes(ltz(['queue', S, 'u1', '1', 'mark', ...a]));
+  mark('c1-a', 'running', '--agent', 'ag1');
+  // Control: a reset in the past holds nothing back.
+  mark('c1-a', 'stopped-limit', '--reset', '2000-01-01T00:00:00Z');
+  let r = next();
+  ok(/^continue c1-a \(agent ag1\)/m.test(r.out) && /^launch\s+c1-b/m.test(r.out) && /^launch\s+c2-a/m.test(r.out) && /^launch\s+c2-b/m.test(r.out), `a past reset:\n${r.out}`);
+  ok(/^queue next \(cap 4\): 1 active, 3 to launch, 0 still queued$/m.test(r.out) && !/held/.test(r.out), r.out);
+  // Control: a stopped-limit slot with no reset recorded holds nothing back.
+  mark('c1-a', 'running');
+  mark('c1-a', 'stopped-limit');
+  eq(queueSlot(S, 'c1-a').reset, null, 'no reset recorded');
+  r = next();
+  ok(/^continue c1-a \(agent ag1\)/m.test(r.out) && /^launch\s+c1-b/m.test(r.out) && /1 active, 3 to launch, 0 still queued$/m.test(r.out) && !/held/.test(r.out), `no reset:\n${r.out}`);
+  // A reset in the future: the wait line stays, nothing is listed to launch, and the held slots are counted.
+  mark('c1-a', 'stopped-limit', '--reset', '2099-01-01T03:00');
+  r = next();
+  ok(/^wait\s+c1-a \(agent ag1\) until 2099-01-01T03:00, then continue from position 1$/m.test(r.out), `the wait line:\n${r.out}`);
+  ok(!/^launch/m.test(r.out), `no launches during the wait:\n${r.out}`);
+  ok(/^hold\s+3 queued slot\(s\) until 2099-01-01T03:00\b/m.test(r.out), `one line for the held slots:\n${r.out}`);
+  ok(/^queue next \(cap 4\): 1 active, 0 to launch, 3 still queued \(3 held until 2099-01-01T03:00\)$/m.test(r.out), `the summary counts them:\n${r.out}`);
+  // Two waits: the latest reset holds. A stopped-context slot is still listed to continue.
+  mark('c1-b', 'running', '--agent', 'ag2');
+  mark('c1-b', 'stopped-limit', '--reset', '2099-06-01T03:00');
+  mark('c2-a', 'running', '--agent', 'ag3');
+  mark('c2-a', 'stopped-context');
+  r = next();
+  ok(/^wait\s+c1-a .*until 2099-01-01T03:00/m.test(r.out) && /^wait\s+c1-b .*until 2099-06-01T03:00/m.test(r.out), r.out);
+  ok(/^continue c2-a \(agent ag3\): SendMessage "continue from position 7"$/m.test(r.out), `continue lines stay:\n${r.out}`);
+  ok(/^hold\s+1 queued slot\(s\) until 2099-06-01T03:00\b/m.test(r.out) && !/^launch/m.test(r.out), `the latest reset:\n${r.out}`);
+  ok(/3 active, 0 to launch, 1 still queued \(1 held until 2099-06-01T03:00\)$/m.test(r.out), r.out);
+  // Control: once no reset is ahead, the free place is used again.
+  mark('c1-a', 'running');
+  mark('c1-b', 'running');
+  r = next();
+  ok(/^launch\s+c2-b/m.test(r.out) && /3 active, 1 to launch, 0 still queued$/m.test(r.out) && !/^hold/m.test(r.out), `after the waits:\n${r.out}`);
+});
+test('queue next: a chunk with more queued readers than the cap itself is a PROBLEM (it launches whole, so it never would)', () => {
+  const S = makeS();
+  snap(S);
+  passes(ltz(['queue', S, 'u1', '1', 'init', '--opaque', '--per-chunk', '3']));
+  const next = (cap) => ltz(['queue', S, 'u1', '1', 'next', '--cap', cap]);
+  let r = fails(next('2'), /PROBLEM: chunk c1 has 3 queued readers and the cap is 2: a chunk's readers launch together, so it can never launch\. Raise --cap to 3 \(the cap is the owner's decision\)/);
+  eq(r.code, 1, 'exit 1');
+  ok(/PROBLEM: chunk c2 has 3 queued readers and the cap is 2/.test(r.out) && !/^launch/m.test(r.out) && /0 active, 0 to launch, 6 still queued -> FAIL$/m.test(r.out), r.out);
+  // Control: at cap 3 one chunk launches whole.
+  r = passes(next('3'), 'cap 3:');
+  eq([(r.out.match(/^launch\s+\S+ \(chunk c1, /gm) || []).length, /PROBLEM/.test(r.out), /0 active, 3 to launch, 3 still queued$/m.test(r.out)], [3, false, true], `cap 3 launches c1's three:\n${r.out}`);
+  // Chunks that only wait for free places are unchanged: no PROBLEM, exit 0.
+  for (const s of rj(path.join(RD(S), 'queue.json')).groups[0].slots) passes(ltz(['queue', S, 'u1', '1', 'mark', s, 'running', '--agent', `ag-${s}`]));
+  for (const cap of ['3', '5']) {
+    r = passes(next(cap), `cap ${cap} with 3 running:`);
+    ok(!/PROBLEM|^launch/m.test(r.out) && new RegExp(`\\(cap ${cap}\\): 3 active, 0 to launch, 3 still queued$`, 'm').test(r.out), `c2 waits for free places at cap ${cap}:\n${r.out}`);
+  }
+  // A pair under an owner's cap of 1; a half-launched pair's one queued reader is no problem.
+  const S2 = queued();
+  r = fails(ltz(['queue', S2, 'u1', '1', 'next', '--cap', '1']), /PROBLEM: chunk c1 has 2 queued readers and the cap is 1: .*Raise --cap to 2/);
+  ok(/PROBLEM: chunk c2 has 2 queued readers and the cap is 1/.test(r.out), r.out);
+  passes(ltz(['queue', S2, 'u1', '1', 'mark', 'c1-a', 'running', '--agent', 'ag1']));
+  r = fails(ltz(['queue', S2, 'u1', '1', 'next', '--cap', '1']), /PROBLEM: chunk c2 has 2 queued readers/);
+  ok(!/PROBLEM: chunk c1/.test(r.out), `c1's one queued reader only waits:\n${r.out}`);
+  passes(ltz(['queue', S2, 'u1', '1', 'next', '--cap', '2']), 'control: cap 2');
+});
+test('queue: a result file that lacks no position but is not clean gets no resume position; dropped-by-owner and replace are refused', () => {
+  const S = queued();
+  const rd = RD(S);
+  const q = (...a) => ltz(['queue', S, 'u1', '1', ...a]);
+  const fileA = path.join(rd, 'agent-c1-a.jsonl');
+  reader(S, 'c1-a', 1, 6);
+  passes(q('mark', 'c1-a', 'running', '--agent', 'ag1'));
+  // Positions 1-6, and position 4 a second time.
+  editJsonl(fileA, (rows) => [...rows, rows[3]]);
+  let st = passes(q('status'));
+  ok(/^c1-a .*lines 7\s+resume none \(not clean: duplicate positions 4\)$/m.test(st.out), `status gives no resume position:\n${st.out}`);
+  let r = fails(q('mark', 'c1-a', 'done'), /refusing: c1-a does not cover its range 1-6 \(duplicate positions 4\)\. No position is missing: remove the duplicate or stray lines from agent-c1-a\.jsonl, then mark it done/);
+  ok(!/continue from position|stopped-context/.test(r.out), `no "continue from position" advice:\n${r.out}`);
+  r = fails(q('mark', 'c1-a', 'dropped-by-owner', '--ruling', 'P-1'), /refusing: no position of c1-a's range 1-6 is missing, but its result file is not clean \(duplicate positions 4\): remove the duplicate or stray lines from agent-c1-a\.jsonl, then mark it done/);
+  eq([queueSlot(S, 'c1-a').state, queueSlot(S, 'c1-a').dropped], ['running', undefined], 'nothing is recorded as dropped');
+  r = fails(q('replace', 'c1-a', '--agent', 'ag4'), /refusing: no position of c1-a's range 1-6 is missing, but its result file is not clean \(duplicate positions 4\): remove the duplicate or stray lines/);
+  fails(q('replace', 'c1-a', '--agent', 'ag4', '--from', '1'), /no position of c1-a's range 1-6 is missing/, 'replace --from 1:');
+  eq([queueSlot(S, 'c1-a').agent, queueSlot(S, 'c1-a').agentHistory], ['ag1', undefined], 'the agent is not replaced');
+  passes(q('mark', 'c1-a', 'stopped-context'));
+  let n = passes(q('next', '--cap', '4'));
+  ok(/^unclean\s+c1-a \(agent ag1\): no position of c1-a's range 1-6 is missing, but its result file is not clean \(duplicate positions 4\)/m.test(n.out), `next names the unclean file:\n${n.out}`);
+  ok(!/c1-a.*continue from position/.test(n.out), `next sends no "continue" for it:\n${n.out}`);
+  // A line outside the range, and an unparseable line, are the same case.
+  reader(S, 'c1-a', 1, 6);
+  const clean = fs.readFileSync(fileA, 'utf8');
+  const a09 = rjl(path.join(rd, 'snapshot.jsonl')).find((x) => x.id === 'A09');
+  fs.writeFileSync(fileA, clean + JSON.stringify({ unit: 'u1', id: 'A09', verdict: 'ok', class: [], note: 'holds', cites: a09.cites }) + '\n');
+  fails(q('mark', 'c1-a', 'done'), /\(1 line\(s\) outside its range\)\. No position is missing: remove the duplicate or stray lines/, 'a stray line:');
+  fails(q('mark', 'c1-a', 'dropped-by-owner', '--ruling', 'P-1'), /no position of c1-a's range 1-6 is missing, .*\(1 line\(s\) outside its range\)/, 'a stray line:');
+  ok(/^c1-a .*resume none \(not clean: 1 line\(s\) outside its range\)$/m.test(passes(q('status')).out), 'status, a stray line');
+  fs.writeFileSync(fileA, clean + '{not json\n');
+  fails(q('mark', 'c1-a', 'done'), /\(1 unparseable line\(s\)\)\. No position is missing: remove the duplicate or stray lines/, 'an unparseable line:');
+  fails(q('replace', 'c1-a', '--agent', 'ag4'), /no position of c1-a's range 1-6 is missing, .*\(1 unparseable line\(s\)\)/, 'an unparseable line:');
+  n = passes(q('next', '--cap', '4'));
+  ok(/^unclean\s+c1-a .*\(1 unparseable line\(s\)\)/m.test(n.out), n.out);
+  // Control: with the stray line removed the slot is complete.
+  fs.writeFileSync(fileA, clean);
+  ok(/^c1-a .*lines 6\s+resume complete$/m.test(passes(q('status')).out), 'control: a clean, complete file');
+  passes(q('mark', 'c1-a', 'done'), 'control: a clean file is marked done');
+  // Control: a file with a real gap keeps its resume position everywhere.
+  reader(S, 'c1-b', 1, 4);
+  passes(q('mark', 'c1-b', 'running', '--agent', 'ag2'));
+  fails(q('mark', 'c1-b', 'done'), /\(missing positions 5-6\)\. Mark it stopped-context and send "continue from position 5": node <skill>\/scripts\/ltz\.mjs queue .* u1 1 mark c1-b stopped-context/, 'control: a gap');
+  ok(/^c1-b .*lines 4\s+resume 5$/m.test(passes(q('status')).out), 'control: status resume 5');
+  passes(q('mark', 'c1-b', 'stopped-context'));
+  ok(/^continue c1-b \(agent ag2\): SendMessage "continue from position 5"$/m.test(passes(q('next', '--cap', '4')).out), 'control: next continues from 5');
+  r = passes(q('replace', 'c1-b', '--agent', 'ag5', '--from', '5'), 'control: replace from the gap');
+  ok(/agent ag5 reads c1-b from FROM = 5/.test(r.out), r.out);
+  r = passes(q('mark', 'c1-b', 'dropped-by-owner', '--ruling', 'P-2'), 'control: drop the uncovered tail');
+  eq(queueSlot(S, 'c1-b').dropped, { from: 5, to: 6, ruling: 'P-2' }, 'the dropped tail');
+});
+test('cost --timeline: a quoted <S> holding a space does not turn "render ... show" into a window', () => {
+  const f = path.join(RUN, `tl-space-${nS}.jsonl`);
+  const cmd = (rest) => `node "/x/scripts/ltz.mjs" render "C:/Users/x/NPM Project/S" u1 1 k7f2 ${rest}`;
+  fs.writeFileSync(f, [
+    tmsg('m1', '2026-11-05T10:00:00Z', 100),
+    tmsg('m2', '2026-11-05T10:01:00Z', 100, 0, cmd('1 16')),
+    tmsg('m3', '2026-11-05T10:02:00Z', 100, 0, cmd('show src/a.js:3')),
+    tmsg('m4', '2026-11-05T10:03:00Z', 100, 0, "node '/x/scripts/ltz.mjs' render 'C:/Users/x/NPM Project/S' u1 1 k7f2 show src/a.js:4"),
+    tmsg('m5', '2026-11-05T10:04:00Z', 100, 0, 'node /x/scripts/ltz.mjs render C:/Users/x/"NPM Project"/S u1 1 k7f2 show src/a.js:5'),
+    tmsg('m6', '2026-11-05T10:05:00Z', 100, 0, cmd('17 16')),
+    tmsg('m7', '2026-11-05T10:06:00Z', 100),
+  ].join('\n') + '\n');
+  const r = passes(ltz(['cost', '--timeline', f]));
+  ok(!/<< render .* show /.test(r.out), `no "render ... show" call is a window:\n${r.out}`);
+  ok(/^window 1 \(render "C:\/Users\/x\/NPM Project\/S" u1 1 k7f2 1 16\): 4 message\(s\), 400 tokens, 4\.0 min$/m.test(r.out), r.out);
+  ok(/^window 2 \(render "C:\/Users\/x\/NPM Project\/S" u1 1 k7f2 17 16\): 2 message\(s\), 200 tokens, 1\.0 min$/m.test(r.out), r.out);
+  ok(/cost --timeline: 7 messages over 6\.0 min, 700 tokens; startup 100 tokens before the first render; 2 window\(s\), about 300 tokens and 2\.5 min each/.test(r.out), r.out);
+});
+test('cost --queue: one transcript stored under two spellings of its path is counted once', () => {
+  const S = queued();
+  const t1 = path.join(RUN, `q-spell-${nS}.jsonl`);
+  const t2 = path.join(RUN, `q-other-${nS}.jsonl`);
+  fs.writeFileSync(t1, [tmsg('m1', '2026-11-05T10:00:00Z', 100, 5), tmsg('m2', '2026-11-05T10:01:00Z', 200, 7)].join('\n') + '\n');
+  fs.writeFileSync(t2, tmsg('m3', '2026-11-05T10:00:00Z', 10, 1) + '\n');
+  // The same file spelled another way: in other letter case on Windows, through a link elsewhere.
+  let alt;
+  if (process.platform === 'win32') alt = path.join(path.dirname(t1), path.basename(t1).toUpperCase());
+  else {
+    alt = path.join(RUN, `q-spell-link-${nS}.jsonl`);
+    fs.symlinkSync(t1, alt);
+  }
+  ok(alt !== t1 && fs.existsSync(alt), 'a second spelling of the same file');
+  passes(ltz(['queue', S, 'u1', '1', 'mark', 'c1-a', 'running', '--agent', 'a1', '--transcript', t1]));
+  passes(ltz(['queue', S, 'u1', '1', 'mark', 'c1-b', 'running', '--agent', 'a2', '--transcript', alt]));
+  eq([queueSlot(S, 'c1-a').transcripts, queueSlot(S, 'c1-b').transcripts], [[t1], [alt]], 'stored as given');
+  let r = passes(ltz(['cost', '--queue', S, 'u1', '1']));
+  ok(/1 transcript\(s\) from 2 of 4 slots: cache reads 0, cache writes 0, other input 300, output 12, total 312/.test(r.out), `counted once:\n${r.out}`);
+  // Control: a different file is still counted on its own.
+  passes(ltz(['queue', S, 'u1', '1', 'mark', 'c2-a', 'running', '--agent', 'a3', '--transcript', t2]));
+  r = passes(ltz(['cost', '--queue', S, 'u1', '1']));
+  ok(/2 transcript\(s\) from 3 of 4 slots: .*other input 310, output 13, total 323/.test(r.out), `control: another file adds:\n${r.out}`);
+});
+test('queue and cost --queue: a queue.json that is not a JSON object, or holds a slot that is not one, is refused with a message', () => {
+  const S = queued();
+  const qp = path.join(RD(S), 'queue.json');
+  const good = fs.readFileSync(qp, 'utf8');
+  const cmds = [
+    ['queue', S, 'u1', '1', 'status'],
+    ['queue', S, 'u1', '1', 'next', '--cap', '2'],
+    ['queue', S, 'u1', '1', 'mark', 'c1-a', 'running', '--agent', 'ag1'],
+    ['queue', S, 'u1', '1', 'replace', 'c1-a', '--agent', 'ag2'],
+    ['queue', S, 'u1', '1', 'rerun', 'c1-a', '--from', '1', '--to', '2'],
+    ['cost', '--queue', S, 'u1', '1'],
+  ];
+  for (const body of ['null', '[]', '"queue"', '5']) {
+    fs.writeFileSync(qp, body + '\n');
+    for (const c of cmds) {
+      const r = fails(ltz(c), /ERROR: queue\.json must be a JSON object/, `${c.slice(0, 5).join(' ')} with queue.json = ${body}:`);
+      eq(r.code, 1, `a refusal, not an internal error (${c[0]} ${c[4]}, ${body})`);
+    }
+    eq(fs.readFileSync(qp, 'utf8'), body + '\n', 'nothing written');
+  }
+  for (const slot of ['null', '"c1-a"', '[]', '7']) {
+    fs.writeFileSync(qp, `{"groups": [], "slots": [${slot}]}\n`);
+    for (const c of cmds) {
+      const r = fails(ltz(c), /ERROR: queue\.json: slots\[0\] must be a JSON object/, `${c.slice(0, 5).join(' ')} with a slot = ${slot}:`);
+      eq(r.code, 1, `a refusal, not an internal error (${c[0]} ${c[4]}, slot ${slot})`);
+    }
+  }
+  fs.writeFileSync(qp, good);
+  passes(ltz(cmds[0]), 'control: status on the sound queue');
+  passes(ltz(cmds[2]), 'control: mark on the sound queue');
+});
+test('lock: a writer.lock that is not {"session": "<id>", ...} counts as held, and the message says to delete it', () => {
+  const S = makeS();
+  const p = path.join(S, 'writer.lock');
+  const lk = (action, session = 's1') => ltz(['lock', S, action, '--session', session]);
+  for (const body of ['null', '{}', '[]', '"s1"', '{"session": ""}', '{"session": 5}', '{ not json']) {
+    fs.writeFileSync(p, body + '\n');
+    const c = fails(lk('check'), /lock: S\/writer\.lock is unreadable .*so it counts as held by another session; delete the file \(.*writer\.lock\) if no session holds it/, `check, ${body}:`);
+    eq(c.code, 1, `check exits 1 for ${body}`);
+    ok(!/lock: free/.test(c.out), c.out);
+    fails(lk('acquire'), /refusing: S\/writer\.lock is unreadable .*delete the file \(.*writer\.lock\) if no session holds it/, `acquire, ${body}:`);
+    fails(lk('release'), /refusing: S\/writer\.lock is unreadable .*delete the file \(.*writer\.lock\) if no session holds it/, `release, ${body}:`);
+    eq(fs.readFileSync(p, 'utf8'), body + '\n', 'the file is left as it is');
+  }
+  // Control: with the file deleted the lock is free, and a sound lock reads as before.
+  fs.rmSync(p);
+  ok(/lock: free/.test(passes(lk('check')).out), 'control: no file is free');
+  passes(lk('acquire'));
+  ok(/lock: held by this session \(s1\)/.test(passes(lk('check')).out), 'control: a sound lock');
+  fails(lk('check', 's2'), /lock: held by another session \(s1\) since \d{4}-/, 'control: another session');
+  passes(lk('release'));
+});
+/** A state folder with the given config (whole, not merged), snapshotted when the config is accepted. */
+function queueCfgRun(cfg) {
+  const S = makeS();
+  fs.writeFileSync(path.join(S, 'config.json'), typeof cfg === 'string' ? cfg : JSON.stringify(cfg, null, 2) + '\n');
+  return ltz(['snapshot', S, 'u1', '1', '--chunk-size', '6']);
+}
+const QUEUE_CFG = () => ({
+  evidence: { type: 'git', repo: REPO, pin: 'v1' },
+  windowSize: 3,
+  itemFields: ['title', 'plan', 'reason'],
+  units: { u1: { status: 'open', itemFiles: ['docs/spec.md'] }, u2: { status: 'closed', itemFiles: ['docs/closed.md'] } },
+});
+test('config: a unit status outside the list is refused; a unit with no status counts as open', () => {
+  const withStatus = (status) => ({ ...QUEUE_CFG(), units: { u1: { ...(status === undefined ? {} : { status }), itemFiles: ['docs/spec.md'] }, u2: { status: 'closed', itemFiles: ['docs/closed.md'] } } });
+  for (const bad of ['Closed', 'CLOSED', 'close', 'final_check', 'Open', '', 5, null, ['closed']]) {
+    const r = fails(queueCfgRun(withStatus(bad)), /ERROR: config\.json: unit u1: "status" must be one of open, final-check, closed, closed-leads-pending, closed-owner-questions-open, closed-known-wrongs, closed-by-stopping-rule \(got /, `status ${JSON.stringify(bad)}:`);
+    ok(r.out.includes(`(got ${JSON.stringify(bad)})`), r.out);
+    eq(r.code, 1, 'a refusal');
+  }
+  for (const good of ['open', 'final-check', 'closed', 'closed-leads-pending', 'closed-owner-questions-open', 'closed-known-wrongs', 'closed-by-stopping-rule']) {
+    passes(queueCfgRun(withStatus(good)), `control: status ${good}:`);
+  }
+  // No status at all: accepted, and the unit counts as open (queue init wants every chunk queued).
+  const S = makeS();
+  wj(path.join(S, 'config.json'), withStatus(undefined));
+  snap(S);
+  fails(ltz(['queue', S, 'u1', '1', 'init', '--pairs', 'c1=c1-a,c1-b']), /chunks with no readers: c2 \(every chunk must be queued\)/, 'no status counts as open:');
+});
+test('config: "units" and "universalWords" of the wrong shape are refused', () => {
+  for (const bad of ['u1', ['u1'], 5, null]) {
+    fails(queueCfgRun({ ...QUEUE_CFG(), units: bad }), /ERROR: config\.json: "units" must be an object, \{"<unit>": \{"status", "itemFiles"\}\}/, `units ${JSON.stringify(bad)}:`);
+  }
+  for (const bad of ['open', null, ['docs/spec.md']]) {
+    fails(queueCfgRun({ ...QUEUE_CFG(), units: { u1: bad } }), /ERROR: config\.json: unit u1 must be an object, \{"status", "itemFiles"\}/, `unit ${JSON.stringify(bad)}:`);
+  }
+  for (const bad of ['only, every', [], [5], ['only', ''], ['only', ' '], {}, null]) {
+    const r = fails(queueCfgRun({ ...QUEUE_CFG(), universalWords: bad }), /ERROR: config\.json: "universalWords" must be a non-empty array of non-empty strings/, `universalWords ${JSON.stringify(bad)}:`);
+    eq(r.code, 1, 'a refusal');
+  }
+  passes(queueCfgRun({ ...QUEUE_CFG(), universalWords: ['solely', 'no caller'] }), 'control: a list of words:');
+  passes(queueCfgRun(QUEUE_CFG()), 'control: neither key overridden:');
+  const { units, ...noUnits } = QUEUE_CFG();
+  fails(queueCfgRun(noUnits), /unit u1 is not in config\.json "units" \(known: none\)/, 'control: no "units" key is not a shape error:');
+  ok(units.u1, 'the control config had units');
+});
+test('config: a key the tools do not read is refused (top level, unit, evidence source), so a misspelled key cannot be ignored', () => {
+  let r = fails(queueCfgRun({ ...QUEUE_CFG(), windowsize: 4 }), /ERROR: config\.json: unknown key "windowsize"\. The keys are: evidence, windowSize, itemFields, units, universalWords, itemsRoot, maskSecrets, maskKeys, maskAllow, maskExclude, boundaryPaths, ownerQuestionsBlock, defectsBlock, decisionLog, rulingIdPattern, requireRulingEntries, historyFolders/);
+  eq(r.code, 1, 'a refusal');
+  fails(queueCfgRun({ ...QUEUE_CFG(), maskkeys: ['dsn'] }), /config\.json: unknown key "maskkeys"\. The keys are: .*maskKeys/, 'maskkeys:');
+  fails(queueCfgRun({ ...QUEUE_CFG(), comment: 'x' }), /config\.json: unknown key "comment"/, 'a comment key:');
+  const unit = (extra) => ({ ...QUEUE_CFG(), units: { u1: { status: 'open', itemFiles: ['docs/spec.md'], ...extra }, u2: { status: 'closed', itemFiles: ['docs/closed.md'] } } });
+  fails(queueCfgRun(unit({ itemfiles: ['docs/x.md'] })), /ERROR: config\.json: unit u1: unknown key "itemfiles"\. The keys are: status, itemFiles/, 'a unit key:');
+  fails(queueCfgRun(unit({ Status: 'closed' })), /config\.json: unit u1: unknown key "Status"\. The keys are: status, itemFiles/, 'a unit key:');
+  fails(queueCfgRun({ ...QUEUE_CFG(), evidence: { type: 'git', repo: REPO, pin: 'v1', Pin: 'v2' } }), /ERROR: config\.json: evidence: unknown key "Pin"\. The keys are: type, repo, pin, root, prefix, sha256/, 'a source key:');
+  fails(queueCfgRun({ ...QUEUE_CFG(), evidence: [{ type: 'git', repo: REPO, pin: 'v1', prefix: '' }, { type: 'dir', root: path.join(REPO, 'docs'), prefix: 'export/', sha: 'x' }] }),
+    /ERROR: config\.json: evidence\[1\]: unknown key "sha"\. The keys are: type, repo, pin, root, prefix, sha256/, 'a key of a listed source:');
+  // Control: every key the lists hold, in its documented form, is accepted.
+  const full = {
+    ...QUEUE_CFG(),
+    evidence: [{ type: 'git', repo: REPO, pin: 'v1', prefix: '' }, { type: 'dir', root: path.join(REPO, 'docs'), prefix: 'export/' }],
+    universalWords: ['only', 'every'], itemsRoot: REPO,
+    maskSecrets: true, maskKeys: [], maskAllow: [], maskExclude: [],
+    boundaryPaths: ['src/**', 'docs/**'],
+    ownerQuestionsBlock: true, defectsBlock: false,
+    decisionLog: 'decisions.md', rulingIdPattern: 'D-\\d+', requireRulingEntries: false,
+    historyFolders: [],
+  };
+  eq(Object.keys(full).sort(), [...CONFIG_KEYS].sort(), 'the control holds every key in CONFIG_KEYS');
+  passes(queueCfgRun(full), 'control: every documented key:');
+  passes(queueCfgRun({ ...QUEUE_CFG(), evidence: { type: 'dir', root: REPO } }), 'control: folder evidence:');
+});
+test('config: a config.json that is not a JSON object is refused with a message', () => {
+  for (const body of ['null', '[]', '"config"', '5']) {
+    const r = fails(queueCfgRun(body + '\n'), /ERROR: config\.json must be a JSON object/, `config.json = ${body}:`);
+    eq(r.code, 1, `a refusal, not an internal error (${body})`);
+  }
+  fails(queueCfgRun('{ not json'), /S\/config\.json is not valid JSON/, 'control: unparseable JSON keeps its message:');
+  passes(queueCfgRun(QUEUE_CFG()), 'control: a sound config:');
+});
+test('diffcheck --verify-searches: the help and the README name it, as the default', () => {
+  const h = passes(ltz(['diffcheck', '--help']));
+  ok(/^diffcheck <S> <unit> <R> \[--verify-searches\|--no-verify-searches\]$/m.test(h.out), `the usage line:\n${h.out}`);
+  ok(/--verify-searches is the default: it is accepted and changes nothing/.test(h.out.replace(/\s+/g, ' ')), `the help says it is the default:\n${h.out}`);
+  const readme = fs.readFileSync(path.join(SCRIPTS, 'README.md'), 'utf8');
+  ok(/ltz\.mjs diffcheck <S> <unit> <R> \[--verify-searches\\\|--no-verify-searches\]` \| .*`--verify-searches` is the default/.test(readme), 'the README command row names it');
+  // Control: it is accepted and changes nothing.
+  const S = makeS();
+  snap(S);
+  const plain = passes(ltz(['diffcheck', S, 'u1', '1']));
+  eq(passes(ltz(['diffcheck', S, 'u1', '1', '--verify-searches'])).out, plain.out, 'the same output with the flag');
+  fails(ltz(['diffcheck', S, 'u1', '1', '--verify-searches', '--no-verify-searches']), /give --verify-searches or --no-verify-searches, not both/);
 });
 
 // ================================================================ run

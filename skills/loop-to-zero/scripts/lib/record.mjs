@@ -9,7 +9,7 @@ import {
 import { decisionLogIds, barRulings } from './rulings.mjs';
 import { pinRecord, loadPinRecord, pinDifference } from './sources.mjs';
 import {
-  loadRenderLog, citeInLog, citeLinesRead, mergeLineMaps, noteRefs, refInLog, slotCoverage, fmtPositions,
+  loadRenderLog, citeInLog, citeLinesRead, mergeLineMaps, noteRefs, fileRefs, refInLog, noteNamesLoggedLine, slotCoverage, fmtPositions,
 } from './coverage.mjs';
 import { estimateRemaining, estimateRange, ESTIMATE_CAVEAT, round2 } from './estimate.mjs';
 
@@ -214,9 +214,11 @@ export function rulingsCheckedProblems(id, v, log) {
 /**
  * Repeat check: a confirmed id that an earlier round of the same unit (r0 excluded) also
  * confirmed, with an overlapping class. A class unknown on either side counts as overlapping.
- * Info lines (an empty "rulingsChecked" list accepted) are pushed to `infos`.
+ * Info lines (an empty "rulingsChecked" list accepted) are pushed to `infos`. Each repeat kept wrong
+ * with a "repeatReason" is pushed to `repeats` as {id, repeatReason, of: [<earlier rounds>]}. A
+ * "repeatReason" on an id no earlier round's standing wrong names is pushed to `warnings`.
  */
-export function repeatProblems(S, unit, R, wrongs, curReaderClasses, cfg = {}, infos = []) {
+export function repeatProblems(S, unit, R, wrongs, curReaderClasses, cfg = {}, infos = [], repeats = [], warnings = []) {
   const problems = [];
   const prev = new Map();
   // Earlier rounds of this state folder (r1..r(R-1)), and every round (r0 aside) of the same unit in
@@ -253,15 +255,23 @@ export function repeatProblems(S, unit, R, wrongs, curReaderClasses, cfg = {}, i
   }
   let log = null; // the decision log's bar rulings, read once and only when a repeat needs them
   for (const [id, v] of wrongs) {
+    const reason = v && typeof v === 'object' ? v.repeatReason : undefined;
+    // The value is checked on every entry, a repeat or not.
+    if (reason !== undefined && !REPEAT_REASONS.includes(reason)) {
+      problems.push(`confirmed.json: ${id} has repeatReason ${JSON.stringify(reason)}; the accepted values are ${REPEAT_REASONS.map((r) => `"${r}"`).join(', ')}`);
+      continue;
+    }
     const earlier = prev.get(id);
-    if (!earlier) continue;
+    if (!earlier) {
+      if (reason !== undefined) {
+        warnings.push(`confirmed.json: ${id} has repeatReason "${reason}", but no earlier round's standing wrong names it (none confirmed it, or judgments.jsonl overturned it); it is not counted as a repeat`);
+      }
+      continue;
+    }
     // The item's classes: the entry's, else the readers' labels.
     const cur = classesOf(v).length ? classesOf(v) : [...(curReaderClasses.get(id) || [])];
-    if (v && v.repeatReason !== undefined) {
-      if (!REPEAT_REASONS.includes(v.repeatReason)) {
-        problems.push(`confirmed.json: ${id} has repeatReason ${JSON.stringify(v.repeatReason)}; the accepted values are ${REPEAT_REASONS.map((r) => `"${r}"`).join(', ')}`);
-        continue;
-      }
+    if (reason !== undefined) {
+      repeats.push({ id, repeatReason: reason, of: [...new Set(earlier.map((e) => e.round))] });
       if (typeof v.repeatNote !== 'string' || !v.repeatNote.trim()) {
         problems.push(`confirmed.json: ${id} has repeatReason "${v.repeatReason}" but no "repeatNote" (what happened: the failed fix, the introducing fix, or the earlier miss)`);
       }
@@ -395,7 +405,8 @@ export function record({ S, unit, R, chunkReaders }) {
   const qP = path.join(rd, 'queue.json');
   if (fs.existsSync(qP)) {
     const q = readJson(qP, 'queue.json');
-    qSlots = (Array.isArray(q.slots) ? q.slots : []).filter((s) => s && typeof s.slot === 'string');
+    if (!q || typeof q !== 'object' || Array.isArray(q)) fail('queue.json must be a JSON object ({"groups": [...], "slots": [...]})');
+    qSlots = (Array.isArray(q.slots) ? q.slots : []).filter((s) => s && typeof s === 'object' && typeof s.slot === 'string');
   }
   const rerunSlots = new Map(qSlots.filter((s) => typeof s.parent === 'string').map((s) => [s.slot, s]));
 
@@ -412,6 +423,15 @@ export function record({ S, unit, R, chunkReaders }) {
       if (rerunSlots.has(s)) problems.push(`slot ${s} is a rerun of ${rerunSlots.get(s).parent}; name ${rerunSlots.get(s).parent} in --chunk-readers (record takes its rerun lines itself)`);
       slotChunk.set(s, g.chunk);
     }
+  }
+  // Every reader the queue holds must be named: a slot left out would take its wrongs out of the
+  // union unseen. An abandoned slot is closed with "mark <slot> replaced", and is then not needed.
+  for (const s of qSlots) {
+    if (typeof s.parent === 'string' || s.state === 'replaced' || slotChunk.has(s.slot)) continue;
+    problems.push(
+      `queue.json holds slot ${s.slot} (chunk ${s.chunk}, state ${s.state}), which --chunk-readers does not name, so its lines would be left out; ` +
+        `name it, or close it with "queue <S> <unit> <R> mark ${s.slot} replaced" if nobody will read it`,
+    );
   }
   const notRead = [];
   for (const [name, c] of Object.entries(chunks)) {
@@ -501,14 +521,11 @@ export function record({ S, unit, R, chunkReaders }) {
 
   // Rejected: reader wrongs the writer did not confirm. Each names its reason and the file:line that
   // answers the refuter, or starts "history:" (an earlier reasoned ok that holds), so the stronger
-  // reviewer can re-judge the dismissal.
+  // reviewer can re-judge the dismissal. The grounding is checked below, once the readers' render logs
+  // are loaded.
   problems.push(...rejectedShape);
   for (const [id, note] of rejected) {
     if (!byId.has(id)) problems.push(`confirmed.json: rejected id ${id} is not an item in this round's snapshot`);
-    const txt = typeof note === 'string' ? note.trim() : '';
-    if (!/^history:/i.test(txt) && !noteRefs(txt).length) {
-      problems.push(`confirmed.json: rejected ${id} has no file:line that answers the refuter (or a note starting "history:" that names the earlier reasoned ok)`);
-    }
     for (const [has, what] of [[wrongs, 'confirmed wrong'], [pending, 'pending'], [defects, 'a defect'], [withdrawn, 'withdrawn'], [outsideBar, 'outside the bar']]) {
       if (has.has(id)) problems.push(`confirmed.json: ${id} is both rejected and ${what}`);
     }
@@ -535,6 +552,7 @@ export function record({ S, unit, R, chunkReaders }) {
   // the positions it supplies; lines a later source supersedes are not used.
   const readers = new Map(); // named slot -> {slot, chunk, real: Map(pos -> {obj, lineNo, src, log}), owner, sources}
   const sourceInfo = new Map(); // file slot -> {cov}, for canary scoring
+  const renderedPaths = new Set(); // every path a used render log shows, for the "rejected" notes
   for (const g of groups) {
     const c = chunks[g.chunk];
     if (!c) continue;
@@ -560,8 +578,18 @@ export function record({ S, unit, R, chunkReaders }) {
         for (let p = src.from; p <= src.to; p++) if (owner.get(p) === src.slot) sup.add(p);
         src.positions = sup.size;
         const lab = src.parent ? `${src.slot} (rerun of ${slot})` : src.slot;
-        if (src.parent && !sup.size) continue; // wholly superseded by a later rerun
         const rp = readerResultPath(rd, src.slot);
+        if (!sup.size) {
+          // Wholly superseded by later reruns (a parent whose whole range was re-read, or an earlier
+          // rerun): neither its result file nor its render log is needed. When the file is there, a
+          // wrong in it is still compared with the line that replaces it, and its canaries are scored.
+          if (fs.existsSync(rp)) {
+            const cov = slotCoverage({ list, from: src.from, to: src.to, rows: readJsonl(rp, { strict: false }).rows, canaryIds: plantedFor(plan, src.slot) });
+            sourceInfo.set(src.slot, { cov });
+            for (const [p, r] of cov.real) if (r.obj.verdict === 'wrong') superseded.push({ p, id: r.obj.id, slot: src.slot });
+          }
+          continue;
+        }
         if (!fs.existsSync(rp)) {
           problems.push(`${lab}: result file is missing (${rp})${src.parent ? `; it supplies positions ${src.from}-${src.to}` : ''}`);
           continue;
@@ -571,6 +599,7 @@ export function record({ S, unit, R, chunkReaders }) {
         const log = loadRenderLog(renderLogPath(rd, src.slot));
         if (log.missing) problems.push(`${lab}: render log is missing (render-${src.slot}.jsonl); nothing it judged was rendered`);
         for (const e of log.errors) problems.push(`${lab}: render log ${e}`);
+        for (const lp of log.lines.keys()) renderedPaths.add(lp);
         const cov = slotCoverage({ list, from: src.from, to: src.to, rows, canaryIds: plantedFor(plan, src.slot) });
         sourceInfo.set(src.slot, { cov });
         const missing = cov.missing.filter((p) => sup.has(p) && !inDrop(src.slot, p));
@@ -600,10 +629,12 @@ export function record({ S, unit, R, chunkReaders }) {
           // A wrong refuted by the item's own text (its figures disagree with each other) has no evidence
           // line to name: its note starts "self-contradiction:" and quotes the clash instead.
           if (o.verdict === 'wrong' && !/^\s*self-contradiction:/i.test(String(o.note ?? ''))) {
+            // The paths this reader rendered are looked for in the note, so a path may hold any character
+            // (a space, brackets, a non-ASCII letter), which the reference pattern alone would cut short.
             const refs = noteRefs(o.note);
-            if (!refs.length) problems.push(`${where}: wrong, but its note names no file:line`);
-            else if (!refs.some((ref) => refInLog(log, ref))) {
-              problems.push(`${where}: wrong, but none of the file:line refs in its note (${refs.map((x) => x.raw).join(', ')}) is in its render log`);
+            if (!refs.some((ref) => refInLog(log, ref)) && !noteNamesLoggedLine(log, o.note)) {
+              if (!refs.length) problems.push(`${where}: wrong, but its note names no file:line`);
+              else problems.push(`${where}: wrong, but none of the file:line refs in its note (${refs.map((x) => x.raw).join(', ')}) is in its render log`);
             }
           }
           real.set(p, { obj: o, lineNo: r.lineNo, src: src.slot, log });
@@ -635,7 +666,8 @@ export function record({ S, unit, R, chunkReaders }) {
     }
   }
   const infos = [];
-  problems.push(...repeatProblems(S, unit, parseRound(R), wrongs, curRC, cfg, infos));
+  const repeats = []; // repeats kept wrong with a repeatReason: {id, repeatReason, of}
+  problems.push(...repeatProblems(S, unit, parseRound(R), wrongs, curRC, cfg, infos, repeats, warnings));
   const output = infos.map((x) => `INFO: ${x}`).join('\n');
 
   // The fix checker's results (usually written after record first runs; none is normal).
@@ -647,11 +679,30 @@ export function record({ S, unit, R, chunkReaders }) {
   // PROBLEM, unless its id is pending as ruled-wording or confirmed.json "ruledKept" lists it with the
   // same ruling (the owner kept the ruling after an "amend <ruling>?" question).
   const ruledOks = [];
+  // With "rulingIdPattern" set, the ruling is that pattern's match at the start of what follows
+  // "ruled:" (when the match ends the word), so an id holding "(", ")", "," or ";" is taken whole.
+  let rulingAtStart = null;
+  if (typeof cfg.rulingIdPattern === 'string' && cfg.rulingIdPattern.trim()) {
+    try {
+      rulingAtStart = new RegExp(`^(?:${cfg.rulingIdPattern})`);
+    } catch {
+      // a pattern that does not compile is reported where rulings are checked
+    }
+  }
   const ruledOk = (o, slot) => {
     if (!o || o.verdict !== 'ok') return;
-    const mr = /^\s*ruled:\s*([^\s,;()]+)/i.exec(String(o.note ?? ''));
-    if (!mr) return;
-    const ruling = mr[1].replace(/[.,;:)]+$/, '');
+    const text = String(o.note ?? '');
+    const lead = /^\s*ruled:\s*/i.exec(text);
+    if (!lead) return;
+    const rest = text.slice(lead[0].length);
+    let ruling = null;
+    const mp = rulingAtStart ? rulingAtStart.exec(rest) : null;
+    if (mp && mp[0] && !/^[\p{L}\p{N}_-]/u.test(rest.slice(mp[0].length))) ruling = mp[0];
+    if (ruling === null) {
+      const mr = /^[^\s,;()]+/.exec(rest);
+      if (!mr) return;
+      ruling = mr[0].replace(/[.,;:)]+$/, '');
+    }
     ruledOks.push({ id: o.id, slot, ruling, refs: noteRefs(o.note).map((x) => x.raw) });
   };
   for (const rinfo of readers.values()) {
@@ -692,6 +743,17 @@ export function record({ S, unit, R, chunkReaders }) {
   for (const id of rejected.keys()) {
     if (!markedBy.has(id) && byId.has(id)) warnings.push(`confirmed.json: ${id} is rejected, but no reader marked it wrong`);
   }
+  // A dismissal needs the same grounding as a confirmation: a file:line (a path with a folder or a file
+  // extension, or one a reader of this round rendered), or "history:" followed by what it names.
+  for (const [id, note] of rejected) {
+    const txt = typeof note === 'string' ? note.trim() : '';
+    if (/^history:\s*\S/i.test(txt) || fileRefs(txt, renderedPaths).length) continue;
+    const loose = noteRefs(txt).map((x) => x.raw);
+    problems.push(
+      `confirmed.json: rejected ${id} has no file:line that answers the refuter (or a note starting "history:" that names the earlier reasoned ok)` +
+        (loose.length ? `; ${loose.join(', ')} is not one: a file:line has a path with a folder or a file extension, or one a reader rendered` : ''),
+    );
+  }
 
   // Templated ok notes: one reader writing the same note (file:line refs and numbers aside) on 5 or more
   // items. A note copied from item to item is a default, not a reading of each item; the writer gives
@@ -703,7 +765,6 @@ export function record({ S, unit, R, chunkReaders }) {
       if (r.obj.verdict !== 'ok' || canaryMap.has(r.obj.id)) continue;
       const raw = String(r.obj.note ?? '').trim();
       const key = raw.replace(/([\w.\/\\@+-]+):(\d+)(?:-(\d+))?/g, '<ref>').replace(/\d+/g, '#').replace(/\s+/g, ' ').toLowerCase();
-      if (!key) continue;
       if (!bySlot.has(r.src)) bySlot.set(r.src, new Map());
       const g = bySlot.get(r.src);
       if (!g.has(key)) g.set(key, { sample: raw, ids: [] });
@@ -713,7 +774,11 @@ export function record({ S, unit, R, chunkReaders }) {
   for (const [slot, g] of [...bySlot].sort((x, y) => x[0].localeCompare(y[0]))) {
     for (const { sample, ids } of g.values()) {
       if (ids.length >= TEMPLATE_MIN) {
-        warnings.push(`${slot}: ${ids.length} ok notes share one text ("${sample.slice(0, 60)}"): ${ids.join(', ')}; a template is not a reading of each item, so give that range a supplementary read`);
+        warnings.push(
+          sample
+            ? `${slot}: ${ids.length} ok notes share one text ("${sample.slice(0, 60)}"): ${ids.join(', ')}; a template is not a reading of each item, so give that reader's whole range a supplementary read`
+            : `${slot}: ${ids.length} ok notes are blank: ${ids.join(', ')}; a blank note is not a reading of each item, so give that reader's whole range a supplementary read`,
+        );
       }
     }
   }
@@ -849,8 +914,11 @@ export function record({ S, unit, R, chunkReaders }) {
   {
     const { rangeLow = 0, rangeHigh = 0, lowConfidenceChunks = [], ...rest } = totEst;
     totEst.range = [round2(rangeLow), round2(rangeHigh)];
-    totEst.lowConfidence = lowConfidenceChunks.length > 0;
+    // With no chunk estimated (one reader per chunk, or none) the 0 is no estimate: say so.
+    totEst.estimated = totEst.chunksEstimated.length > 0;
+    totEst.lowConfidence = lowConfidenceChunks.length > 0 || !totEst.estimated;
     totEst.lowConfidenceChunks = lowConfidenceChunks;
+    if (!totEst.estimated) totEst.reason = 'needs two readers per chunk';
     delete totEst.rangeLow;
     delete totEst.rangeHigh;
     void rest;
@@ -863,6 +931,7 @@ export function record({ S, unit, R, chunkReaders }) {
   measure.finalCheck = finalCheck;
   measure.chunksNotRead = notRead;
   measure.fixChecker = fixChecker;
+  measure.repeats = repeats;
 
   // Ruled oks (gathered above, before the PROBLEM gate): a warning for each one neither pending as
   // ruled-wording nor listed in "ruledKept" with its ruling.
@@ -900,9 +969,17 @@ export function record({ S, unit, R, chunkReaders }) {
       if (outcome === 'false-alarm') sc.falseAlarms++;
       if (outcome === 'ok-correct') sc.okCorrect++;
       sc.detail.push({ canaryId: e.canaryId, atPosition: e.atPosition, kind, verdict: line ? line.verdict : null, outcome });
+      const what = `${slot}: the planted ${kind} ${e.canaryId} (before position ${e.atPosition})`;
+      if (outcome === 'missed') warnings.push(`canary missed: ${what} was marked ok; that reader's range gets a supplementary read`);
+      if (outcome === 'false-alarm') warnings.push(`canary false alarm: ${what} was marked wrong`);
+      if (outcome === 'not-judged') warnings.push(`canary not judged: ${what} has no line in the reader's file`);
     }
     measure.canaries[slot] = sc;
   }
+  const canarySlots = Object.entries(measure.canaries);
+  const canaryText = canarySlots.length
+    ? `; canaries: ${canarySlots.map(([slot, c]) => `${slot} caught ${c.caught} of ${c.plantedWrong}${c.plantedOk ? `, ${c.falseAlarms} false alarm(s) on ${c.plantedOk} ok` : ''}${c.notJudged ? `, ${c.notJudged} not judged` : ''}`).join('; ')}`
+    : '';
 
   // ---- report ----
   const items = [];
@@ -978,6 +1055,11 @@ export function record({ S, unit, R, chunkReaders }) {
         if (wrongs.get(id).foundBy) entry.foundByWriter = wrongs.get(id).foundBy;
         const cls = classesOf(wrongs.get(id));
         if (cls.length) entry.class = cls;
+        const rpt = repeats.find((x) => x.id === id);
+        if (rpt) {
+          entry.repeatReason = rpt.repeatReason;
+          entry.repeatOf = rpt.of;
+        }
       }
       items.push(entry);
     }
@@ -1020,6 +1102,7 @@ export function record({ S, unit, R, chunkReaders }) {
     : '';
   const rr = measure.reruns.length ? `; ${measure.reruns.length} rerun(s) merged (${measure.reruns.map((x) => `${x.slot} for ${x.parent} ${x.from}-${x.to}`).join(', ')})` : '';
   // Wrongs outside a frozen bar are not counted, but the writer lists them for the owner.
+  const rptText = repeats.length ? ` (${repeats.length} repeat(s): ${repeats.map((x) => `${x.id} ${x.repeatReason}, of ${x.of.join(', ')}`).join('; ')})` : '';
   const ob = outsideBar.size ? `; outside the bar, list for the owner (not counted): ${[...outsideBar.keys()].join(', ')}` : '';
   return {
     output,
@@ -1028,7 +1111,10 @@ export function record({ S, unit, R, chunkReaders }) {
     summary:
       `record ${unit} r${measure.round}: ${items.length} items (ok ${counts.ok}, wrong ${counts.wrong}, pending-owner ${counts['pending-owner']}, defect ${counts.defect}, unread ${counts.unread}, outside-bar ${counts['outside-bar']}); ` +
       `full depth ${measure.fullDepth ? 'yes' : 'NO'}, counts as zero ${measure.countsAsZero ? 'yes' : `no (${blockers.join(', ')})`}; ` +
-      `${readers.size} reader files covered${rr}; confirmed ${tot.confirmed}, found by one reader ${tot.foundByOneReader}, by none ${tot.foundByNone}, rejected ${rejected.size}${fc}${ob}; ` +
-      `estimated remaining ${est.remaining} (range ${est.range[0]}-${est.range[1]}${est.lowConfidence ? `, low confidence in ${est.lowConfidenceChunks.join(', ')}` : ''}; ${ESTIMATE_CAVEAT}) -> report.json, measure.json`,
+      `${readers.size} reader files covered${rr}; confirmed ${tot.confirmed}${rptText}, found by one reader ${tot.foundByOneReader}, by none ${tot.foundByNone}, rejected ${rejected.size}${fc}${ob}${canaryText}; ` +
+      (est.estimated
+        ? `estimated remaining ${est.remaining} (range ${est.range[0]}-${est.range[1]}${est.lowConfidenceChunks.length ? `, low confidence in ${est.lowConfidenceChunks.join(', ')}` : ''}${est.chunksNotEstimated.length ? `, chunk(s) ${est.chunksNotEstimated.join(', ')} not estimated` : ''}; ${ESTIMATE_CAVEAT})`
+        : `remaining wrongs not estimated (${est.reason})`) +
+      ' -> report.json, measure.json',
   };
 }

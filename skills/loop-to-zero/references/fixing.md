@@ -200,7 +200,9 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
   that removes the universal word. A qualifier alone ("probably", "usually") does not clear it. A universal word
   used in another sense ("disables the timeout" rather than "no timeout") is cleared by rewording. The same applies to any list in such a clause:
   "only A" turned into "only A and B" is caught. A changed clause holding a list of 3 or more with no hedge word ("such as", "for example", "e.g.", "among
-  others") also needs the logged search, even after the universal word is removed (`scripts/README.md`, "New lists"). Clauses you didn't change aren't flagged: the readers judged
+  others") also needs the logged search, even after the universal word is removed (`scripts/README.md`, "New lists"). The
+  tool flags only a series written with a comma before its "and" or "or" ("A, B, and C"); a list written without
+  it ("A, B and C") needs the same search, and catching it is yours. Clauses you didn't change aren't flagged: the readers judged
   them, and your re-read (section 4) covers how your edit changes what they mean.
 - **`judged`.** A search that backs a universal lists every hit you judged at the pin, one entry each:
   `"judged": [{"at": "path:line", "why": "<short reason>"}]`. `ltz diffcheck` re-runs the search and requires the

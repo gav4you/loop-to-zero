@@ -80,7 +80,7 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
   - **Change:** `briefs.md`, "Coverage".
   - **Seen:** 5 units.
 - **✗ Readers game a strict checker.**
-  - **Rule:** a reader that trims its evidence to pass gets that range re-read; one that admits shortcuts
+  - **Rule:** a reader that trims its cites to pass gets that range re-read; one that admits shortcuts
     gets a supplementary read.
   - **Why:** verifiers dropped 28 and then 19 "lines read" entries to pass, and one read long ranges only
     through their first lines.

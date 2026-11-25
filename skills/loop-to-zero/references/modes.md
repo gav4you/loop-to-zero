@@ -17,8 +17,8 @@ If the owner rules solo anyway, say what is given up. Early on, have a cold read
 fresh session the owner opens (setup question 6; if the owner ruled such sessions out, after a context reset
 instead, as for a solo reading session), from a reader brief filled for it alone: an opaque slot name
 of its own, not queued (so its renders stay out of your render log), `{SCRATCH}` for that slot, that window's
-positions, and the brief's Write path changed to `{SCRATCH}agent-<slot>.jsonl` (an `agent-*.jsonl` in the
-round folder would be read by `record`). Confirm each wrong it finds that your pass missed as a wrong of the round
+positions, and the brief's Write path changed to `{SCRATCH}agent-<slot>.jsonl` (the tools take an `agent-*.jsonl` in the
+round folder for a reader's result file: the repeat check and `replay` read its class labels). Confirm each wrong it finds that your pass missed as a wrong of the round
 it is found in (`"foundBy": "spot-check"`; re-run `record`; `references/learning.md`, "Counting"), and report the gap.
 
 Your judgments get no independent check, so the mode makes up for it with order and a fresh session:
@@ -69,7 +69,7 @@ Your judgments get no independent check, so the mode makes up for it with order 
   release, or the items as the reference (setup question 0, `references/setup.md`), tags or publishes waits until every owed item is settled (below).
 - **If a checker is refused or errors, stop and tell the owner.** Never fall back silently. A usage limit or a credit outage is not a failure: wait (`references/queue-and-outages.md`).
 - **Before treating a close as final (in any mode),** recommend an independent audit by a different model or a different
-  lens. In one project, a unit closed at zero under claim-vs-citation reading still held 8 wrongs about behaviour
+  lens, in each unit's close report (`references/round.md`, step 8). In one project, a unit closed at zero under claim-vs-citation reading still held 8 wrongs about behaviour
   that such an audit found.
 - **Poll a background run until it completes,** and fetch the result before counting it. A run that returns
   early reports a fake clean pass.

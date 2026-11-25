@@ -80,6 +80,11 @@ export function sha256File(p) {
   return crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 }
 
+/** sha256 of a file with every "\r\n" folded to "\n": what it hashed to before a CRLF checkout. */
+export function sha256FileLf(p) {
+  return crypto.createHash('sha256').update(Buffer.from(fs.readFileSync(p).toString('latin1').replace(/\r\n/g, '\n'), 'latin1')).digest('hex');
+}
+
 /** Canonical JSON: object keys sorted recursively, so equal values compare equal. */
 export function canon(v) {
   if (v === undefined) return 'undefined';
@@ -127,14 +132,16 @@ export function normPath(p) {
  */
 export function parseCite(raw) {
   const c = String(raw).trim();
-  // Config-key cite: "path#a.b.c" (a nested JSON/YAML key), when the path part has no colon.
+  const m = /^(.*):(\d+)(?:-(\d+))?$/.exec(c);
+  // Config-key cite: "path#a.b.c" (a nested JSON/YAML key), when the path part has no colon. A "#"
+  // inside a folder name is not that form: what follows it starts with "/" ("docs/C#/x.md:Install"),
+  // or holds a "/" and ends in a line number ("src/C#x/a.cs:1"). Those are read by the other forms.
   const h = /^([^#:]+)#([^#]+)$/.exec(c);
-  if (h && h[2].trim()) {
+  if (h && h[2].trim() && !h[2].startsWith('/') && !(m && h[2].includes('/'))) {
     const p = normPath(h[1]);
     const keys = h[2].trim().split('.').map((k) => k.trim()).filter(Boolean);
     if (keys.length) return { kind: 'keypath', path: p, keys, key: `#${keys.join('.')}`, norm: `${p}#${keys.join('.')}` };
   }
-  const m = /^(.*):(\d+)(?:-(\d+))?$/.exec(c);
   if (m && m[1]) {
     const a = Number(m[2]);
     const b = m[3] ? Number(m[3]) : a;

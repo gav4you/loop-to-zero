@@ -89,7 +89,8 @@ An item that states a requirement (`type: requirement`, or "must"/"shall" only w
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
 defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
-config", which the writer records as a defect.
+config", which the writer records as a defect (or, for a descriptive item that misstates the config, fixes as a
+wrong and logs the defect beside it).
 {PROBES: either "You may run probes of the code in a scratch copy under {SCRATCH} (never in a repo)." or
 "Do not run the project's code, config loaders or parsers. Throwaway helper scripts in {SCRATCH} (to evaluate an
 expression or count matches, say) are allowed."}
@@ -102,8 +103,9 @@ refutes its wording), note it in {SCRATCH}rulings.md, and go back to reading."}
 ## Write: one result file, as you go
 {S}/{UNIT}/r{R}/agent-{SLOT}.jsonl. After each window, APPEND one JSON line per item, in list order:
 Before citing a refuter you found by searching, show it with {SHOW_CMD}: a cite you never rendered is refused.
-{"unit":"{UNIT}","id":"…","verdict":"ok"|"wrong","class":["<class>", …],"note":"<why; a wrong names the
-refuting file:line at the pin>","cites":["path:line", …]}
+{"unit":"{UNIT}","id":"…","verdict":"ok"|"wrong","class":["<class>", …],"note":"<why: an ok names the claim you tested hardest and the line that holds it, in words of that item; a wrong
+names the refuting file:line at the pin>","cites":["path:line", …]}
+`cites` lists every line your verdict rests on: the item's cites you read, and any line you showed.
 List every class that applies, the first as classes.md's "When two classes fit" says.
 An item its own text refutes (its figures disagree: parts that don't add up to its total, a share that doesn't
 follow from its numbers) is wrong with a note starting "self-contradiction:" that quotes the clashing figures;
@@ -165,7 +167,8 @@ An item that states a requirement (`type: requirement`, or "must"/"shall" only w
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
 defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
-config", which the writer records as a defect.
+config", which the writer records as a defect (or, for a descriptive item that misstates the config, fixes as a
+wrong and logs the defect beside it).
 
 Your input file also holds every item the new text names ("see X", "as X states"), marked as a
 named item for context, with no `changed` field. Check that each really holds the claim the new text
@@ -206,14 +209,16 @@ Reply with the path, the counts, and one line per wrong.
    **When a check fails** (one rule; never fill an item by hand):
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
      position. A tail the owner dropped is not continued (`references/round.md`, step 8).
-   - **Evidence trimmed, unrendered or failed:** re-run that range with a fresh agent. For one unrendered
+   - **A reader's cites trimmed or never rendered** (not in its render log), or a render command that errored:
+     re-run that range with a fresh agent. A cite that `render` marks as not found is not this case: it is
+     logged as an attempt and may be cited. For one unrendered
      refuter, the range is just that window.
    - **Coverage is computed from the files,** never taken from a reader's word. A sampled pass once left 384
      items uncovered.
-   - **A reader that trims its evidence to pass the check** (dropping cites, for example) has that range
-     re-read.
-   - **A reader whose ok notes repeat one text** on 5 or more items (`ltz record` warns, refs and numbers
-     aside) wrote a default, not a reading: give that range a supplementary read, as below.
+   - **A reader that trims its cites to pass the check** (a result line whose note relies on a line its `cites`
+     omit, or with no `cites` for an item that has some) has that range re-read.
+   - **A reader whose ok notes repeat one text, or are blank,** on 5 or more items (`ltz record` warns, refs
+     and numbers aside) wrote a default, not a reading: give that reader's whole range (its slot's FROM to TO) a supplementary read, as below.
    - **A reader that admits shortcuts or unchecked areas** ("read only the first lines", "area 2 not
      checked") gets a supplementary read of those ranges before acceptance. `record` takes the re-run's
      lines in place of the parent's for that range, so run the confirm checks on any wrong the parent marked
