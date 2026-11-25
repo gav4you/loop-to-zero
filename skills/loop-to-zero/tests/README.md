@@ -82,10 +82,10 @@ against a baseline copy made before the edit, as in step 1):
 | 25-extract-reconcile | After the extract runs at setup: reconciling it against its source both ways (orphans on either side listed), not only comparing totals; no-cite items flagged for the first pass |
 
 ## 3. Trigger test (the description)
-`triggers.md`: 10 requests that should load this skill and 10 near misses, each run sent in a new shuffled order to a new
+`triggers.md`: requests that should load this skill (T rows) and near misses (N rows), each run sent in a new shuffled order to a new
 cold agent that picks a skill for each. Each request is one criterion. For a `description:` edit, use the
 scenario steps above: baseline runs use the baseline copy's description, the target criterion is the request
-the edit is for, and the other 19 requests are the touched criteria. Every run scores all 20, so step 6 does
+the edit is for, and every other request is a touched criterion. Every run scores every request, so step 6 does
 not apply. Step 4's remedy here is to reword the target request or add T or N rows, updating the counts in
 `triggers.md` to match.
 

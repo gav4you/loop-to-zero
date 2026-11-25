@@ -291,7 +291,8 @@ the skill's maintainer).
      round's confirmed wrongs are still fixed and fix-checked before the unit closes; any the owner leaves unfixed
      make it `closed-known-wrongs` (`references/round.md`, "Closed statuses").
    - **Agree an escalation trigger up front,** for example "more than about 3 new wrongs in items an earlier
-     pass accepted and nobody has changed since, or any repeat on a fixed item". Without discovery or adopted history, it can't fire in
+     pass accepted and nobody has changed since, or any repeat on a fixed item" (an "evidence moved" one aside:
+     `references/learning.md`, "The retro"). Without discovery or adopted history, it can't fire in
      round 1, because no earlier pass has accepted anything. When it fires, take the owner the trend, the classes and the
      cost per pass. The owner decides whether
      to continue, cap the passes, or change the method; asking doesn't pause the loop

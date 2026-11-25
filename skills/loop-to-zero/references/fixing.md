@@ -60,6 +60,11 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
         refuter now is;
       - `new-text`: the earlier fix introduced a different claim, and that claim is wrong;
       - `earlier-miss`: a different claim of the same class, in old text, that earlier passes missed.
+
+      A repeat that only the new evidence refutes after a pin move (origin "evidence moved":
+      `references/learning.md`, "The retro") takes `new-text` when an earlier fix wrote the refuted text, else
+      `earlier-miss`, with a `repeatNote` naming the pin move's decision id. It is no fix failure and no miss: it
+      logs no lesson and does not count toward the escalation trigger.
     - **A rule's meaning is in dispute, and the item's truth turns on that meaning** (SKILL.md, Verdicts). Record it
       as `pending-owner` (`rule-meaning`) and ask the owner. A
       ruling is probably missing from the bar.

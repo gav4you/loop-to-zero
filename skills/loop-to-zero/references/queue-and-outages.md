@@ -25,14 +25,16 @@
 - **Readers tire.** Measure, per reader, the extra lines read per item in early windows against late ones.
   In one project, a long reader's depth fell from about 56 to 4.5 after its first windows. A sharp fall
   (late depth under half the early depth: `references/round.md`, step 3) means the chunks are too long.
-- **Concurrency.** The owner sets it. Recommend starting low, at 2 (one chunk's pair), with the rest queued.
+- **Concurrency.** The owner sets it. Recommend starting low, at one chunk's readers (2 for a pair), with the rest queued.
   - `ltz queue next` launches a chunk's readers together. A chunk with more queued readers than the cap
     can never launch, so it reports that chunk as a PROBLEM.
   - Launching many agents at once strands them all at the same usage limit: six readers launched together
     all stopped part-way, and about 25 helpers drained a limit in minutes.
   - Speed comes from the cap, not from the number of jobs. A lower cap means fewer limit stops and less
     work caught part-done.
-  - Propose raising the cap to the owner only after a round runs with no limit stop.
+  - The cap is never below the readers per chunk, since a chunk launches whole: propose raising it together with
+    any increase in readers per chunk, whatever the limit stops. Otherwise, propose raising the cap to the owner
+    only after a round runs with no limit stop.
 
 ## The queue (on disk: `S/<unit>/r<R>/queue.json`)
 - **Job states:** queued, running (with its `agent` id), stopped-limit, stopped-credits, stopped-context (the
@@ -90,7 +92,10 @@
   brief plus "continue from position P", so it stays cold.
 
 ## When a fresh launch is allowed
-There are five cases:
+"A fresh agent" here means a fresh reader of the round's own kind: a new agent in agent mode, a fresh run of the
+external reviewer under the same brief when it is the reader mode, and in solo mode your own read after a context
+reset (`references/modes.md`). A fresh launch never changes the round's reader mode (`references/round.md`,
+"Between rounds only"). There are five cases:
 - **cites trimmed or never rendered, or a render that errored,** in a reader's file (`references/briefs.md`, "When a check
   fails"): that range is re-run with a fresh agent. A range that is only incomplete is continued, not
   re-run;

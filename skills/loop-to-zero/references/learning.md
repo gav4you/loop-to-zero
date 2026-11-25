@@ -10,7 +10,7 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | The owner overrules a verdict, or gives a ruling (asked or not) | Your reading of a rule was off, or a ruling was missing from the bar |
 | A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
-| A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
+| A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"). A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
 | Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
 | A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks from the next snapshot |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
@@ -119,7 +119,7 @@ until that check.
 
    **For each wrong a reader missed, check its render log** before choosing a remedy. If the reader never
    showed the refuting line, it failed to look: the remedy is reading depth (window size, through a side-by-side trial: "Changing the reader setup"; the whole-context
-   lens, a supplementary read), not a sharper class wording. If it showed the line and still marked ok, it
+   lens, shorter chunks from the next snapshot), not a sharper class wording. If it showed the line and still marked ok, it
    misjudged: then a sharper wording is the remedy (Triggers, "Only one of two readers found a confirmed
    wrong").
 
@@ -135,7 +135,7 @@ until that check.
 3. **The scores:** the canary scores, the remaining-wrongs estimate, the early-versus-late reading depth, and the
    recall of the unit's outside findings (`references/setup.md`, "Existing outside findings").
    **Calibrate the estimate:** for each earlier round of the unit, compare its total estimate with the wrongs
-   later rounds confirmed in items that round read and nobody edited since (repeats with `earlier-miss`, and
+   later rounds confirmed in text that round read, unedited since (repeats with `earlier-miss`, and
    `judgments.jsonl` lines that turned that round's ok to wrong). Record the ratio found-later / estimated in
    `retro.md`; the report quotes it (`references/owner-asks.md`, "Reporting a round", item 3). A round whose
    estimate was 0 has no ratio: record its later finds as "found later despite an estimate of 0". The latest

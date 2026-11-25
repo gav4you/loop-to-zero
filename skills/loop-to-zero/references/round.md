@@ -44,7 +44,8 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   as part of the pass.
 
 ## 3. Verify
-`references/briefs.md`, "Verifying the readers' work", in this order:
+In this order (the checks of the readers' work are `references/briefs.md`, "Verifying the readers' work"; the cite
+groups and the deferred lines below are this step's own):
 - coverage, computed from the files;
 - confirm every wrong in the union with the confirm checks in `references/fixing.md`, and the unit's mapped
   outside findings that no reader marked (`foundBy: "audit"`; `references/setup.md`, "Existing outside findings");
@@ -55,9 +56,11 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   logged for it, and back-propagation re-judges logged for it: `references/learning.md`, "Back-propagation"): judge each with the confirm checks, add a hit confirmed wrong that no reader marked to
   `confirmed.json` (`"foundBy": "sweep"` for a logged hit, `"spot-check"` for a back-propagation re-judge, or `"sweep"` when its `ltz sweep` run found it: `references/learning.md`, "Counting"), make any reverts they call for in step 4, and mark each settled (round, date);
 - write `confirmed.json` (the find list) and run `record`: it writes `report.json` and `measure.json` and, once
-  its checks pass, prints the canary scores. Give any supplementary read now, before the spot-check draw: a
-  reader that missed a canary gets one ("What a miss shows", below), and so does one whose ok notes `record`
-  flags or that admitted shortcuts (`references/briefs.md`);
+  its checks pass, prints the canary scores. Give any supplementary read not yet given, before the spot-check
+  draw: a reader that missed a canary gets one ("What a miss shows", below; its score shows only now), and so
+  does one whose ok notes `record` flags or that admitted shortcuts (these show at coverage, and their reads may
+  start then: `references/briefs.md`). Confirm the wrongs a supplementary read marks, as above, and run `record`
+  again;
 - spot-check 10 ok items per reader: 5 at random, and 5 weighted toward items an earlier fix changed and
   toward classes that produced wrongs. Draw the random 5 with `ltz spotcheck <S> <unit> <R> --seed <N>`, once
   any supplementary read is done (a rerun slot's file gets picks of its own): it spreads them over each
@@ -274,7 +277,7 @@ There are two exceptions mid-round:
   - Readers may not open `list.json`, because a canary's id is not in it.
   - A window that holds a canary shows one item more than its range. That is a known tell: keep canaries to
     one or two per reader.
-- **What a miss shows.** A reader who misses a canary gets a supplementary read of its whole range (its slot's FROM to TO) by a fresh agent,
+- **What a miss shows.** A reader who misses a canary gets a supplementary read of its whole range (its slot's FROM to TO) by a fresh reader of the round's kind,
   as for trimmed evidence, before the pass counts. If its misses are in late windows only (it is tiring), also
   shorten the chunks from the next round's snapshot (`snapshot --chunk-size`), and say so in the report.
 

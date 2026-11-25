@@ -313,7 +313,7 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
 
 ## Running agents
 - **✗ Launching many agents at once strands them all at one limit.**
-  - **Rule:** launch up to the owner's concurrency cap (recommend starting at 2), with the rest queued.
+  - **Rule:** launch up to the owner's concurrency cap (recommend starting at one chunk's readers, 2 for a pair), with the rest queued.
   - **Why:** six readers launched together all stopped part-way, and about 25 helpers drained a limit in
     minutes.
   - **Change:** `queue-and-outages.md`.

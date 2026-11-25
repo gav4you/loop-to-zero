@@ -49,7 +49,7 @@ Map the project's own words onto these, and use the project's words with the own
 | ruling / decision log | A ruling is an owner decision about how items are judged (a bar ruling, numbered like `R-n`). A process decision (`P-n`) covers how the loop runs, including the close rules and the approval of the class set (its content is `classes.md` itself). The decision log holds both, verbatim, and is the master copy. Readers never open it. |
 | zero rule | A unit closes only on a full-depth pass with 0 confirmed wrongs. |
 | ruling-level lead | A lead that would change what a ruling permits. It goes to the owner at once ("Cross-unit effects", below). A lead whose refuter is a ruling id, such as a revert under a ruling, is not one. |
-| supplementary read | A fresh agent (in solo mode, you after a context reset: `references/modes.md`) re-reads a range whose reader skimmed. Like a re-run of a range whose cites were trimmed or never rendered, it is recorded with `ltz queue rerun` (`references/queue-and-outages.md`). |
+| supplementary read | A fresh reader of the round's kind (a new agent; a fresh run of the external reviewer when it is the reader mode; in solo mode, you after a context reset: `references/modes.md`) re-reads a range whose reader skimmed. Like a re-run of a range whose cites were trimmed or never rendered, it is recorded with `ltz queue rerun` (`references/queue-and-outages.md`). |
 | named item | An item the new text of a fix names, given to the fix checker for context. |
 | snapshot | The unit's items frozen at a round's start (`snapshot.jsonl`, hashed). Readers judge it. |
 | full depth | Every item read in full, with every cited line rendered. Never filtered, tiered or skimmed. |
@@ -188,7 +188,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    canaries.
 2. **Read:** cold readers in the owner's mode. No item file is edited or committed until the reading is done (fixes are
    drafted in `drafts/<id>.md`).
-3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`); write the find
+3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`), and judge the
+   cite groups `ltz crosscheck` flags and the unit's deferred cross-unit lines; write the find
    list and run `record` (it scores the canaries); give any supplementary reads; spot-check 10 oks per reader, add
    their finds and run `record` again. Work each new `defect` through
    `references/debugging.md`, and never edit the evidence.
@@ -233,10 +234,10 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
 | "The sweep for the fixed wording came back clean" | That proves no regression. Sweep by subject, cite and file |
 | "I read the diff; the fix is fine" | Open every named item, and every field of the changed item |
 | "My fix is obviously right; skip the fix checker" | Your own clauses are the most-missed wrongs |
-| "It was flagged again; park it with the owner" | If the evidence plainly refutes it, your earlier fix failed or an earlier pass missed it: it is `wrong`, so fix it and log a lesson. Only the Verdicts exceptions go to the owner: a dispute over a rule's meaning, a boundary silent on the refuter, or wording a ruling approved |
+| "It was flagged again; park it with the owner" | If the evidence plainly refutes it, your earlier fix failed or an earlier pass missed it (after a pin move, a repeat only the new evidence refutes is neither, and logs no lesson: `references/fixing.md`): it is `wrong`, so fix it and log a lesson. Only the Verdicts exceptions go to the owner: a dispute over a rule's meaning, a boundary silent on the refuter, or wording a ruling approved |
 | "The option conflicts with a past ruling; leave it out" | Offer it as "amend <ruling>" |
 | "Make up a class now" | Classes come from repo research; a new one also logs a lesson |
 | "Freeze the bar to finish faster" | That is the owner's call |
 | "The count rose, so the fixes are failing" | Check the origins first; usually the bar moved |
-| "Launch every reader at once" | They all stop at the same limit. Launch up to the owner's concurrency cap (recommend starting at 2), with the rest queued |
+| "Launch every reader at once" | They all stop at the same limit. Launch up to the owner's concurrency cap (recommend starting at one chunk's readers, 2 for a pair), with the rest queued |
 | "Tell the readers about the canaries or the other reader" | That breaks the measurement |

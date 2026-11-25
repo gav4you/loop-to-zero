@@ -210,7 +210,8 @@ Reply with the path, the counts, and one line per wrong.
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
      position. A tail the owner dropped is not continued (`references/round.md`, step 8).
    - **A reader's cites trimmed or never rendered** (not in its render log), or a render command that errored:
-     re-run that range with a fresh agent. A cite that `render` marks as not found is not this case: it is
+     re-run that range with a fresh reader of the round's kind (`references/queue-and-outages.md`, "When a fresh
+     launch is allowed"). A cite that `render` marks as not found is not this case: it is
      logged as an attempt and may be cited. For one unrendered
      refuter, the range is just that window.
    - **Coverage is computed from the files,** never taken from a reader's word. A sampled pass once left 384
@@ -227,6 +228,8 @@ Reply with the path, the counts, and one line per wrong.
      "Changing the bar's wording" to the class found mid-pass). Meanwhile its wrongs go through the confirm
      checks (`references/fixing.md`) like any other.
 2. **Confirm every wrong in the union** at the evidence, with the confirm checks in `references/fixing.md`.
+   Round step 3 also judges the cite groups `ltz crosscheck` flags and the unit's deferred cross-unit lines
+   (`references/round.md`, step 3).
    - A repeat the evidence plainly refutes is `wrong`, with `repeatReason` (`plain-fix-failure` when the refuted
      claim still stands, `new-text` or `earlier-miss`), a `rulingsChecked` list (`references/fixing.md`)
      and a `repeatNote`. Only the Verdicts exceptions go in `pending` (a rule's meaning, a silent boundary, or
