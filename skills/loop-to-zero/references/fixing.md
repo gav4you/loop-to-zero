@@ -36,8 +36,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    <the ok>; rule-meaning: no, <why>; ambiguity: no, <why>"). If you can't show the reasoning fails, the item is not plainly refuted:
    don't confirm it, so it counts as that reader's false alarm (readers', fix checkers' and the writer's oks all
    count, and so does this round's other reader's reasoned ok). `confirmed.json`'s `withdrawn` list is only for
-   wrongs a ruling given mid-round overturns (including one that answers the round's own `pending` items while
-   it waits).
+   wrongs a ruling given mid-round overturns (including a new ruling or a dated amendment that answers the
+   round's own `pending` items while it waits); after a keep, the reader wrong goes in `rejected`
+   (`references/round.md`, step 8).
 4. **The refuter, the item type and the classes** (below). Otherwise, the evidence plainly refutes it: `wrong`.
 
 - **History.** Earlier reasoned oks live in each round's `report.json` notes, readers' `agent-*.jsonl` lines and

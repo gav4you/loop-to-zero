@@ -60,6 +60,9 @@ retire; quiet is not a reason to delete one.
 - **A wrong that an earlier pass missed counts in the round that finds it.** The latest full pass that marked
   it ok is shown as adjusted (`n (adj n+1, reason, date)`), never added into the trend a second time. Skip the
   adjustment if that pass read text that was changed afterwards.
+- **A find in another open unit's item counts for that unit,** never in the finding round's count: show that
+  unit's latest full pass that read it as adjusted, and count it toward that unit's escalation trigger. A hit
+  logged for it as "deferred" counts in the round that judges it (`references/round.md`, step 3).
 - **Closed units' earlier rounds:** their `judgments.jsonl` lines and adjusted counts are written at the final
   targeted check.
 - **Fix-checker finds** on text written after the snapshot count in the retro as "own edit". They are not part

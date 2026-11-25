@@ -113,7 +113,9 @@ it needs no evidence file:line. Check its figures at the evidence too, and name 
 Never rewrite earlier lines. Throwaway helper scripts go only in {SCRATCH}.
 No git command that changes anything. No edits to items.
 If your context runs low, finish the window, append it, and stop with the next position.
-If you are sent "continue from position P", re-read these rules, render from P and append from there.
+If you are sent "continue from position P", re-read these rules, render from P and append from there. If your
+result file already holds lines when you start and you are sent no position, P is the first position after its
+last line.
 
 ## Reply
 Your result file's path, the positions covered, the ok and wrong counts, one line per wrong (id, class,

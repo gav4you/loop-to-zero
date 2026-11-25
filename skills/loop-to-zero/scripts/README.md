@@ -496,7 +496,8 @@ slot name that another reader shares its range.
 A unit whose `status` in `config.json` is `final-check` (a closed unit reopened for the final targeted
 check) runs round F with readers only for the chunks covering a dropped range from
 `S/known-wrongs.txt` (even one another reader read), or holding `evidence-moved` leads after a pin move. The writer chooses those chunks; the tool does not
-read that file. Leads are confirmed by the writer, with a `foundBy`.
+read that file. `wrong` leads in chunks no reader reads are confirmed by the writer, with a `foundBy`;
+`revert` leads are applied as reverts and never entered in `confirmed.json` (`references/round.md`, step 8).
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
   empty, `finalCheck: true`). Without a `queue.json` at all, `record` works the same.

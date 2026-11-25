@@ -78,7 +78,7 @@ Map the project's own words onto these, and use the project's words with the own
 | reader guidance | Notes that state what to bound, carried to readers only in `classes.md`'s "Reader guidance" section. Never new facts. |
 | hedge | Opening a claim with "such as", "for example", "e.g." or "among others" (softening). Stating a proven scope ("outside tests") is not a hedge. Subtraction (dropping a false or unproven clause) is never softening, and is always allowed for descriptive items. A requirement item is never narrowed to fit the evidence (a copying error from its own source is fixed: `references/fixing.md`, "Requirement items"). A qualifier like "probably" fixes nothing. |
 | context reset | A fresh session, or the owner clearing the conversation. What follows starts from `S/HANDOFF.md` (the writer's steps resume) or from the brief of a cold read it runs (such as a solo reading or a fix-check self-check). The writer can't reset itself mid-session: when a step calls for resets, it first gives the owner their order, each with its first prompt, through to the one that resumes from `S/HANDOFF.md`. |
-| final targeted check | After every unit closes (or sooner, between rounds, if the owner asks: `references/round.md`, "Between rounds only"), with the owner's OK per unit: the unit is reopened as `final-check`, and its round F reads its dropped ranges and the chunks holding `evidence-moved` leads, confirms its other leads, fixes the real ones, applies its known wrongs' held drafts, and fix-checks them. It then returns to the closed status `loop.md` kept for it ("was <status>") (`references/round.md`, step 8). |
+| final targeted check | After every unit closes (or sooner, between rounds, if the owner asks: `references/round.md`, "Between rounds only"), with the owner's OK per unit: the unit is reopened as `final-check`, and its round F reads its dropped ranges and the chunks holding `evidence-moved` leads, confirms its other `wrong` leads and applies its `revert` leads, fixes the real ones, applies its known wrongs' held drafts, and fix-checks them. It then returns to the closed status `loop.md` kept for it ("was <status>") (`references/round.md`, step 8). |
 | escalation trigger | The owner's rule for when a stalled loop goes back to them (setup question 0). |
 | `boundaries.md` | Near-misses: items confirmed ok only after real doubt (`references/round.md`). |
 | `ltz` / `<skill>` | `node <skill>/scripts/ltz.mjs`, where `<skill>` is this skill's folder. |
@@ -190,7 +190,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
 2. **Read:** cold readers in the owner's mode. No item file is edited or committed until the reading is done (fixes are
    drafted in `drafts/<id>.md`).
 3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`), and judge the
-   cite groups `ltz crosscheck` flags and the unit's deferred cross-unit lines; write the find
+   cite groups `ltz crosscheck` flags and this unit's open `cross-unit-edits.txt` lines with verdict "deferred"
+   (`references/round.md`, step 3); write the find
    list and run `record` (it scores the canaries); give any supplementary reads; spot-check 10 oks per reader, add
    their finds and run `record` again. Work each new `defect` through
    `references/debugging.md`, and never edit the evidence.
@@ -213,6 +214,9 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
   then reads them normally. A unit with no snapshot yet (r0's doesn't count) needs a baseline before the first such edit:
   `ltz snapshot <S> <unit> 1`, which that unit's round 1 takes again when it starts. Re-take it only after the
   editing round's last `diffcheck` and commit (its fix checks' follow-ups and any reverts included), or that diffcheck fails on its own logged edits.
+- **Units whose round 1 hasn't started** may instead have their hits logged for them, verdict "deferred", in
+  `cross-unit-edits.txt`, if the owner chose that at setup (`references/setup.md`, question 8). That unit's
+  round step 3 judges them. They are not leads, which only closed units have.
 - **Closed units** are never edited. Log each match as a lead.
   - Leads are deferred under the recommended policy, once the owner decides it.
   - A final targeted check handles all leads after every unit closes (or sooner, between rounds, if the owner asks).

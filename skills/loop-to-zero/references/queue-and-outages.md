@@ -89,7 +89,9 @@
   4. a checkpoint of `S/`.
 
   Then resume from `S/HANDOFF.md`, as below. A solo reading cut off mid-way resumes instead with its slot's
-  brief plus "continue from position P", so it stays cold.
+  brief plus "continue from position P", so it stays cold. P is the first position its result file lacks: the
+  owner opens that session with the brief and runs `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status`
+  for P, or, with no position given, the reader takes P from its own result file (the reader brief says so).
 
 ## When a fresh launch is allowed
 "A fresh agent" here means a fresh reader of the round's own kind: a new agent in agent mode, a fresh run of the
