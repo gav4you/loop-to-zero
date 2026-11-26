@@ -59,9 +59,10 @@
   no resume position: `status` shows `resume none (not clean: ...)`, and `mark done`, `replace` and
   `dropped-by-owner` refuse it until those lines are removed. Remove them yourself: keep the first line for each
   position, and delete the later duplicate, the line outside the range or the unparseable line. Never add or
-  change a line. Where two lines for one item gave different verdicts, re-judge the item yourself and confirm
-  a real wrong as `foundBy: "spot-check"`, as for a reply-only verdict ("Tool gotchas", below). Note each
-  removal in `retro.md`, with the reason for any wrong it held that you don't confirm.
+  change a line. Where a removed line held a wrong no kept line holds (a differing duplicate, or a line outside the
+  range), re-judge the item yourself and confirm a real wrong as `foundBy: "spot-check"`, as for a reply-only
+  verdict ("Tool gotchas", below). Note each removal in `retro.md`, and a wrong only it held that you don't
+  confirm as `references/fixing.md`, "The confirm checks" says.
 
 ## Limits and credits: wait, never fail
 - **In the same session, never kill a stopped agent and never relaunch it.** Mark it stopped-limit (with its
@@ -161,7 +162,7 @@ marked there that the re-run doesn't (`references/briefs.md`).
 - **Verdicts come only from result files.** A reader sometimes changes a verdict in its final reply without
   writing it to its file. Compare each reply with its file; if they differ, the file stands (a reader can't
   rewrite a line, and an item appears once). Re-judge the item yourself, and confirm a real wrong found only in
-  a reply as `foundBy: "spot-check"`, and note one you don't confirm in `retro.md`, with its reason. Never copy a
+  a reply as `foundBy: "spot-check"`, and note one you don't confirm in `retro.md` (`references/fixing.md`, "The confirm checks"). Never copy a
   reply-only verdict into a reader's file.
 - **Confirm what a stopped or killed run actually did,** after it has really stopped, before re-running it.
   A "nothing written" check made too early was wrong, and the re-run then failed on the leftover file.

@@ -228,9 +228,8 @@ Reply with the path, the counts, and one line per wrong.
      checked") gets a supplementary read of those ranges before acceptance.
    - **After any re-run or supplementary read,** `record` takes the re-run's lines in place of the parent's for
      that range, so run the confirm checks on any wrong the parent marked there that the re-run doesn't mark.
-     Record the real ones as `foundBy: "spot-check"`, and note the others in `retro.md` as that reader's false
-     alarms (`references/owner-asks.md`, "Reporting a round", item 2), not in `rejected`: `record` no longer
-     holds them. None is lost.
+     Record the real ones as `foundBy: "spot-check"`, and note the others in `retro.md` (`references/fixing.md`, "The confirm checks") as that
+     reader's false alarms, not in `rejected`: `record` no longer holds them. None is lost.
    - **A stricter standard one reader applies** enters the bar only as `references/learning.md` says (from
      "Changing the bar's wording" to the class found mid-pass). Meanwhile its wrongs go through the confirm
      checks (`references/fixing.md`) like any other.

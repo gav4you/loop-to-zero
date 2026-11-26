@@ -109,8 +109,9 @@ test read may run (its reader, and an external reviewer on the same window when 
    - **If the owner approved hooks,** enable `scripts/hooks/guard.mjs` in the project's settings, never the
      user-level settings (`scripts/hooks/README.md`). If you took the lock under an id of your own, re-take it
      under your real session id once the guard runs (Claude Code may load a hook change only in a new session, or
-     after you review it in `/hooks`; until then keep your own id): `ltz lock <S> release --session <your id>`,
-     then `ltz lock <S> acquire --session auto`. The guard blocks your own writes while the lock names a different session.
+     once the owner reviews it in `/hooks`; until then `ltz lock <S> check --session auto` fails with "no session
+     hint", so keep your own id): `ltz lock <S> release --session <your id>`, then `ltz lock <S> acquire --session
+     auto`. The guard blocks your own writes while the lock names a different session.
    - **The tools are the loop's riskiest code.** Every check, including any the project adds, needs a
      negative test for each way it could pass while checking nothing:
      - missing input, or a skipped case;
@@ -138,7 +139,8 @@ test read may run (its reader, and an external reviewer on the same window when 
    `owner-questions.md` and `cross-unit-edits.txt` (with its "deferred" lines, which round 1 reads there) stay in `S/`: copy `S/classes.md` (and `S/precedents.md`, if it exists) into `S/discovery/`, and mirror `S/checks/patterns/` to
    `S/discovery/checks/patterns/`, before each discovery snapshot and each `diffcheck`
    there, and again at once whenever they change (a ruling, a new class,
-   a fix's new pattern, which is written to `S/checks/patterns/` first); the fix checker reads
+   a fix's new pattern or a pattern retired after a revert, each pattern change made in `S/checks/patterns/`
+   first); the fix checker reads
    `S/discovery/classes.md` there. Discovery writes its own `S/discovery/judgments.jsonl`, since
    its pass numbers would clash with the units' round numbers. Readers judge every item under the three lenses
    (`references/reading-classes.md`). Cross-unit edits are allowed, because no unit is

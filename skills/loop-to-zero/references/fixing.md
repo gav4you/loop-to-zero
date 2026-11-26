@@ -27,6 +27,11 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    the allow-list).
 2. **Boundary.** If the boundary doesn't say whether the refuter's kind of evidence counts, record
    `pending-owner` (`boundary-silent`) and ask the owner.
+
+   If the item also holds another claim the evidence plainly refutes, with no ruling or boundary question on it,
+   checks 1 and 2 don't park it: it is `wrong` (go on to checks 3 and 4 for that claim). Fix that claim, leave the
+   ruled or boundary-silent wording as it is, and ask its question in `S/owner-questions.md` apart; the next
+   round's readers surface that wording again, and it is then `pending-owner` until the owner answers.
 3. **History**, including an earlier reasoned ok. If an earlier verdict gave a reasoned ok on this exact point,
    you, confirming, state in the note why that reasoning fails. One such reason is that the reader and the
    earlier ok read the item in two ways that the evidence judges differently (ambiguous wording, below); where it is
@@ -56,7 +61,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
     - **The evidence plainly refutes the claim under the current bar.** Your earlier fix failed
       (`plain-fix-failure`, `new-text`), or an earlier pass missed it (`earlier-miss`), or, after a pin move,
       only the new evidence refutes it (`evidence-moved`). It is `wrong`: fix it, and log a lesson (not for
-      `evidence-moved`). In `confirmed.json`, give it a `"repeatReason"` and a non-empty
+      `evidence-moved`; for a repeat that only a ruling given or amended since makes wrong, origin "missing ruling",
+      the ruling row's lesson: `references/learning.md`, "Triggers"). In `confirmed.json`, give it a `"repeatReason"` and a non-empty
       `"repeatNote"`:
       - `plain-fix-failure`: the claim an earlier round refuted still stands, perhaps reworded, whatever the
         refuter now is;
@@ -117,8 +123,11 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   citing the item's own file:line. A dismissal needs the same grounding as a
   confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
   is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5). The
-  exception is a wrong in a parent's lines that a re-run replaced: it goes in `retro.md` (`references/briefs.md`,
-  "Verifying the readers' work").
+  exceptions are reader wrongs `record` doesn't hold: a parent's in lines a re-run replaced (`references/briefs.md`,
+  "Verifying the readers' work"), a removed duplicate or stray line's, a reply-only one
+  (`references/queue-and-outages.md`), and the solo cold sample's (`references/modes.md`). Each goes in `retro.md`
+  with its reason and the file:line that answers it, and counts with that reader's false alarms in the report
+  (`references/owner-asks.md`, "Reporting a round", item 2).
 
 ## 1. Sweep
 - **Write the class's sweep patterns first,** at least as wide as the seed. Sweep along every axis, not just

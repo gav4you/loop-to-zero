@@ -201,7 +201,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    their logs, never into this unit's find list.
 5. **Check:** the fix checker reads every changed and named item; follow-ups are checked until a check
    returns 0. A stronger reviewer, if available, re-judges the find list, the `rejected` list, the wrongs
-   dismissed in `retro.md` (each reader or checker wrong you don't confirm that is not in `rejected`) and the near-misses in `boundaries.md`.
+   dismissed in `retro.md` (`references/fixing.md`, "The confirm checks" and "After the fix checker") and the near-misses in `boundaries.md`.
 6. **Learn:** the retro (`references/learning.md`).
 7. **Report:** update `loop.md`, the handoff and memory, and report to the owner in the order of
    `references/owner-asks.md` ("Reporting a round"). It is information, not a stop.

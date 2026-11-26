@@ -170,7 +170,7 @@ Then report, in this order:
    retro", step 2), naming any class that is not falling.
    - **Bridge each count from the last round's; never give it alone.** Say what became of the last round's
      wrongs and where this round's came from: "round 4 found 7, all fixed (fix check returned 0); round 5 found
-     4, all new: none is a repeat or in text I edited". Split the new ones into repeats (from `record`'s output; an `evidence-moved` one apart, as no fix failure), finds in your
+     4, all new: none is a repeat or in text I edited". Split the new ones into repeats (from `record`'s output; an `evidence-moved` one apart, as no fix failure, and a "missing ruling" one apart, with its ruling), finds in your
      own edits (from the retro's origin axis: `references/learning.md`, "The retro", step 1) and the rest.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
    your own edit, a new class, a missing ruling, writer misjudgment, evidence moved) and by who found them (both readers, one only, none), plus

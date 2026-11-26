@@ -106,8 +106,8 @@ measure counts them as found by none.
   unit's item is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
   policy).
 - If a stronger reviewer is available (an advisor, say), have it re-judge the find list, the dismissed reader
-  wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (each reader or checker
-  wrong you don't confirm that is not in `rejected`) and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
+  wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (`references/fixing.md`,
+  "The confirm checks" and "After the fix checker") and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
   fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`; one from the
   `rejected` list instead moves out of `rejected` into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
   adds to `boundaries.md` in step 3: an
@@ -175,8 +175,9 @@ may still count it. If a later round finds it again at the same pin, it stays cl
 "Cross-unit effects"). It marks a closed unit reopened, with the
 owner's OK, for the final targeted check. The check runs as the unit's next round, F (a round that so far holds only a baseline snapshot is taken again as F): `ltz snapshot <S> <unit> <F>`
 before any edit, then the reading of any chunk it queues (below) and step 3's checks of its readers' work, then
-the fixes, `diffcheck` and the fix checker as usual. Afterwards, take a new baseline with
-`ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the final-check edits. Then set the unit back to the
+the fixes, `diffcheck` and the fix checker as usual. Just before setting it back (after any edits an owner answer
+calls for, below), take a new baseline with `ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the
+final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
 round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
@@ -192,7 +193,10 @@ known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "k
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
   that closed with them, and a lead that restates one is settled with it, not confirmed again. Re-check the held
   draft against today's bar, rulings and pin (or draft the fix now if its line names none), apply it, log it in round F's fixlog, and
-  fix-check it.
+  fix-check it. A round-F reader's wrong on an item round F fixes without confirming it (a known wrong, or a
+  `revert` or `stale` lead's item) is listed in round F's wrongs, so `record` holds it, and adds nothing to the
+  closing count or the lessons; on a known wrong it is a repeat, with `repeatReason` `plain-fix-failure` and a
+  `repeatNote` naming its `known-wrongs.txt` line (its fix was held, never applied).
 - **Mark each lead settled** in `closed-unit-leads.txt`, and each known wrong and dropped range in `known-wrongs.txt` (round F, date). If new leads are logged
   against a unit after its round F (by round F's sweeps or otherwise), the final targeted check repeats for those
   units, with the owner's OK, until none is open.
