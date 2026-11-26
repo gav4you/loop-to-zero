@@ -213,7 +213,7 @@ Reply with the path, the counts, and one line per wrong.
    **When a check fails** (one rule; never fill an item by hand):
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
      position. A tail the owner dropped is not continued (`references/round.md`, step 8).
-   - **A reader's cites trimmed or never rendered** (not in its render log), or a render command that errored:
+   - **A reader's cites never rendered** (listed in its `cites` but not in its render log), or a render command that errored:
      re-run the windows holding those items with a fresh reader of the round's kind (`references/queue-and-outages.md`,
      "When a fresh launch is allowed"). A cite that `render` marks as not found is not this case: it is
      logged as an attempt and may be cited. For one unrendered
@@ -243,10 +243,13 @@ Reply with the path, the counts, and one line per wrong.
      ruled wording; `references/fixing.md`).
    - **Ruled wording.** Every ok (a reader's or a fix checker's) whose note starts "ruled:" and names a differing file:line is checked at the
      evidence. If the evidence refutes the approved wording, record it in `pending` (`ruled-wording`, with the
-     question "amend <ruling>?"; unless the id is in another list the next sentence names: then ask that question apart,
-     as `references/fixing.md`, check 2, does for a wrong, and its warning is expected), unless the ruling's entry records that the owner kept it after that question:
+     question "amend <ruling>?"), unless the ruling's entry records that the owner kept it after that question:
      then list it in `confirmed.json`'s `ruledKept` (`{"id", "ruling"}`), unless the id is also in the wrongs,
      `pending`, `defects`, `withdrawn`, `outsideBar` or `restated` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
+     Where the id is already a wrong or `restated` for another claim, it stays there and the question is asked
+     apart, as `references/fixing.md`, check 2, does; where another list would hold it (`withdrawn`,
+     `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as `ruled-wording`
+     instead, with its other point in the question, so the question blocks the close.
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

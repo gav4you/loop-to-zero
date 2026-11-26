@@ -525,7 +525,8 @@ reader's wrong that restates a known wrong or such a lead's flaw goes in `confir
 
 ### Re-runs and supplementary reads
 `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> rerun <slot> --from P --to Q` adds a new slot that
-reads positions P-Q of `<slot>` again: a re-run of a range whose cites were trimmed or never rendered, or whose render errored,
+reads positions P-Q of `<slot>` again: a re-run of a range whose cites were never rendered or whose render errored (or of a reader's whole range
+after it trimmed its cites to pass the check),
 a supplementary read of a skimming reader's range, in solo mode a re-read of items a sweep showed the writer
 before it read them, or (with the owner's OK) a read of an owner-dropped tail.
 - **The new slot.** It gets an opaque name and records its `parent`, and starts `queued`. The output
@@ -608,8 +609,8 @@ round counts as zero only when all of these hold:
 - it was read at full depth, as far as the tool can see: no chunk in `measure.json` with a non-empty
   `droppedRanges` or with `notRead: true` (see "Dropped ranges" and "Final-check rounds"). A skimmed range, and
   an item edited after the pass read it, are the writer's checks (`references/round.md`, step 8);
-- it has no confirmed `wrong` and nothing `unread` (an `outside-bar` item, listed for the owner, does
-  not block it);
+- it has no `wrong` (a confirmed one, or a `restated` one) and nothing `unread` (an `outside-bar` item,
+  listed for the owner, does not block it);
 - it has no `pending-owner` item with `pendingReason` `boundary-silent` or `ruled-wording`, ever. Those
   items concern text the evidence refutes, so no setting lets them through;
 - it has no `pending-owner` item with `pendingReason` `rule-meaning`, when `ownerQuestionsBlock` is true
@@ -830,8 +831,10 @@ Notes on these fields:
   - **`restated`** (optional; a `final-check` unit's round only) lists round-F reader wrongs that restate a
     known wrong, or the flaw a `revert` or `stale` lead's edit fixes: the round fixes them without confirming
     them again (`references/round.md`, step 8). They are not confirmed wrongs (so not repeats, and out of the
-    confirmed count) and not false alarms; `measure.json` counts them as `restated` (per chunk and in total),
-    `report.json` shows each one `wrong` with `restated` (its `of`), and `record`'s summary gives the count.
+    confirmed count, the `foundBy` counts and the remaining-wrongs estimate) and not false alarms; `measure.json`
+    counts them as `restated` (per chunk and in total), `report.json` shows each one `wrong` with `restated`
+    (its `of`) when a reader read it (an item no reader read stays `unread`), it blocks a zero as a wrong does,
+    `replay` counts a hit on it as neither recalled nor a false hit, and `record`'s summary gives the count.
     Each of these is a PROBLEM: the list in a unit that is not `final-check`; an entry that is not an
     `{"id", "of"}` object; an id listed twice, not in the snapshot, or also confirmed, pending, a defect,
     withdrawn, in `outsideBar` or rejected; an `of` that is missing or blank. One no reader marked wrong gives a
@@ -922,7 +925,7 @@ Notes on these fields:
   - `readers`, keyed by slot: `{verdict, class, note}`; a reader whose range was dropped shows
     `{"verdict": null, "dropped": true, "ruling"}`, and an entry taken from a rerun carries
     `"rerun": "<slot>"`;
-  - for a wrong item, `foundBy` (the slots that marked it wrong), `foundByWriter` (the confirmed
+  - for a confirmed wrong item, `foundBy` (the slots that marked it wrong), `foundByWriter` (the confirmed
     entry's own `foundBy`, when it has one) and `class` (the entry's classes, when it has any); for a
     repeat kept wrong, also `repeatReason` and `repeatOf` (the earlier rounds that confirmed it).
 - **`r<R>/measure.json`:**

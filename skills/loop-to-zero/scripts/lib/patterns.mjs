@@ -270,6 +270,9 @@ export function replay({ S, patternFile, rounds, holdout }) {
     // Overturned to pending-owner: like a pending item, neither a recalled wrong nor a false hit.
     const pending = new Set([...conf.pending, ...overturned.filter((id) => latest.get(id) === 'pending-owner')]);
     const defects = conf.defects;
+    // A restated id (a final-check round's reader wrong restating a known wrong or a lead's flaw, fixed there
+    // without being confirmed again) is neither a recalled wrong of this round nor a false hit.
+    const restated = new Set(conf.restated ? conf.restated.keys() : []);
     // An item no reader read in this round (a final-check round's unqueued chunks, a dropped range)
     // was never judged, so a hit on it is neither a recalled wrong nor a false hit. report.json says
     // which those are; a round without one (a rebuilt past round) is taken as read in full.
@@ -296,7 +299,8 @@ export function replay({ S, patternFile, rounds, holdout }) {
       const recalled = ofClass.filter((id) => hit.has(id));
       const missed = ofClass.filter((id) => !hit.has(id));
       const laterWrongHits = [...hit].filter((id) => !wrongs.has(id) && laterWrong.has(id));
-      const falseHits = [...hit].filter((id) => !wrongs.has(id) && !pending.has(id) && !defects.has(id) && !laterWrong.has(id));
+      const restatedHits = [...hit].filter((id) => !wrongs.has(id) && restated.has(id));
+      const falseHits = [...hit].filter((id) => !wrongs.has(id) && !pending.has(id) && !defects.has(id) && !laterWrong.has(id) && !restated.has(id));
       const otherClass = [...hit].filter((id) => wrongs.has(id) && !ofClass.includes(id));
       const t = totals[i];
       t.ofClass += ofClass.length;
@@ -317,6 +321,7 @@ export function replay({ S, patternFile, rounds, holdout }) {
           `; false hits ${falseHits.length}${falseHits.length ? ` (${falseHits.join(', ')})` : ''}` +
           (otherClass.length ? `; hits on other-class wrongs ${otherClass.join(', ')}` : '') +
           (laterWrongHits.length ? `; hits on items a later round found wrong here, not false hits: ${laterWrongHits.join(', ')}` : '') +
+          (restatedHits.length ? `; hits on restated items (a known flaw fixed in this final check), not counted: ${restatedHits.join(', ')}` : '') +
           (unreadHits.length ? `; hits on items not read in this round, not counted: ${unreadHits.join(', ')}` : '') +
           (overturned.length ? `; overturned, not counted: ${overturned.join(', ')}` : ''),
       );

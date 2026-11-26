@@ -108,8 +108,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   ambiguity class (if the bar has none: "A class found mid-pass" on an open bar). Rewrite the item to say one
   thing (a requirement item only by an owner ruling: "Requirement items", below). On a frozen bar with no such
   class it is not counted: list it in `outsideBar` for the owner,
-  unedited unless the owner says otherwise (in text a fix wrote, fix it in the follow-up instead:
-  `references/learning.md`, "Counting"). It becomes a
+  unedited unless the owner says otherwise (in text a fix wrote after this round's snapshot, a fix
+  checker's find, fix it in the follow-up instead: `references/learning.md`, "Counting"). It becomes a
   `pending-owner` question only if the ambiguity is in a rule.
 - **Requirement items.** If the item states a requirement and the evidence does not meet it, record the
   verdict `defect`, work it and log it in `S/defects.md` (`references/debugging.md`), and leave the item (see
@@ -125,7 +125,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   citing the item's own file:line. A dismissal needs the same grounding as a
   confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
   is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5). The
-  exceptions are reader wrongs in no line `record` uses, such as a parent's or an earlier rerun's in lines a later
+  exceptions are a counted round's reader wrongs in no line `record` uses (r0's never count), such as a parent's or an earlier rerun's in lines a later
   re-run supersedes (`references/briefs.md`, "Verifying the readers' work"), a `replaced` rerun's, a removed
   duplicate or stray line's, a reply-only one (`references/queue-and-outages.md`), and the solo cold sample's
   (`references/modes.md`). Each goes in `retro.md` with its reason and the file:line that answers it, and counts with that reader's false alarms in the report
@@ -243,7 +243,11 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
   claim and a `scopeText` (the scope words) appears in the new text; the search to log is still one over the
   whole boundary (section 2, step 3).
 - **Closed units.** No changed item may belong to a closed unit.
-- **Patterns.** No changed item may still match a regression pattern. `ltz diffcheck` re-runs them all.
+- **Patterns.** No changed item may still match a regression pattern. `ltz diffcheck` re-runs them all. A match only
+  in wording the rules forbid you to change (wording a ruling approved, wording parked under an open owner
+  question, or a requirement's claim) means the pattern is too wide for that item: narrow its regex until it no
+  longer matches that wording, check with `ltz sweep` that it still hits its known instances, and note the change
+  and why in `retro.md`.
 - **Shape.** Check the whole changed field, not a window around the edit: run-on sentences from appended
   clauses, stacked parentheticals, a clause appended with no sentence stop.
 - **Change set.** Diff every field of every item against the round's snapshot. The changed set must equal

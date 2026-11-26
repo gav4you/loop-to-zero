@@ -101,9 +101,9 @@
 external reviewer under the same brief when it is the reader mode, and in solo mode your own read after a context
 reset (`references/modes.md`). A fresh launch never changes the round's reader mode (`references/round.md`,
 "Between rounds only"). There are six cases:
-- **cites trimmed or never rendered, or a render that errored,** in a reader's file (`references/briefs.md`, "When a check
-  fails"): the windows holding those items are re-run with a fresh agent (its whole range, for a reader that
-  trimmed its cites to pass the check). A range that is only incomplete is continued, not
+- **cites never rendered, or a render that errored, or cites trimmed to pass the check,** in a reader's file
+  (`references/briefs.md`, "When a check fails"): the windows holding those items are re-run with a fresh agent,
+  and for trimmed cites the reader's whole range. A range that is only incomplete is continued, not
   re-run;
 - **a reader that skims** (it misses a canary, admits shortcuts, or `record` flags its ok notes as templated): a fresh agent gives a
   supplementary read to its whole range or, after admitted shortcuts, to the ranges it names (its whole range when

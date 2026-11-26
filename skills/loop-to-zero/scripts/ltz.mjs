@@ -82,7 +82,7 @@ render <S> <unit> <R> <slot> show <cite>...
   in measure.json ruledOks, with a warning unless the id is pending
   as ruled-wording or listed in "ruledKept" with the same ruling (the writer checked it and the owner
   kept the ruling). A ruledKept entry whose id is not a ruled ok of the round, whose ruling differs
-  from the ruled ok's, whose id is also confirmed, pending, a defect, withdrawn or outsideBar, or
+  from the ruled ok's, whose id is also confirmed, pending, a defect, withdrawn, outsideBar or restated, or
   that lacks an id or ruling, is a PROBLEM. A wrong in a parent's (or earlier rerun's) lines that
   the replacing rerun does not mark is a warning. A confirmed id that an earlier round (or, with config "historyFolders",
   any round but r0 under <folder>/<unit>/) also confirmed with an overlapping class is a PROBLEM

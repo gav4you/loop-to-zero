@@ -8,9 +8,9 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | Trigger | What it shows |
 |---|---|
 | The owner overrules a verdict, or gives a ruling (asked or not) | Your reading of a rule was off, or a ruling was missing from the bar |
-| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1) | Your fix overreached, or an earlier pass missed it |
+| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1; for a "missing ruling" one, "Back-propagation") | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
-| A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"), which writes no lesson and no `judgments.jsonl` line ("The retro", step 1). A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
+| A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"), which writes no lesson and no `judgments.jsonl` line ("The retro", step 1); for a "missing ruling" one, "Back-propagation". A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
 | Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
 | A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks from the next snapshot |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
@@ -85,9 +85,9 @@ retire; quiet is not a reason to delete one.
   `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit") and are fixed in the
   follow-up, an `outside-bar` one included: `outsideBar` holds only snapshot text.
 - **Revert and stale leads.** Either alone sets `closed-leads-pending`. The closing count (the confirmed count of
-  the pass that closed the unit) changes for wrongs the final targeted check confirms (not "evidence moved" or
-  "missing ruling" ones: "Back-propagation", below), never for reverts, stale dependents or a `restated` wrong
-  (`references/round.md`, "Known wrongs").
+  the pass that closed the unit) changes for wrongs the final targeted check confirms, with the exceptions
+  `references/round.md`, step 8, lists (round F's paragraph, and "Known wrongs"); never for reverts, stale
+  dependents or a `restated` wrong.
 - **The escalation trigger counts per unit.** Finds in other units count toward their own unit.
 - **"Who found it"** includes "none (writer)" for the writer's own re-check of a past verdict, recorded as
   `foundBy: "spot-check"` unless a sweep found it.
@@ -113,9 +113,11 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
 the final targeted check confirms a wrong in it, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
-question answered, after the close): the closing pass judged those correctly under the bar of its time. Its status is `closed-leads-pending` from when the first lead is logged
-until that check. In an open unit, a "missing ruling" wrong counts as any later find does: its earlier pass adjusted, its lesson,
-its repeat reason, the escalation trigger and the calibration all as for one, so the trend reads under today's bar;
+question answered, after the close): the closing pass judged those correctly under the bar of its time (the other exceptions: `references/round.md`,
+step 8). Its status is `closed-leads-pending` from when the first lead is logged
+until that check. In an open unit, a "missing ruling" wrong counts as any later find does: its earlier pass adjusted, its repeat reason,
+the escalation trigger and the calibration all as for one, though its lesson is the first Triggers row's (a ruling
+was missing), not the "earlier pass missed it" one, so the trend reads under today's bar;
 only a closing count keeps the bar of its close.
 
 ## The retro (`r<R>/retro.md`)
@@ -149,7 +151,7 @@ only a closing count keeps the bar of its close.
    falling total can hide a class that is flat or rising; name any such class in the report.
 3. **The scores:** the canary scores, the remaining-wrongs estimate, the early-versus-late reading depth, and the
    recall of the unit's outside findings (`references/setup.md`, "Existing outside findings").
-   **Calibrate the estimate:** for each earlier round of the unit, compare its total estimate with the wrongs
+   **Calibrate the estimate:** for each earlier round of the unit, compare its total remaining estimate (`total.estimate.remaining` in its `measure.json`) with the wrongs
    later rounds confirmed in text that round read, unedited since, of any origin but "evidence moved" (repeats with `earlier-miss`, and
    `judgments.jsonl` lines that turned that round's ok to wrong). Record the ratio found-later / estimated in
    `retro.md`; the report quotes it (`references/owner-asks.md`, "Reporting a round", item 3). A round whose

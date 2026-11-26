@@ -107,7 +107,7 @@ measure counts them as found by none.
   policy).
 - If a stronger reviewer is available (an advisor, say), have it re-judge the find list, the dismissed reader
   wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (`references/fixing.md`,
-  "The confirm checks" and "After the fix checker") and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
+  "The confirm checks" and "After the fix checker"), the `restated` list and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
   fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`; one from the
   `rejected` list instead moves out of `rejected` into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
   adds to `boundaries.md` in step 3: an
@@ -182,7 +182,7 @@ closed status `loop.md` kept for it ("was <status>", carried forward from `close
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
 round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
 defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
-what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than an id the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
+what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
@@ -310,13 +310,13 @@ There are two exceptions mid-round:
   - A window that holds a canary shows one item more than its range. That is a known tell: keep canaries to
     one or two per reader.
 - **What a miss shows.** A reader who misses a canary gets a supplementary read of its whole range (its slot's FROM to TO, short of any tail the owner dropped) by a fresh reader of the round's kind,
-  as for trimmed evidence, before the pass counts. The rerun carries no canaries (`canary plan` runs once, before
+  as for cites trimmed to pass the check, before the pass counts. The rerun carries no canaries (`canary plan` runs once, before
   the reading starts); its spot-checks check it (step 3). If its misses are in late windows only (it is tiring), also
   shorten the chunks from the next round's snapshot (`snapshot --chunk-size`), and say so in the report.
 
 ## The remaining-wrongs estimate
 `record` estimates how many wrongs each chunk still holds, from the overlap of its two readers (the Chapman
-capture-recapture estimator: N = (n1+1)(n2+1)/(m+1) − 1).
+capture-recapture estimator: N = (n1+1)(n2+1)/(m+1) − 1 wrongs in all, so remaining = N − (n1 + n2 − m)).
 - **Always report it with its caveat.** The readers share a brief, so they are not independent,
   and the estimate runs low. Wrongs found by none add to it.
 - **Use it to answer "when will it end?"** as a count of wrongs likely still unfound, never as a date. A large

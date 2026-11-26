@@ -50,7 +50,7 @@ Map the project's own words onto these, and use the project's words with the own
 | ruling / decision log | A ruling is an owner decision about how items are judged (a bar ruling, numbered like `R-n`). A process decision (`P-n`) covers how the loop runs, including the close rules and the approval of the class set (its content is `classes.md` itself). The decision log holds both, verbatim, and is the master copy. Readers never open it. |
 | zero rule | A unit closes only on a full-depth pass with 0 confirmed wrongs. |
 | ruling-level lead | A lead that would change what a ruling permits. It goes to the owner at once ("Cross-unit effects", below). A lead whose refuter is a ruling id, such as a revert under a ruling, is not one. |
-| supplementary read | A fresh reader of the round's kind (a new agent; a fresh run of the external reviewer when it is the reader mode; in solo mode, you after a context reset: `references/modes.md`) re-reads a range whose reader skimmed. Like a re-run of a range whose cites were trimmed or never rendered, it is recorded with `ltz queue rerun` (`references/queue-and-outages.md`). |
+| supplementary read | A fresh reader of the round's kind (a new agent; a fresh run of the external reviewer when it is the reader mode; in solo mode, you after a context reset: `references/modes.md`) re-reads a range whose reader skimmed. Like a re-run of a range whose cites were never rendered (or of a reader's whole range after it trimmed its cites), it is recorded with `ltz queue rerun` (`references/queue-and-outages.md`). |
 | named item | An item the new text of a fix names, given to the fix checker for context. |
 | snapshot | The unit's items frozen at a round's start (`snapshot.jsonl`, hashed). Readers judge it. |
 | full depth | Every item read in full, with every cited line rendered. Never filtered, tiered or skimmed. |
@@ -201,7 +201,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    their logs, never into this unit's find list.
 5. **Check:** the fix checker reads every changed and named item; follow-ups are checked until a check
    returns 0. A stronger reviewer, if available, re-judges the find list, the `rejected` list, the wrongs
-   dismissed in `retro.md` (`references/fixing.md`, "The confirm checks" and "After the fix checker") and the near-misses in `boundaries.md`.
+   dismissed in `retro.md` (`references/fixing.md`, "The confirm checks" and "After the fix checker"), the
+   `restated` list and the near-misses in `boundaries.md`.
 6. **Learn:** the retro (`references/learning.md`).
 7. **Report:** update `loop.md`, the handoff and memory, and report to the owner in the order of
    `references/owner-asks.md` ("Reporting a round"). It is information, not a stop.

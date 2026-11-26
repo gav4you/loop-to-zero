@@ -1965,12 +1965,15 @@ test('record: "restated" (final-check only) holds a reader wrong that restates a
   const r = passes(rec());
   ok(/rejected 0, restated 1/.test(r.out), r.out);
   const m = rj(mp);
-  eq([m.chunks.c2.falseAlarms['c2-b'], m.chunks.c2.falseAlarmIds['c2-b'], m.chunks.c2.restated, m.total.restated, m.chunks.c2.confirmed, m.total.confirmed, m.total.repeats ?? m.repeats],
-    [0, [], 1, 1, 1, 3, m0.total.repeats ?? m0.repeats], 'not a false alarm, not confirmed, no repeat');
+  eq([m.chunks.c2.falseAlarms['c2-b'], m.chunks.c2.falseAlarmIds['c2-b'], m.chunks.c2.restated, m.total.restated, m.chunks.c2.confirmed, m.total.confirmed],
+    [0, [], 1, 1, 1, 3], 'not a false alarm, not confirmed');
   const by = Object.fromEntries(rj(path.join(RD(S), 'report.json')).items.map((x) => [x.id, x]));
   eq([by.A09.verdict, by.A09.restated], ['wrong', of], 'reported wrong (the item is wrong at the snapshot), with what it restates');
   ok(by.A09.note.startsWith(`restated: ${of}`), by.A09.note);
-  ok(/counts as zero no \(.*wrong/.test(r.out), 'the round is not a zero');
+  // With no confirmed wrong, the restated one alone keeps the round from counting as a zero.
+  wj(conf, { restated: [{ id: 'A09', of }] });
+  passes(rec());
+  eq([rj(mp).total.confirmed, rj(mp).countsAsZero, rj(mp).zeroBlockers], [0, false, ['1 wrong']], 'a restated wrong blocks a zero');
   // Only a final-check round takes it.
   for (const st of ['open', 'closed']) {
     status(st);
@@ -1989,12 +1992,40 @@ test('record: "restated" (final-check only) holds a reader wrong that restates a
     [{ restated: ['A09'] }, /"restated" entry 1 \("A09"\) is not an \{"id", "of"\} entry/],
     [{ restated: { id: 'A09', of } }, /"restated" must be an array of \{"id", "of"\} entries/],
     [{ restated: [{ id: 'A09', of }, { id: 'A09', of }] }, /"restated" lists A09 twice/],
+    [{ withdrawn: [{ id: 'A09', ruling: 'D-12' }], restated: [{ id: 'A09', of }] }, /A09 is both restated and withdrawn/],
+    [{ ruledKept: [{ id: 'A09', ruling: 'R-1' }], restated: [{ id: 'A09', of }] }, /A09 is both in "ruledKept" and restated/],
   ]) {
     wj(conf, { ...CONFIRMED, ...extra });
     fails(rec(), re);
   }
+  // A restated id in a chunk no reader read stays unread.
+  wj(conf, { ...CONFIRMED, restated: [{ id: 'A09', of }, { id: 'A01', of }] });
+  const ru = passes(ltz(['record', S, 'u1', '1', '--chunk-readers', 'c2=c2-a,c2-b']));
+  ok(/WARNING: confirmed\.json: A01 is restated, but no reader marked it wrong/.test(ru.out), ru.out);
+  eq(Object.fromEntries(rj(path.join(RD(S), 'report.json')).items.map((x) => [x.id, x.verdict])).A01, 'unread', 'no reader read A01: unread, not wrong');
   wj(conf, { ...CONFIRMED, restated: [{ id: 'A09', of }, { id: 'A10', of: 'closed-unit-leads.txt: A10 (stale)' }] });
   ok(/WARNING: confirmed\.json: A10 is restated, but no reader marked it wrong/.test(passes(rec()).out), 'a restated id no reader marked: a warning only');
+});
+test('record and replay: a restated id is no repeat of the round that confirmed it, and no false hit', () => {
+  const S = baseCopy();
+  const cfgP = path.join(S, 'config.json');
+  const base = rj(cfgP);
+  wj(cfgP, { ...base, units: { ...base.units, u1: { ...base.units.u1, status: 'final-check' } } });
+  asRound2(S);
+  // Round 1 (the closing round) confirmed A09; round 2 is the final check, where c2-b marks A09 wrong again.
+  wj(path.join(RD(S, 'u1', 1), 'confirmed.json'), { A09: { note: 'src/billing.js:7', class: 'U1' } });
+  const c2 = path.join(RD(S, 'u1', 2), 'confirmed.json');
+  const rec = () => ltz(['record', S, 'u1', '2', ...READERS]);
+  wj(c2, { ...CONFIRMED, A09: { note: 'src/billing.js:7', class: 'U1' } });
+  fails(rec(), /A09 repeats r1/, 'control: confirming it again is a repeat');
+  fs.rmSync(path.join(RD(S, 'u1', 2), 'report.json'), { force: true });
+  wj(c2, { ...CONFIRMED, restated: [{ id: 'A09', of: 'known-wrongs.txt: A09 (u1/r1)' }] });
+  passes(rec(), 'restated: no repeat');
+  // replay: a pattern hitting A09 counts it neither as recalled nor as a false hit in round 2.
+  const pat = patFile(S, { id: 'P-09', class: 'U1', regex: '.', fields: ['title'], knownInstances: ['A09'] });
+  const rp = passes(ltz(['replay', S, pat, '--rounds', 'u1']));
+  const line = rp.out.split('\n').find((x) => x.startsWith('u1/r2 '));
+  ok(line && /hits on restated items \(a known flaw fixed in this final check\), not counted: (.*\b)?A09\b/.test(line) && !/false hits \d+ \([^)]*\bA09\b/.test(line), 'round 2 line:\n' + rp.out);
 });
 test('record: "outsideBar" reader wrongs (outside a frozen bar) are listed for the owner, not counted: not false alarms, not confirmed', () => {
   const S = baseCopy();
