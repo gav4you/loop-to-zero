@@ -30,8 +30,10 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 
    If the item also holds another claim the evidence plainly refutes, with no ruling or boundary question on it,
    checks 1 and 2 don't park it: it is `wrong` (go on to checks 3 and 4 for that claim). Fix that claim, leave the
-   ruled or boundary-silent wording as it is, and ask its question in `S/owner-questions.md` apart; the next
-   round's readers surface that wording again, and it is then `pending-owner` until the owner answers.
+   parked wording (ruled, boundary-silent or rule-meaning) as it is, and ask its question in
+   `S/owner-questions.md` apart. This round can't close (the item is wrong). At the next round's step 3, record
+   the item `pending-owner` with that question's `pendingReason`, whatever its readers mark, unless it is wrong
+   again for another claim; it stays so until the owner answers.
 3. **History**, including an earlier reasoned ok. If an earlier verdict gave a reasoned ok on this exact point,
    you, confirming, state in the note why that reasoning fails. One such reason is that the reader and the
    earlier ok read the item in two ways that the evidence judges differently (ambiguous wording, below); where it is
@@ -61,8 +63,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
     - **The evidence plainly refutes the claim under the current bar.** Your earlier fix failed
       (`plain-fix-failure`, `new-text`), or an earlier pass missed it (`earlier-miss`), or, after a pin move,
       only the new evidence refutes it (`evidence-moved`). It is `wrong`: fix it, and log a lesson (not for
-      `evidence-moved`; for a repeat that only a ruling given or amended since makes wrong, origin "missing ruling",
-      the ruling row's lesson: `references/learning.md`, "Triggers"). In `confirmed.json`, give it a `"repeatReason"` and a non-empty
+      `evidence-moved`, nor for a round-F reader's wrong on a known wrong: `references/round.md`, "Known wrongs"; for a repeat that only a ruling
+      given or amended since makes wrong, origin "missing ruling", the first row's lesson in
+      `references/learning.md`, "Triggers"). In `confirmed.json`, give it a `"repeatReason"` and a non-empty
       `"repeatNote"`:
       - `plain-fix-failure`: the claim an earlier round refuted still stands, perhaps reworded, whatever the
         refuter now is;
@@ -73,7 +76,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
         failure and no miss: it logs no lesson and does not count toward the escalation trigger.
 
       Where several fit, `plain-fix-failure` wins while the refuted claim still stands, and then
-      `evidence-moved` when only the new evidence refutes it.
+      `evidence-moved` when only the new evidence refutes it. A repeat of origin "missing ruling" takes `new-text`
+      (in text a fix wrote) or `earlier-miss` (in old text), with the ruling id first in its `repeatNote`, by which
+      the report shows it apart (`references/owner-asks.md`, "Reporting a round", item 1).
     - **A rule's meaning is in dispute, and the item's truth turns on that meaning** (SKILL.md, Verdicts). Record it
       as `pending-owner` (`rule-meaning`) and ask the owner. A
       ruling is probably missing from the bar.
@@ -124,7 +129,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
   is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5). The
   exceptions are reader wrongs `record` doesn't hold: a parent's in lines a re-run replaced (`references/briefs.md`,
-  "Verifying the readers' work"), a removed duplicate or stray line's, a reply-only one
+  "Verifying the readers' work"), a `replaced` rerun's (`record` uses none of its lines), a removed duplicate or
+  stray line's, a reply-only one
   (`references/queue-and-outages.md`), and the solo cold sample's (`references/modes.md`). Each goes in `retro.md`
   with its reason and the file:line that answers it, and counts with that reader's false alarms in the report
   (`references/owner-asks.md`, "Reporting a round", item 2).
@@ -305,8 +311,9 @@ An "old text held" find means the wrong the fix answered was false: confirm it a
 overturned verdict ("Reverting fixes caused by false wrongs", below) and log a lesson. Fix its other real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
-the round's `retro.md` under its iteration, with its reason and the file:line that answers it; a check whose only
-wrongs are so dismissed counts as returning 0 (`record` still counts them, so report it as "returned 0 after n
+the round's `retro.md` under its iteration, with its reason and the file:line that answers it; one on wording
+parked under an open owner question (check 2) waits on that question, noted the same way. A check whose only
+wrongs are so dismissed or waiting counts as returning 0 (`record` still counts them, so report it as "returned 0 after n
 dismissed", naming `retro.md`).
 
 ## Reverting fixes caused by false wrongs

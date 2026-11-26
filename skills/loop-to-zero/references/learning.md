@@ -10,7 +10,7 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | The owner overrules a verdict, or gives a ruling (asked or not) | Your reading of a rule was off, or a ruling was missing from the bar |
 | A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1; one of origin "missing ruling" takes the first row's lesson instead) | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
-| A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"), which writes no lesson and no `judgments.jsonl` line ("The retro", step 1). One that only a ruling given or amended since makes wrong (origin "missing ruling") takes the first row's lesson. A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
+| A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"), which writes no lesson and no `judgments.jsonl` line ("The retro", step 1). One that only a ruling given or amended since makes wrong (origin "missing ruling") takes the first row's lesson. A round-F reader's wrong on a known wrong is neither: its fix was held (`references/round.md`, "Known wrongs"). A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
 | Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
 | A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks from the next snapshot |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
@@ -82,10 +82,12 @@ retire; quiet is not a reason to delete one.
   miss, unless its origin is "evidence moved" ("The retro", step 1).
 - **Fix-checker finds in this unit's old text** (a named item, an unchanged field) go into this round's
   `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's items are handled as in
-  `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit").
+  `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit") and are fixed in the
+  follow-up, an `outside-bar` one included: `outsideBar` holds only snapshot text.
 - **Revert and stale leads.** Either alone sets `closed-leads-pending`. The closing count (the confirmed count of
   the pass that closed the unit) changes for wrongs the final targeted check confirms (not "evidence moved" or
-  "missing ruling" ones: "Back-propagation", below), never for reverts or stale dependents.
+  "missing ruling" ones: "Back-propagation", below; nor one listed only so `record` holds it: `references/round.md`, "Known wrongs"), never
+  for reverts or stale dependents.
 - **The escalation trigger counts per unit.** Finds in other units count toward their own unit.
 - **"Who found it"** includes "none (writer)" for the writer's own re-check of a past verdict, recorded as
   `foundBy: "spot-check"` unless a sweep found it.
@@ -111,7 +113,8 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
 the final targeted check confirms a wrong in it, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
-question answered, after the close): the closing pass judged those correctly under the bar of its time. Its status is `closed-leads-pending` from when the first lead is logged
+question answered, after the close): the closing pass judged those correctly under the bar of its time. Nor is it adjusted for a wrong listed only so
+`record` holds it (`references/round.md`, "Known wrongs"). Its status is `closed-leads-pending` from when the first lead is logged
 until that check. In an open unit, a "missing ruling" wrong adjusts the earlier pass that marked it ok, as any
 later find does, so the trend reads under today's bar; only a closing count keeps the bar of its close.
 

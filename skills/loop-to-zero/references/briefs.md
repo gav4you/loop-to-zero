@@ -242,7 +242,7 @@ Reply with the path, the counts, and one line per wrong.
      ruled wording; `references/fixing.md`).
    - **Ruled wording.** Every ok (a reader's or a fix checker's) whose note starts "ruled:" and names a differing file:line is checked at the
      evidence. If the evidence refutes the approved wording, record it in `pending` (`ruled-wording`, with the
-     question "amend <ruling>?"), unless the ruling's entry records that the owner kept it after that question:
+     question "amend <ruling>?"; unless the id is in the wrongs for another claim: `references/fixing.md`, check 2), unless the ruling's entry records that the owner kept it after that question:
      then list it in `confirmed.json`'s `ruledKept` (`{"id", "ruling"}`), unless the id is also in the wrongs,
      `pending`, `defects`, `withdrawn` or `outsideBar` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about

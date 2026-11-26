@@ -505,8 +505,8 @@ check) runs round F with readers only for the chunks covering a dropped range fr
 read that file. `wrong` leads that no reader marks (every one, in a chunk no reader reads) are confirmed by the
 writer, with a `foundBy`;
 `re-judge` leads are judged by the writer and then handled as `wrong` or `revert` leads; `revert` leads are
-applied as reverts, and `stale` leads as the dependent's edit, never entered in `confirmed.json`
-(`references/round.md`, step 8).
+applied as reverts, and `stale` leads as the dependent's edit, never themselves entered in `confirmed.json` (a
+round-F reader's wrong on their flaw is listed there: `references/round.md`, step 8).
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
   empty, `finalCheck: true`). Without a `queue.json` at all, `record` works the same.
