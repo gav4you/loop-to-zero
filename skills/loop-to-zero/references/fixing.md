@@ -312,8 +312,8 @@ only the new text. On a fix, it means the wrong the fix answered was false: conf
 overturned verdict ("Reverting fixes caused by false wrongs", below) and log a lesson. Fix its other real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
-the round's `retro.md` under its iteration, with its reason and the file:line that answers it; a check whose
-only wrongs are so dismissed counts as returning 0 (`record` still counts them, so report it as "returned 0 after
+the round's `retro.md` under its iteration, with its reason and the file:line that answers it, or, where the
+confirm checks park it, the question it waits on; a check whose only wrongs are so noted counts as returning 0 (`record` still counts them, so report it as "returned 0 after
 n dismissed", naming `retro.md`).
 
 ## Reverting fixes caused by false wrongs

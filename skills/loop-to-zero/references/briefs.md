@@ -252,8 +252,8 @@ Reply with the path, the counts, and one line per wrong.
      When the ruling was not kept and another list would hold the id (the wrongs, `restated`, `withdrawn`,
      `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as `ruled-wording` all the
      same, its other point in the question and any fix that point needs held (`references/fixing.md`, check 2).
-     Once the owner answers, the id goes where its points then put it: the wrongs if any is wrong, otherwise its
-     other list.
+     Once the owner answers, the id goes back to its other list, or to the wrongs if the answer makes the ruled
+     point wrong.
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

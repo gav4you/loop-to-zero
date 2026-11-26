@@ -104,7 +104,9 @@ Map the project's own words onto these, and use the project's words with the own
   `boundary-silent` and `ruled-wording` items always block a close, because the evidence refutes them;
   `ownerQuestionsBlock` governs only `rule-meaning` items. These apply in the order of `references/fixing.md`'s
   confirm checks: rulings first, then the boundary, then an
-  earlier (or same-round) reasoned ok the new wrong can't answer, then the refutation.
+  earlier (or same-round) reasoned ok the new wrong can't answer, then the refutation. So an item parked as
+  `ruled-wording` or `boundary-silent` stays `pending-owner` even when another of its claims is plainly refuted;
+  that claim's fix is drafted and held (`references/fixing.md`, check 2).
 
 **Owner overrides.** If, after one challenge, the owner still chooses to close a unit that holds a known
 wrong:
