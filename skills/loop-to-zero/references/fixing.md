@@ -9,7 +9,7 @@ The confirm checks run in SKILL.md round step 3. The fix steps run in round step
 6. commit.
 
 Items that are not in git have no commits: copy their source files to a dated backup in `S/` before the round's
-first edit (`references/setup.md`, question 9), and treat each saved batch of edits as the commit the steps name.
+first edit (`references/setup.md`, question 9), and treat each saved fix batch as the commit the steps name.
 
 In a unit's **first** fix round, also re-read the whole unit for every class the round reported, not just the
 reported items. You do this yourself, class by class; judge each match at the evidence like a sweep hit. It is
@@ -155,7 +155,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   Known instances are tested against the snapshots where they occurred. Every regression pattern is re-run after each
   later fix batch. The other axes (subject, cited range, named file) are only for finding hits, because a
   fixed item still cites the same lines.
-- **A class that keeps coming back** is drained with narrow falsifiers, not a heavy pre-sweep:
+- **A class that keeps coming back** is drained with narrow falsifiers, not a heavy pre-sweep (their first use in a
+  project is trialled under `references/learning.md`, "Trying a new check or a new method"; if they fail that
+  test, ask the owner which drain to use):
   1. extract every claim clause of that class across all items;
   2. test each clause at the evidence, and keep as the sweep's finds only the claims you can prove false.
 
@@ -170,7 +172,7 @@ test. It is the point when the item exists to state it (without the "only" or "n
 nothing they need, as in an item about who reads a table).
 You decide, and note why in the item's `confirmed.json` note (for an item in another unit, in its
 `cross-unit-edits.txt` line; for a dependent logged in `fixlog.jsonl` only, or a known wrong applied in round F, in
-the round's `retro.md` under its batch's expected effect, step 5). A requirement item never takes this path: it keeps
+the round's `retro.md` under its fix batch's expected effect, step 5). A requirement item never takes this path: it keeps
 its claim, or the gap is a `defect` (a copying error from its own source is fixed: "Requirement items", below). For a descriptive item: if it is, keep the claim, state its scope and prove it (3 below). If it isn't, or it's
 unclear, subtract (1 below), or keep the claim with a proven scope (3 below).
 Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven bounds, one wording per class).
@@ -193,10 +195,10 @@ Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven boun
    - **A wording no fix of the class has used yet is tried on one item first:** take that item through steps 3
      to 6 (dependents, re-read, diff check, commit) and the fix check of that commit (iteration K); once that check returns 0 for the
      item, apply the wording to the other hits in the next follow-up commit (iteration K+1).
-5. **Write each fix's expected effect before applying a batch,** in the round's `retro.md` under that batch: the
+5. **Write each fix's expected effect before applying a fix batch,** in the round's `retro.md` under that fix batch: the
    ids and fields it changes, and what it should leave unchanged. After the commit, compare the diff and `fixlog.jsonl` with it; a change you didn't
    expect (another field, another item, a fix that didn't land) is checked before the fix checker, and is a lesson.
-   With two fixes to one field in a batch, the later one wins: merge them into one edit of the field. If each adds a
+   With two fixes to one field in a fix batch, the later one wins: merge them into one edit of the field. If each adds a
    bound, log that edit as chained entries, each with its own search (section 5).
 
 ## 3. Dependents
@@ -248,8 +250,11 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
   question, or a requirement's claim) means the pattern is too wide for that item: narrow its regex by context particular
   to that item (never by dropping the phrase itself) until it no longer matches that wording, check with `ltz sweep`
   that it still hits its known instances, and note the change and why in `retro.md`; for parked wording, restore
-  the pattern once the owner answers. Where no regex spares the item and still hits the known instances, hold that
-  item's fix as a draft and ask the owner.
+  the pattern once the owner's answer has that wording rewritten (if the answer keeps it, keep the narrowing).
+  Where no regex spares the item and still hits the known instances, hold that item's fix as a draft: under its
+  open question, for parked wording; otherwise ask the owner "retire regression pattern <id>, or amend <ruling>?"
+  (for a requirement's claim, "retire it, or rule on the item's wording?"). On a retire, set its `"regression"`
+  to false (the file stays, for its known instances) and apply the draft.
 - **Shape.** Check the whole changed field, not a window around the edit: run-on sentences from appended
   clauses, stacked parentheticals, a clause appended with no sentence stop.
 - **Change set.** Diff every field of every item against the round's snapshot. The changed set must equal
@@ -310,7 +315,9 @@ Anything written in bulk (fields filled in bulk, applied owner answers, mass rel
 a fix, through the fix checker. "Write-checked" is not "judged".
 
 ## After the fix checker
-An "old text held" find means the wrong the fix answered was false: confirm it at the pin, then treat it as an
+An "old text held" find on an edit that answered no confirmed wrong (a revert, a stale dependent, a ruling carried
+into the items, an applied owner answer) overturns nothing: note it in `retro.md` with the edit's basis, and judge
+only the new text. On a fix, it means the wrong the fix answered was false: confirm it at the pin, then treat it as an
 overturned verdict ("Reverting fixes caused by false wrongs", below) and log a lesson. Fix its other real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
@@ -333,11 +340,13 @@ When a verdict is overturned (by the owner, your own re-check (recorded as `spot
    this unit, and in units not yet closed (a unit in `final-check` counts as closed here: SKILL.md, "Cross-unit effects") where this unit's false wrongs caused cross-unit edits (log those as
    cross-unit edits). In closed units, log a lead instead. Other units' own verdicts that the same flaw could
    have produced are re-judged at their next round (`references/learning.md`, "Back-propagation").
-3. Log each revert in `fixlog.jsonl` with `"ruling": "<ruling id>"`, or `"judgment:<round>:<id>"` for an overturn
-   that isn't a ruling (a spot-check, say; `"judgment:discovery/<round>:<id>"` when a main-loop entry cites a
+3. Log each revert of an earlier round's edit in `fixlog.jsonl` with `"ruling": "<ruling id>"`, or
+   `"judgment:<round>:<id>"` for an overturn that isn't a ruling (a spot-check, say; `"judgment:discovery/<round>:<id>"` when a main-loop entry cites a
    discovery pass's verdict; within discovery, the plain form). `ltz flips` then reports the revert as a flip the
-   ruling explains, not as an unclear definition. Retire any regression pattern born from the false wrong: set its
-   `"regression"` to false (the file stays, for its known instances).
+   ruling explains, not as an unclear definition. A revert that returns a field to this round's snapshot value
+   instead drops that field's entries from this round's `fixlog.jsonl` (`ltz diffcheck` refuses an entry for a
+   field that did not change), and is recorded with its reference in `retro.md`. Retire any regression pattern born
+   from the false wrong: set its `"regression"` to false (the file stays, for its known instances).
 4. Re-run extract, run `ltz diffcheck` and commit (sections 5 and 6), then run the fix checker on the reverts.
 5. List the harmless hedges in the round's `retro.md`, for the report to the owner, instead of reverting them.
 

@@ -24,7 +24,8 @@ it is found in (`"foundBy": "spot-check"`; re-run `record`; `references/learning
 Your judgments get no independent check, so the mode makes up for it with order and a fresh session:
 - **Recording your reading.** Queue one slot per chunk (`ltz queue <S> <unit> <R> init --opaque --per-chunk 1`),
   render and show under that slot, and append your verdicts to its `agent-<slot>.jsonl` as the reader brief
-  says. `record` reads it like any reader's file.
+  says. `record` reads it like any reader's file. After the hand-back, check that each slot's result file covers
+  its range and `mark` it `done` (`references/queue-and-outages.md`, "The queue") before round step 3.
 - **Read first, consult history after.** Judge each window from what the reader brief's "Read first" names
   (the rules, the round's `classes.md` copy with the ruling texts it quotes, the precedents), the items and
   the evidence. Only when confirming the wrongs (`references/round.md`, step 3) consult the history that

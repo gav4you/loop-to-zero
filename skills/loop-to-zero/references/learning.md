@@ -193,7 +193,7 @@ say "no held-out history yet" rather than quoting the in-sample recall.
   Hits that turn out right are candidate wrongs (confirm checks as usual); false hits mean the check is fixed first.
   Regression patterns are the exception: they block at once, because their known instances test them.
   A new hook rule is not yours to add: propose it to the skill's maintainer, who tests it before it ships.
-- **A new method for a round** (a different sweep, say; a new reading order only for a discovery
+- **A new method for a round** (narrow falsifiers, a different sweep; a new reading order only for a discovery
   pass, since rounds keep list order): before trying it,
   write in the round's `retro.md` the test that decides whether to keep it, for example "keep if it confirms at
   least as many wrongs as the last sweep of the class did, at no more cost". After the round, apply that test and

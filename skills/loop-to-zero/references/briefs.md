@@ -209,7 +209,9 @@ Reply with the path, the counts, and one line per wrong.
    - Every cite a reader lists appears in that reader's render log.
    - Every wrong names a refuting file:line, except one whose note starts "self-contradiction:" (it quotes the
      clashing figures instead) and a vague-relation one (it names the link line it found, or the item's own cited
-     lines showing none: `references/fixing.md`, "A vague relation").
+     lines showing none: `references/reading-classes.md`, U13). `record` checks only that a wrong's note names at
+     least one line in that reader's render log (a not-found attempt does not count); that the refuter it names is
+     among them is yours to check.
 
    **When a check fails** (one rule; never fill an item by hand):
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
@@ -252,7 +254,10 @@ Reply with the path, the counts, and one line per wrong.
      hold it (`withdrawn`, `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as
      `ruled-wording` instead, with its other point in the question, so the question blocks the close. Once the
      owner answers, that other point goes back to its list (`references/round.md`'s placements under "Blocked only
-     by what a re-read can't clear" apply to the ruled point only).
+     by what a re-read can't clear" apply to the ruled point only), unless the answer makes the item wrong: then
+     the id is a wrong only (an id can't be both), a defect keeps its `S/defects.md` line, an open question on the
+     other point is asked apart as `references/fixing.md`, check 2, says, and an `outsideBar` or `withdrawn`
+     point is noted in the wrong's note.
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

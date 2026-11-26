@@ -97,7 +97,9 @@ An item that a ruling covers is not wrong for the ruled point. Readers read this
 
 ## Reader guidance (in `S/classes.md`)
 Notes for readers go only here: what to bound. Never new facts, and never a
-paraphrase of a rule. Re-check every line against later rulings before each round. Propose any change to the owner with its replay
+paraphrase of a rule. Re-check every line against later rulings before each round. The one other channel to
+readers is `S/precedents.md` (worked examples the owner approved): re-check each precedent against later rulings
+before each round's copy too, and never use it for notes. Propose any change to the owner with its replay
 (`references/learning.md`, "Changing the bar's wording"); once approved, it enters the next round's copy on the same timing.
 
 ## A class found mid-pass (open bar)

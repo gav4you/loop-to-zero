@@ -72,7 +72,7 @@ connected tool or server of that kind. Without one, use the local repo and say s
 | Category | Use | Limit |
 |---|---|---|
 | `~~source control` | History and blame for step 2, and the pull requests that touched the cited lines | Read only |
-| `~~monitoring` | Logs, error rates and metrics that show the run-time behaviour | Evidence only if the boundary admits run-time evidence; otherwise outside reports |
+| `~~monitoring` | Logs, error rates and metrics that show the run-time behaviour | Evidence only through the pinned, dated export when the boundary admits run-time evidence (`references/setup.md`, "Order"); a live query is an outside report |
 | `~~project tracker` | Known issues about the same fault; a ticket for the defect | Filing a ticket needs the owner's OK, for each defect or as a standing process decision (`P-n`) |
 
 Nothing is pushed, posted or filed without the owner.
