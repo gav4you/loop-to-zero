@@ -249,15 +249,11 @@ Reply with the path, the counts, and one line per wrong.
      question "amend <ruling>?"), unless the ruling's entry records that the owner kept it after that question:
      then list it in `confirmed.json`'s `ruledKept` (`{"id", "ruling"}`), unless the id is also in the wrongs,
      `pending`, `defects`, `withdrawn`, `outsideBar` or `restated` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
-     When the ruling was not kept: where the id is already a wrong or `restated` for another claim, it stays
-     there and the question is asked apart, as `references/fixing.md`, check 2, does; where another list would
-     hold it (`withdrawn`, `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as
-     `ruled-wording` instead, with its other point in the question, so the question blocks the close. Once the
-     owner answers, that other point goes back to its list (`references/round.md`'s placements under "Blocked only
-     by what a re-read can't clear" apply to the ruled point only), unless the answer makes the item wrong: then
-     the id is a wrong only (an id can't be both), a defect keeps its `S/defects.md` line, an open question on the
-     other point is asked apart as `references/fixing.md`, check 2, says, and an `outsideBar` or `withdrawn`
-     point is noted in the wrong's note.
+     When the ruling was not kept and another list would hold the id (the wrongs, `restated`, `withdrawn`,
+     `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as `ruled-wording` all the
+     same, its other point in the question and any fix that point needs held (`references/fixing.md`, check 2).
+     Once the owner answers, the id goes where its points then put it: the wrongs if any is wrong, otherwise its
+     other list.
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

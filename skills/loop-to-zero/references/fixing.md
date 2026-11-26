@@ -28,12 +28,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 2. **Boundary.** If the boundary doesn't say whether the refuter's kind of evidence counts, record
    `pending-owner` (`boundary-silent`) and ask the owner.
 
-   If the item also holds another claim the evidence plainly refutes, with no ruling or boundary question on it,
-   checks 1 and 2 don't park it: it is `wrong` (go on to checks 3 and 4 for that claim). Fix that claim, leave the
-   parked wording (ruled, boundary-silent or rule-meaning) as it is, and ask its question in
-   `S/owner-questions.md` apart. This round can't close (the item is wrong). At the next round's step 3, record
-   the item `pending-owner` with that question's `pendingReason`, whatever its readers mark, unless it is wrong
-   again for another claim; it stays so until the owner answers.
+   An item parked by check 1's ruled wording or by check 2 stays `pending-owner` even if another of its claims is
+   plainly refuted: that claim's fix is drafted in `drafts/<id>.md` and held; once the owner answers, the item is a
+   wrong of that pass and the draft is applied (`references/round.md`, "Blocked only by what a re-read can't clear").
 3. **History**, including an earlier reasoned ok. If an earlier verdict gave a reasoned ok on this exact point,
    you, confirming, state in the note why that reasoning fails. One such reason is that the reader and the
    earlier ok read the item in two ways that the evidence judges differently (ambiguous wording, below); where it is
@@ -246,15 +243,9 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
   whole boundary (section 2, step 3).
 - **Closed units.** No changed item may belong to a closed unit.
 - **Patterns.** No changed item may still match a regression pattern. `ltz diffcheck` re-runs them all. A match only
-  in wording the rules forbid you to change (wording a ruling approved, wording parked under an open owner
-  question, or a requirement's claim) means the pattern is too wide for that item: narrow its regex by context particular
-  to that item (never by dropping the phrase itself) until it no longer matches that wording, check with `ltz sweep`
-  that it still hits its known instances, and note the change and why in `retro.md`; for parked wording, restore
-  the pattern once the owner's answer has that wording rewritten (if the answer keeps it, keep the narrowing).
-  Where no regex spares the item and still hits the known instances, hold that item's fix as a draft: under its
-  open question, for parked wording; otherwise ask the owner "retire regression pattern <id>, or amend <ruling>?"
-  (for a requirement's claim, "retire it, or rule on the item's wording?"). On a retire, set its `"regression"`
-  to false (the file stays, for its known instances) and apply the draft.
+  in wording you may not change (wording a ruling approved, or a requirement's claim): hold that item's fix as a
+  draft and ask the owner "retire regression pattern <id>, or amend <ruling>?" ("retire it, or rule on the item's
+  wording?" for a requirement). On a retire, set its `"regression"` to false and apply the draft.
 - **Shape.** Check the whole changed field, not a window around the edit: run-on sentences from appended
   clauses, stacked parentheticals, a clause appended with no sentence stop.
 - **Change set.** Diff every field of every item against the round's snapshot. The changed set must equal
@@ -321,10 +312,9 @@ only the new text. On a fix, it means the wrong the fix answered was false: conf
 overturned verdict ("Reverting fixes caused by false wrongs", below) and log a lesson. Fix its other real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
-the round's `retro.md` under its iteration, with its reason and the file:line that answers it; one on wording
-parked under an open owner question (check 2) waits on that question, noted with the question it waits on. A check
-whose only wrongs are so dismissed or waiting counts as returning 0 (`record` still counts them, so report it as
-"returned 0 after n dismissed and m waiting on <question id>", naming `retro.md`).
+the round's `retro.md` under its iteration, with its reason and the file:line that answers it; a check whose
+only wrongs are so dismissed counts as returning 0 (`record` still counts them, so report it as "returned 0 after
+n dismissed", naming `retro.md`).
 
 ## Reverting fixes caused by false wrongs
 When a verdict is overturned (by the owner, your own re-check (recorded as `spot-check`), a fix checker's "old text held" or a ruling):

@@ -180,9 +180,8 @@ calls for, below), take a new baseline with `ltz snapshot <S> <unit> <F+1>`, so 
 final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
-round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, a question
-asked apart on a round-F wrong or `restated` id that would block a close (`references/fixing.md`, check 2;
-`references/briefs.md`, "Ruled wording"), or an open defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
+round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
+defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
 what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check

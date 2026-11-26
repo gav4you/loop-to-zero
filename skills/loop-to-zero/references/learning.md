@@ -85,9 +85,7 @@ retire; quiet is not a reason to delete one.
   `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit") and are fixed in the
   follow-up, an `outside-bar` one included: `outsideBar` holds only snapshot text.
 - **Revert and stale leads.** Either alone sets `closed-leads-pending`. The closing count (the confirmed count of
-  the pass that closed the unit) changes for wrongs the final targeted check confirms, with the exceptions
-  `references/round.md`, step 8, lists (round F's paragraph, and "Known wrongs"); never for reverts, stale
-  dependents or a `restated` wrong.
+  the pass that closed the unit) changes only as `references/round.md`, step 8, says.
 - **The escalation trigger counts per unit.** Finds in other units count toward their own unit.
 - **"Who found it"** includes "none (writer)" for the writer's own re-check of a past verdict, recorded as
   `foundBy: "spot-check"` unless a sweep found it.
