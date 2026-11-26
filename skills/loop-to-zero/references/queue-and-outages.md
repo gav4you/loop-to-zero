@@ -61,7 +61,7 @@
   position, and delete the later duplicate, the line outside the range or the unparseable line. Never add or
   change a line. Where two lines for one item gave different verdicts, re-judge the item yourself and confirm
   a real wrong as `foundBy: "spot-check"`, as for a reply-only verdict ("Tool gotchas", below). Note each
-  removal in `retro.md`.
+  removal in `retro.md`, with the reason for any wrong it held that you don't confirm.
 
 ## Limits and credits: wait, never fail
 - **In the same session, never kill a stopped agent and never relaunch it.** Mark it stopped-limit (with its
@@ -161,7 +161,8 @@ marked there that the re-run doesn't (`references/briefs.md`).
 - **Verdicts come only from result files.** A reader sometimes changes a verdict in its final reply without
   writing it to its file. Compare each reply with its file; if they differ, the file stands (a reader can't
   rewrite a line, and an item appears once). Re-judge the item yourself, and confirm a real wrong found only in
-  a reply as `foundBy: "spot-check"`. Never copy a reply-only verdict into a reader's file.
+  a reply as `foundBy: "spot-check"`, and note one you don't confirm in `retro.md`, with its reason. Never copy a
+  reply-only verdict into a reader's file.
 - **Confirm what a stopped or killed run actually did,** after it has really stopped, before re-running it.
   A "nothing written" check made too early was wrong, and the re-run then failed on the leftover file.
 - **Dry-run new tooling on a copy of a recorded round** in its own state folder, as the reader-setup trial runs

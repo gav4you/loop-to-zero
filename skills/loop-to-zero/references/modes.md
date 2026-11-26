@@ -19,7 +19,7 @@ conversation instead, as for a solo reading session), from a reader brief filled
 of its own, not queued (so its renders stay out of your render log), `{SCRATCH}` for that slot, that window's
 positions, and the brief's Write path changed to `{SCRATCH}agent-<slot>.jsonl` (the tools take an `agent-*.jsonl` in the
 round folder for a reader's result file: the repeat check and `replay` read its class labels). Confirm each wrong it finds that your pass missed as a wrong of the round
-it is found in (`"foundBy": "spot-check"`; re-run `record`; `references/learning.md`, "Counting"), and report the gap.
+it is found in (`"foundBy": "spot-check"`; re-run `record`; `references/learning.md`, "Counting"), note each of its wrongs you don't confirm in `retro.md` with its reason, and report the gap.
 
 Your judgments get no independent check, so the mode makes up for it with order and a fresh session:
 - **Recording your reading.** Queue one slot per chunk (`ltz queue <S> <unit> <R> init --opaque --per-chunk 1`),

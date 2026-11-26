@@ -504,8 +504,9 @@ check) runs round F with readers only for the chunks covering a dropped range fr
 `S/known-wrongs.txt` (even one another reader read), or holding `evidence-moved` leads after a pin move. The writer chooses those chunks; the tool does not
 read that file. `wrong` leads that no reader marks (every one, in a chunk no reader reads) are confirmed by the
 writer, with a `foundBy`;
-`revert` leads are applied as reverts, and `stale` leads as the dependent's edit, never entered in
-`confirmed.json` (`references/round.md`, step 8).
+`re-judge` leads are judged by the writer and then handled as `wrong` or `revert` leads; `revert` leads are
+applied as reverts, and `stale` leads as the dependent's edit, never entered in `confirmed.json`
+(`references/round.md`, step 8).
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
   empty, `finalCheck: true`). Without a `queue.json` at all, `record` works the same.
@@ -986,7 +987,7 @@ Notes on these fields:
   | `scopeText` | with `scopeNote` | The scope words the item states. They must appear (case- and spacing-insensitive) in the field's current text: in diffcheck the item's current value, in `searches` the last `new` logged for that field in the round. So a later edit that drops the bound is caught. |
   | `ruling` | on an entry that returns a field to an earlier value; or, instead of `basis`, on any change to a requirement item | A ruling id, `judgment:<round>:<id>`, `judgment:<folder>/<round>:<id>` for a judgments line in a history folder, or, for a return only a pin move calls for, that move's decision id; it marks that flip as explained (see "Flips"). On a requirement item's change with no `basis`, it is the ruling that allows it (see "The diff check"). |
   | `basis` | on a change to a requirement item, unless it has a `ruling` | `"copying-error"`: the item miscopied its source, which the edit restores. The only accepted value. |
-  | `source` | with `basis` | The `file:line` the item copies: the requirement's own source, such as a policy line, never the config that implements it for a value (a corrected cite's source is the line it now cites); non-empty. |
+  | `source` | with `basis` | The `file:line` the item copies: the requirement's own source, such as a policy line; never, for a corrected value, the config that implements it (for a corrected cite, the line it now cites); non-empty. |
 - **`S/judgments.jsonl`:** `{"date", "unit", "round", "id", "was", "now", "by", "reason", "lesson"?, "backprop"?}`, one line per changed verdict per round. A line goes in the `judgments.jsonl` of the state folder that holds the verdict's round: `S/judgments.jsonl` for `S/`'s rounds, a history folder's own (such as `S/discovery/judgments.jsonl`) for its rounds. `replay` reads each folder's file for that folder's rounds, to leave out overturned wrongs. `flips` reads it to check `judgment:` references: `judgment:<round>:<id>` in the folder holding the fixlog entry, and `judgment:<folder>/<round>:<id>` from a fixlog entry in another folder (see "Flips").
 
 **Patterns and canaries:**

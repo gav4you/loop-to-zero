@@ -17,8 +17,7 @@ A unit closes only when one full pass over all of its items finds 0 wrong. Each 
 
 Every correction to your judgment becomes a lesson. Each lesson is applied forwards, and also backwards to
 the earlier verdicts and edits it could have spoiled. **The owner's decisions override everything here,** through the paths this skill gives them: bar rulings, and
-process decisions such as an approved stopping rule or an override (a close over a blocker goes through "Owner
-overrides").
+process decisions such as an approved stopping rule or an override.
 
 ## Terms
 Map the project's own words onto these, and use the project's words with the owner.
@@ -80,7 +79,7 @@ Map the project's own words onto these, and use the project's words with the own
 | reader guidance | Notes that state what to bound, carried to readers only in `classes.md`'s "Reader guidance" section. Never new facts. |
 | hedge | Opening a claim with "such as", "for example", "e.g." or "among others" (softening). Stating a proven scope ("outside tests") is not a hedge. Subtraction (dropping a false or unproven clause) is never softening, and is always allowed for descriptive items. A requirement item is never narrowed to fit the evidence (a copying error from its own source is fixed: `references/fixing.md`, "Requirement items"). A qualifier like "probably" fixes nothing. |
 | context reset | A fresh session, or the owner clearing the conversation. What follows starts from `S/HANDOFF.md` (the writer's steps resume) or from the brief of a cold read it runs (such as a solo reading or a fix-check self-check). The writer can't reset itself mid-session: when a step calls for resets, it first gives the owner their order, each with its first prompt, through to the one that resumes from `S/HANDOFF.md`. |
-| final targeted check | After every unit closes (or sooner, between rounds, if the owner asks: `references/round.md`, "Between rounds only"), with the owner's OK per unit: the unit is reopened as `final-check`, and its round F reads its dropped ranges and the chunks holding `evidence-moved` leads, confirms its other `wrong` leads and applies its `revert` and `stale` leads, fixes the real ones, applies its known wrongs' held drafts, and fix-checks them. It then returns to the closed status `loop.md` kept for it ("was <status>"), unless a lead logged since its snapshot is still open, or a `pending-owner` verdict or open defect it records blocks a close (`references/round.md`, step 8). |
+| final targeted check | After every unit closes (or sooner, between rounds, if the owner asks: `references/round.md`, "Between rounds only"), with the owner's OK per unit: the unit is reopened as `final-check`, and its round F reads its dropped ranges and the chunks holding `evidence-moved` leads, confirms its other `wrong` leads, judges its `re-judge` leads, and applies its `revert` and `stale` leads, fixes the real ones, applies its known wrongs' held drafts, and fix-checks them. It then returns to the closed status `loop.md` kept for it ("was <status>"), unless a lead logged since its snapshot is still open, or a `pending-owner` verdict it records, or an open defect for the unit when `defectsBlock` is set, blocks a close (`references/round.md`, step 8). |
 | escalation trigger | The owner's rule for when a stalled loop goes back to them (setup question 0). |
 | `boundaries.md` | Near-misses: items confirmed ok only after real doubt (`references/round.md`). |
 | `ltz` / `<skill>` | `node <skill>/scripts/ltz.mjs`, where `<skill>` is this skill's folder. |
@@ -202,7 +201,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    their logs, never into this unit's find list.
 5. **Check:** the fix checker reads every changed and named item; follow-ups are checked until a check
    returns 0. A stronger reviewer, if available, re-judges the find list, the `rejected` list, the wrongs
-   dismissed in `retro.md` (a re-run parent's, a fix checker's or a removed duplicate line's) and the near-misses in `boundaries.md`.
+   dismissed in `retro.md` (each reader or checker wrong you don't confirm that is not in `rejected`) and the near-misses in `boundaries.md`.
 6. **Learn:** the retro (`references/learning.md`).
 7. **Report:** update `loop.md`, the handoff and memory, and report to the owner in the order of
    `references/owner-asks.md` ("Reporting a round"). It is information, not a stop.

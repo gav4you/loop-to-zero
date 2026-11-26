@@ -316,8 +316,9 @@ When a verdict is overturned (by the owner, your own re-check (recorded as `spot
    have produced are re-judged at their next round (`references/learning.md`, "Back-propagation").
 3. Log each revert in `fixlog.jsonl` with `"ruling": "<ruling id>"`, or `"judgment:<round>:<id>"` for an overturn
    that isn't a ruling (a spot-check, say; `"judgment:discovery/<round>:<id>"` when a main-loop entry cites a
-   discovery pass's verdict; within discovery, the plain form). Retire any regression pattern born from the false wrong. `ltz flips` then reports it as a flip
-   the ruling explains, not as an unclear definition.
+   discovery pass's verdict; within discovery, the plain form). `ltz flips` then reports the revert as a flip the
+   ruling explains, not as an unclear definition. Retire any regression pattern born from the false wrong: set its
+   `"regression"` to false (the file stays, for its known instances).
 4. Run the fix checker on the reverts.
 5. List the harmless hedges in the round's `retro.md`, for the report to the owner, instead of reverting them.
 

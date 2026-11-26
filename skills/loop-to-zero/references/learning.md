@@ -107,7 +107,7 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
   - in units not yet closed (a unit in `final-check` counts as closed here: SKILL.md, "Cross-unit effects"), their own verdicts at their next round: log them for that unit
     (`cross-unit-edits.txt`, verdict "deferred"), which that round handles (`references/round.md`, step 3; during discovery, main round 1 of that unit:
     `references/setup.md`, step 9);
-  - in closed units, as leads.
+  - in closed units, as `re-judge` leads (`references/state-template.md`).
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
 the final targeted check confirms a wrong in it, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
