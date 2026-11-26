@@ -11,7 +11,7 @@ isolate, diagnose, fix), with the fix step changed to "propose": the evidence is
   wishes") gets the same steps.
 - **It is read-only work.** In agent or external-reviewer mode it may run while readers are still reading, like
   the other read-only work in `references/round.md` ("2. Read"), and like it waits for the reset during a known
-  limit wait in agent mode. In solo mode it runs after the hand-back, never in a reading session.
+  limit wait while Claude agents read. In solo mode it runs after the hand-back, never in a reading session.
 - **Never edit the evidence or the pin, and never change a defect's item to match the evidence.** A wrong item
   the fault was found with is still fixed as a wrong (round step 4). Probes run only in a scratch copy (under
   `S/<unit>/r<R>/scratch/writer/`, which `**/scratch/` keeps out of git), and only if the owner

@@ -15,8 +15,9 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   (readers use that copy all round), writes `list.json`, and cuts the list into `chunks.json` (about 70 items
   each, on window boundaries; positions are counted from 1). It refuses once anything in the round has been
   rendered. Later tools refuse a snapshot whose hash no longer matches. If `S/precedents.md` exists, copy it to
-  `r<R>/precedents.md` yourself before any reader starts: readers use that copy all round, and a precedent the
-  owner approves mid-round waits for the next round's copy, as an approved bar wording does
+  `r<R>/precedents.md` yourself before any reader starts: readers use that copy all round (a real item removed from `S/precedents.md` for a fix check
+  that would read it is removed from this copy too), and a precedent the owner approves mid-round waits for the
+  next round's copy, as an approved bar wording does
   (`references/learning.md`, "Changing the bar's wording", step 3).
 - **Queue:** each chunk's readers are one job each, queued together with `queue init`
   (`references/queue-and-outages.md`).
@@ -31,7 +32,8 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
 - **Read-only work may run during the reading,** in agent or external-reviewer mode: confirming wrongs already reported,
   weighted spot-checks of readers already done (a pick on a line a supplementary read later replaces is drawn
   again in step 3; the random draw waits for step 3), sweeps to find hits, and drafting fixes in the round's `drafts/<id>.md` (applied after the
-  reading). No item file is edited or committed. In agent mode, during a known limit wait this work spends the same limit: save
+  reading). No item file is edited or committed. While Claude agents read (agent mode, or a stand-in for the external
+  reviewer), during a known limit wait this work spends the same limit: save
   state first, then only confirm the wrongs already reported (reading the files the confirm checks need, such as
   earlier fixlogs, is part of that). Spot-checks, sweeps, drafts and the search for a refuted universal's other refuters (`references/fixing.md`, "The
   refuter") wait for the reset; a local tool run you
@@ -104,8 +106,8 @@ measure counts them as found by none.
   unit's item is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
   policy).
 - If a stronger reviewer is available (an advisor, say), have it re-judge the find list, the dismissed reader
-  wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (a re-run parent's and a fix
-  checker's) and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
+  wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (a re-run parent's, a fix
+  checker's or a removed duplicate line's) and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
   fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`; one from the
   `rejected` list instead moves out of `rejected` into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
   adds to `boundaries.md` in step 3: an
@@ -177,14 +179,15 @@ the fixes, `diffcheck` and the fix checker as usual. Afterwards, take a new base
 `ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
-round F's snapshot is still open. A verdict round F records that would block a close (step 8's conditions) keeps
-the unit in `final-check` until the owner answers, as "Blocked only by what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart), the unit is reported with its adjusted closing
+round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
+defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
+what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
 - **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`, or for `evidence-moved` leads: queue just the chunks that cover them (a dropped range by its first and last item ids, not its old positions),
   read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <chunk names, such as c2,c3>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
-  queue). Other `wrong` leads, unless a reader marks them, are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). If the pin moved since the unit closed, count each wrong round F confirms by the two-pin test in "Reopening a closed unit for the move" (below), whether or not the owner reopened the unit for the move. A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never entered in `confirmed.json`, and adjusts no closing count (the earlier round whose wrong it overturns is written as adjusted: `references/learning.md`, "Counting"). A `stale` lead is applied as the dependent's edit (`references/fixing.md`, "3. Dependents"), never entered in `confirmed.json`, and adjusts no count. `ltz record` accepts a `final-check`
+  queue). Other `wrong` leads, unless a reader marks them, are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). If the pin moved since the unit closed, count each wrong round F confirms by the two-pin test in "Reopening a closed unit for the move" (below), whether or not the owner reopened the unit for the move. A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never entered in `confirmed.json`, and adjusts no closing count: the earlier round whose wrong it overturns is written as adjusted, unless that round is the closing pass (a unit closed with known wrongs or by a stopping rule), whose count stays as it was (`references/learning.md`, "Counting"). A `stale` lead is applied as the dependent's edit (`references/fixing.md`, "3. Dependents"), never entered in `confirmed.json`, and adjusts no count. `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
   that closed with them, and a lead that restates one is settled with it, not confirmed again. Re-check the held

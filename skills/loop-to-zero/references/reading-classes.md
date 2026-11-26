@@ -26,8 +26,8 @@ These words make a claim universal:
 - sole, exclusively, any;
 - "no caller", "nothing reads", "exists only", "appears only";
 - "N per …" (readers read it literally; the tools' universal check matches whole words, so `diffcheck` and
-  `reach` do not flag it; config `universalWords` can add it only as the bare word `per`, which also flags "per
-  the spec").
+  `reach` do not flag it; config `universalWords` can add it only as the bare word `per`, listed with the master words
+  (the setting replaces the list), which also flags "per the spec").
 
 Read them literally. A universal is wrong if anything in the evidence boundary refutes it, unless the item
 bounds it.

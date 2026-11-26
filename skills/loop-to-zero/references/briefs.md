@@ -90,13 +90,13 @@ An item that states a requirement (`type: requirement`, or "must"/"shall" only w
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
 defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
-config", which the writer records as a defect (or, for a descriptive item that misstates the config, fixes as a
-wrong and logs the defect beside it).
+config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
+the policy for the config's value, fixes as a wrong and logs the defect beside it).
 {PROBES: either "You may run probes of the code in a scratch copy under {SCRATCH} (never in the project's or the
 evidence's repos)." or
 "Do not run the project's code, config loaders or parsers. Throwaway helper scripts in {SCRATCH} (to evaluate an
 expression or count matches, say) are allowed."}
-{SOLO_RULING: in solo mode only: "If the owner gives you a ruling while you read, write the owner's words,
+{SOLO_RULING: in solo mode, and in a fix check run in a fresh session or as a self-check: "If the owner gives you a ruling while you read, write the owner's words,
 verbatim and dated, to {SCRATCH}rulings.md, keep judging under classes.md as it stands, and add the ruling
 to the note of each item it touches. If evidence that a ruling's approved wording is false reaches you while you
 read (the owner or an outside finding brings it), finish the current window, send the owner one line (the ruling, the item, what
@@ -171,8 +171,8 @@ An item that states a requirement (`type: requirement`, or "must"/"shall" only w
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
 defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
-config", which the writer records as a defect (or, for a descriptive item that misstates the config, fixes as a
-wrong and logs the defect beside it).
+config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
+the policy for the config's value, fixes as a wrong and logs the defect beside it).
 
 Your input file also holds every item the new text names ("see X", "as X states"), marked as a
 named item for context, with no `changed` field. Check that each really holds the claim the new text

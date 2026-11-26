@@ -297,7 +297,8 @@ overturned verdict ("Reverting fixes caused by false wrongs", below) and log a l
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
 the round's `retro.md` under its iteration, with its reason and the file:line that answers it; a check whose only
-wrongs are so dismissed counts as returning 0.
+wrongs are so dismissed counts as returning 0 (`record` still counts them, so report it as "returned 0 after n
+dismissed", naming `retro.md`).
 
 ## Reverting fixes caused by false wrongs
 When a verdict is overturned (by the owner, your own re-check (recorded as `spot-check`), a fix checker's "old text held" or a ruling):
@@ -335,4 +336,5 @@ When an item states a requirement (a control or a policy) and the evidence does 
 
 `ltz diffcheck` enforces this for items whose `type` is `"requirement"`: every changed field's fixlog entry needs
 `"basis": "copying-error"` with `"source"` (the file:line the item copies), or a `"ruling"` id. It accepts any
-non-empty `ruling`, so checking that it names a bar ruling (never a pin move's `P-n` alone) is yours.
+non-empty `ruling`, so checking what it names is yours: a bar ruling, or a revert's `judgment:` reference; a pin
+move's `P-n` only beside `"basis": "copying-error"`.

@@ -252,8 +252,8 @@ lines. Item text is never masked.
 - **Requirement items are never narrowed to fit the evidence.** For an item whose `type` is
   `"requirement"` (in the snapshot or now), every fixlog entry for a changed field, the whole item
   (`"*"`) and `type` itself included, needs either `"basis": "copying-error"` with a non-empty
-  `"source"` (the `file:line` the item copies), or a `"ruling"` id (any non-empty one: checking that it
-  names a bar ruling is yours). Otherwise it is a PROBLEM:
+  `"source"` (the `file:line` the item copies), or a `"ruling"` id (any non-empty one: checking what it
+  names is the writer's, `references/fixing.md`, "Requirement items"). Otherwise it is a PROBLEM:
   "a requirement item changed without a copying-error basis or a ruling (a requirement the evidence
   does not meet is a defect, not a fix)". This holds for cross-unit edits too. Items with no `type`,
   or `"description"`, are unaffected.
@@ -709,7 +709,8 @@ Notes on these fields:
     for the chunks covering a dropped range from `S/known-wrongs.txt` (even one another reader read)
     or holding `evidence-moved` leads,
     and `queue init` and `record` accept the others left unread (see "Final-check rounds"). When that check is
-    done, the unit is set back to the closed status `loop.md` kept for it ("was <status>"). **Before setting it
+    done, the unit is set back to the closed status `loop.md` kept for it ("was <status>", with the exceptions in
+    `references/round.md`, step 8). **Before setting it
     back**, take a new baseline with `node <skill>/scripts/ltz.mjs snapshot <S> <unit> <F+1>`. Otherwise
     diffcheck compares the closed unit with its older snapshot and flags every final-check edit.
   - `closed`, `closed-leads-pending`, `closed-owner-questions-open`, `closed-known-wrongs` and
@@ -985,7 +986,7 @@ Notes on these fields:
   | `scopeText` | with `scopeNote` | The scope words the item states. They must appear (case- and spacing-insensitive) in the field's current text: in diffcheck the item's current value, in `searches` the last `new` logged for that field in the round. So a later edit that drops the bound is caught. |
   | `ruling` | on an entry that returns a field to an earlier value; or, instead of `basis`, on any change to a requirement item | A ruling id, `judgment:<round>:<id>`, `judgment:<folder>/<round>:<id>` for a judgments line in a history folder, or, for a return only a pin move calls for, that move's decision id; it marks that flip as explained (see "Flips"). On a requirement item's change with no `basis`, it is the ruling that allows it (see "The diff check"). |
   | `basis` | on a change to a requirement item, unless it has a `ruling` | `"copying-error"`: the item miscopied its source, which the edit restores. The only accepted value. |
-  | `source` | with `basis` | The `file:line` the item copies: the requirement's own source, such as a policy line, never the config that implements it; non-empty. |
+  | `source` | with `basis` | The `file:line` the item copies: the requirement's own source, such as a policy line, never the config that implements it for a value (a corrected cite's source is the line it now cites); non-empty. |
 - **`S/judgments.jsonl`:** `{"date", "unit", "round", "id", "was", "now", "by", "reason", "lesson"?, "backprop"?}`, one line per changed verdict per round. A line goes in the `judgments.jsonl` of the state folder that holds the verdict's round: `S/judgments.jsonl` for `S/`'s rounds, a history folder's own (such as `S/discovery/judgments.jsonl`) for its rounds. `replay` reads each folder's file for that folder's rounds, to leave out overturned wrongs. `flips` reads it to check `judgment:` references: `judgment:<round>:<id>` in the folder holding the fixlog entry, and `judgment:<folder>/<round>:<id>` from a fixlog entry in another folder (see "Flips").
 
 **Patterns and canaries:**

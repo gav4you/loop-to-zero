@@ -1,7 +1,7 @@
 # Setup in detail
 
-Until the owner has answered the setup questions, nothing is edited and no counted reader runs. Only the r0
-test reader may run. The steps match SKILL.md's Setup.
+Until the owner has answered the setup questions, nothing is edited and no counted reader runs. Only r0's
+test read may run (its reader, and an external reviewer on the same window when that mode is offered: step 6). The steps match SKILL.md's Setup.
 
 ## Order
 1. **Read the lessons:** this skill's `lessons.md`, and `S/lessons.md` if it exists.
@@ -63,7 +63,7 @@ test reader may run. The steps match SKILL.md's Setup.
    agent only if the owner has
    already allowed agents (otherwise ask that first). With agents ruled out, its reader is a fresh session the owner
    opens with the reader brief filled for r0 (if the owner rules that out too, it is read after the owner clears the conversation, as a solo
-   reading session is: `references/modes.md`; it needs a session that has not seen the research), and that session's transcript is the one measured. Queue its one reader with `ltz queue <S> <unit> 0 init --opaque
+   reading session is: `references/modes.md`; it needs a session that has not seen the research), and that session's transcript is the one measured. If an external reviewer is an option, it also reads r0's window, with the owner's OK and outside the queue (its verdicts don't count either), and its own usage output gives that option's cost (`references/modes.md`, "External reviewer"). Queue its one reader with `ltz queue <S> <unit> 0 init --opaque
    --per-chunk 1`. r0 writes `confirmed.json` as `{}`, so a `record` run on r0 reports one PROBLEM per reader wrong; run it only
    for the coverage lines, and take r0's cost from `ltz cost`. A real wrong r0 surfaces is noted in r0's `retro.md`,
    confirmed by the writer in the first pass that reads that window (discovery's first pass, or round 1 if there
@@ -308,8 +308,10 @@ the skill's maintainer).
      cost per pass. The owner decides whether
      to continue, cap the passes, or change the method; asking doesn't pause the loop
      (`references/owner-asks.md`, "Asking about stopping or changing method").
-1. **Names, classes and rules.** The proposed terms map and class set, each with its evidence and counts, and the
-   drafted verification rules (`S/rules.md`) if the project had none.
+1. **Names, classes and rules.** The proposed terms map and class set, each with its evidence and counts, the
+   drafted verification rules (`S/rules.md`) if the project had none, and the rulings logged from the governing
+   documents (research source 4), each to confirm or withdraw (`references/reading-classes.md`, "Accepted by
+   ruling").
 2. **Discovery first, or unit by unit?** (For an adopted loop, tell the owner, as a fact to note, that this skill's
    discovery needs a fresh loop, so an adopted loop continues from its next round (SKILL.md, setup checklist step 9);
    then ask only the unit order and whether the next unit waits for the owner's go.)
@@ -344,11 +346,11 @@ the skill's maintainer).
      mapping, a policy-vs-config mismatch is judged only where an item cites both. The approved mapping is a bar ruling: quote its table
      in `classes.md` with the boundary, so readers also open the mapped config of an item that cites only the
      policy. Readers mark a mismatch wrong with a note starting "policy vs config"; you record it as a `defect`,
-     except that a descriptive item that gives the policy's value as what the system does is `wrong` and fixed,
-     with the defect logged beside it ("Policy and config evidence", below).
+     except where "Policy and config evidence" (below) makes the item `wrong` and fixed, with the defect logged
+     beside it.
 6. **Reader mode** (`references/modes.md`): solo, agents or an external reviewer. Also readers per chunk,
    concurrency, and the fix-checker mode. Quote each option's cost as a range of tokens and wall-clock
-   time, from the measurement. Also ask whether readers may run probes of the code in a scratch copy:
+   time, from the measurement (for the external-reviewer option, its own r0 read: step 6). Also ask whether readers may run probes of the code in a scratch copy:
    recommend allowing them where the research finds claims about run-time behaviour (config loading,
    parsing), and read only otherwise. Probes also let the writer reproduce a `defect`
    (`references/debugging.md`).
@@ -395,7 +397,7 @@ only when the item cites both the policy and the config, or a ruling says the co
 policy. When the policy differs from the config, that is a `defect` for the owner: a requirement item is left
 as it is, and so is a descriptive item that states both values correctly. A descriptive item that gives the
 policy's value as what the system does is `wrong` as well (it misstates the config); one that gives the
-config's value but cites only the policy is `wrong` under C1 (its cite says something else), and keeps its
+config's value as what the system does but cites only the policy is `wrong` under C1 (its cite says something else), and keeps its
 value while its cite is corrected. Either way the mismatch is logged as its own defect entry
 (`references/round.md`, "Pending owner, defects, wishes").
 

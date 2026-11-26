@@ -66,10 +66,11 @@ Your judgments get no independent check, so the mode makes up for it with order 
 - **Same briefs and the same result schema.** Record which reviewer produced each report, in the round's `retro.md`.
 - **Cost.** `ltz cost` reads only Claude Code transcripts. Take an external run's tokens and time from the
   reviewer's own usage output, record them in the round's `retro.md`, and store no `--transcript` for its slots
-  (`cost --queue` names them in a warning). At setup, quote the external option's cost from that output for one
-  window, not from r0.
+  (`cost --queue` warns about them, and fails when no slot of the round has one: then total the round from
+  `retro.md`). At setup, that output for its read of r0's window gives the option's cost (`references/setup.md`,
+  step 6).
 - **A fix check that neither the reviewer nor an agent runs** (a fresh session or a self-check) follows Solo's
-  "The fix check" bullet, its ruling clause and hand-back included.
+  "The fix check" bullet and "A ruling given in a solo reading or fix-check session", the hand-back included.
 - **A stand-in is labelled.** A stand-in's report says it is a stand-in. Every item it judged, and every fix
   made on its finds, goes on `S/owed-rechecks.txt` for the external reviewer. Unless the owner decides otherwise, anything that freezes a
   release, or the items as the reference (setup question 0, `references/setup.md`), tags or publishes waits until every owed item is settled (below).
