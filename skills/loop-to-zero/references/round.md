@@ -66,7 +66,8 @@ groups and the deferred lines below are this step's own):
   any supplementary read is done (a rerun slot's file gets picks of its own): it spreads them over each
   reader's early and late positions and records the picks and seed in `spotchecks.json`. A reader that missed a
   canary gets more random picks on the rerun slot's file (`--extra <rerun slot>=5` gives it 5 more random
-  picks than its own 5; it gets no weighted picks of its own, as the parent reader's 5 still apply). Before the draw, take
+  picks than its own 5; it gets no weighted picks of its own: the parent reader's 5 weighted picks are drawn from the rerun slot's ok
+  items, since the rerun's lines replace the parent's). Before the draw, take
   each reader's depth from its render log (extra lines read per item: `scripts/README.md`, "File formats"),
   over the early half of its windows and over the late half. A reader whose late depth is under half its early
   depth, with no other sign of a skim, only reads less deeply late: it gets `--extra <slot>=5`, and the next
@@ -123,6 +124,9 @@ The unit closes when one pass meets all of these:
 - no open defect for the unit in `S/defects.md`, if the owner decided that defects block a close (check the file:
   readers mark ok an item that describes a code fault accurately, so the round's verdicts can miss one);
 - none of its items edited after the pass read them (a past round adjusted to 0 included).
+
+At the close, each of the unit's open "deferred" lines in `S/cross-unit-edits.txt` (one logged after its last
+step 3) becomes a lead in `closed-unit-leads.txt`, for the final targeted check; mark the line moved.
 
 **Blocked only by what a re-read can't clear.** When a pass's only blockers are `pending-owner` items, or open
 defects when `defectsBlock` is set, and nothing was edited after it was read, don't start another round:

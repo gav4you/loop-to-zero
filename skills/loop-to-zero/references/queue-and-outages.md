@@ -26,8 +26,9 @@
   In one project, a long reader's depth fell from about 56 to 4.5 after its first windows. A sharp fall
   (late depth under half the early depth: `references/round.md`, step 3) means the chunks are too long.
 - **Concurrency.** The owner sets it. Recommend starting low, at one chunk's readers (2 for a pair), with the rest queued.
-  - `ltz queue next` launches a chunk's readers together. A chunk with more queued readers than the cap
-    can never launch, so it reports that chunk as a PROBLEM.
+  - `ltz queue next` lists a chunk's readers to launch together; launch each one yourself and `mark` it
+    `running`. A chunk with more queued readers than the cap can never launch, so it reports that chunk as a
+    PROBLEM.
   - Launching many agents at once strands them all at the same usage limit: six readers launched together
     all stopped part-way, and about 25 helpers drained a limit in minutes.
   - Speed comes from the cap, not from the number of jobs. A lower cap means fewer limit stops and less

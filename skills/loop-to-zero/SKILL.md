@@ -235,7 +235,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
 | "Commit fixes while a reader is still reading" | Readers judge the snapshot |
 | "Copy the item's cites into cites_read", or "fill a missing item myself" | The coverage check would pass while checking nothing |
 | "`grep \| head` is enough" | Truncation at any layer hides the refuter |
-| "Change 'only A' to 'only A and B'" | That is a new universal. Prove it with an unlimited search, or rewrite it without the universal word (subtract, or hedge if softening is allowed) |
+| "Change 'only A' to 'only A and B'" | That is a new universal. Prove it with an unlimited search, or rewrite it without the universal word (subtract, or hedge if softening is allowed); a list of 3 or more with no hedge word still needs the logged search (`references/fixing.md`, "5. The diff check") |
 | "The sweep for the fixed wording came back clean" | That proves no regression. Sweep by subject, cite and file |
 | "I read the diff; the fix is fine" | Open every named item, and every field of the changed item |
 | "My fix is obviously right; skip the fix checker" | Your own clauses are the most-missed wrongs |

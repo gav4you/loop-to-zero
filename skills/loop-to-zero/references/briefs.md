@@ -12,7 +12,7 @@ Fill the `{…}` slots:
 | `{R}` | The round number (digits only) |
 | `{EVIDENCE}` | What the items are judged against |
 | `{PIN}` | Its pin |
-| `{ROOTS}` | Each repo or folder, read-only, and how to read the pin |
+| `{ROOTS}` | Each repo or folder, read-only, and how to search it at the pin |
 | `{RULES}` | The project's verification rules |
 | `{PRECEDENTS}` | `S/precedents.md`, or "none" |
 | `{FROM}` / `{TO}` | The reader's positions in the round's list, counted from 1 (from `chunks.json`) |
@@ -44,7 +44,8 @@ and judge each one ok or wrong against {EVIDENCE}, pinned at {PIN}. You change n
 named below. Do not use any skill named loop-to-zero; follow this brief only.
 
 ## Paths
-{ROOTS: each repo or folder, read-only, and how to read the pinned version, e.g. git show <pin>:<path>}
+{ROOTS: each repo or folder, read-only, and how to search it at the pin, e.g. git grep <pattern> <pin>. Every
+line you read to judge goes through {SHOW_CMD}, so it is logged; a search only finds where to look.}
 
 ## Environment (concrete commands)
 {ENV: state each environment rule as the exact command to use, including the working directory at the start
@@ -91,7 +92,8 @@ defect (or, where the item misquotes its own source, fixes it as a wrong). Where
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect (or, for a descriptive item that misstates the config, fixes as a
 wrong and logs the defect beside it).
-{PROBES: either "You may run probes of the code in a scratch copy under {SCRATCH} (never in a repo)." or
+{PROBES: either "You may run probes of the code in a scratch copy under {SCRATCH} (never in the project's or the
+evidence's repos)." or
 "Do not run the project's code, config loaders or parsers. Throwaway helper scripts in {SCRATCH} (to evaluate an
 expression or count matches, say) are allowed."}
 {SOLO_RULING: in solo mode only: "If the owner gives you a ruling while you read, write the owner's words,

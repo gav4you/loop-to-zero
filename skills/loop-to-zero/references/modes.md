@@ -13,7 +13,7 @@ false low.
 - A cold test reader on one 16-item window then caught 2 the pass had missed.
 - The next round with independent readers confirmed 51.
 
-If the owner rules solo anyway, say what is given up. Early on, have a cold reader re-read one sample window in a
+If the owner chooses solo anyway, say what is given up. Early on, have a cold reader re-read one sample window in a
 fresh session the owner opens (setup question 6; if the owner ruled such sessions out, after the owner clears the
 conversation instead, as for a solo reading session), from a reader brief filled for it alone: an opaque slot name
 of its own, not queued (so its renders stay out of your render log), `{SCRATCH}` for that slot, that window's
@@ -65,7 +65,7 @@ Your judgments get no independent check, so the mode makes up for it with order 
 ## External reviewer (for example Codex)
 - **Same briefs and the same result schema.** Record which reviewer produced each report, in the round's `retro.md`.
 - **A stand-in is labelled.** A stand-in's report says it is a stand-in. Every item it judged, and every fix
-  made on its finds, goes on `S/owed-rechecks.txt` for the external reviewer. Unless the owner rules otherwise, anything that freezes a
+  made on its finds, goes on `S/owed-rechecks.txt` for the external reviewer. Unless the owner decides otherwise, anything that freezes a
   release, or the items as the reference (setup question 0, `references/setup.md`), tags or publishes waits until every owed item is settled (below).
 - **If a checker is refused or errors, stop and tell the owner.** Never fall back silently. A usage limit or a credit outage is not a failure: wait (`references/queue-and-outages.md`).
 - **Before treating a close as final (in any mode),** recommend an independent audit by a different model or a different

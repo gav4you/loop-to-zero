@@ -150,7 +150,7 @@ Every setup question (`references/setup.md`) belongs to the owner, including:
   fix-checker mode.
 - The item type, softening, and whether defects block a close.
 - The cross-unit policy. The recommendation is to defer leads in closed units; it applies once the owner
-  rules.
+  decides.
 - Anything that changes what a ruling, decision record or approved exception permits.
 - Push, publish, a tag, or freezing a release or the items as the reference (setup question 0).
 

@@ -107,7 +107,7 @@ Reader mode: <solo | N readers per chunk | external>; chunk ≈ 70 items; concur
 Fix-checker mode: <agent | fresh session | self-check after reset | external>
 Canaries: <per reader per round, or off>; hooks: <on (project settings) | off>
 Bar: <open | frozen at round R (owner, date)>
-Cross-unit policy: <as ruled>
+Cross-unit policy: <as decided>
 Gate: <the commands that must pass before a fix commit: extract, ltz diffcheck (never with --no-verify-searches), the project's own checks>; branch <name>; approver <who>
 Trend: <unit>: r1 <n>, r2 <n>, … (adjusted written "n (adj m, reason, date)")
 Cost: per agent: startup <a>, per item <b> (floor), context re-reads <c>; measured per round <list>

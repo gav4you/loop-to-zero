@@ -355,7 +355,7 @@ the skill's maintainer).
      and use `maskAllow` and `maskExclude` in the config, so that claims about settings stay checkable. Prose
      such as "Password rotation: every 90 days" looks like a key and value to the masker, so put prose documents
      (policies) in `maskExclude` once their secrets are stripped.
-   - **Solo and fresh sessions.** If the owner rules out subagents, ask whether a fresh session the owner
+   - **Solo and fresh sessions.** If the owner decides against subagents, ask whether a fresh session the owner
      opens counts as one. That decides the fix-checker mode.
 7. **The bar.** Open (new classes are always swept) or frozen after a stated round. Recommend open: classes the
    research missed still get found, and each one improves the research.
