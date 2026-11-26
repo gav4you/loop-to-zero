@@ -25,10 +25,10 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   `references/briefs.md`.
 - No item edits are committed in any unit until the round's reading is done. Decision-log entries may be
   committed at any time; the guard allows a commit that holds no item files.
-- **Read-only work may run during the reading,** in agent mode: confirming wrongs already reported,
+- **Read-only work may run during the reading,** in agent or external-reviewer mode: confirming wrongs already reported,
   weighted spot-checks of readers already done (a pick on a line a supplementary read later replaces is drawn
   again in step 3; the random draw waits for step 3), sweeps to find hits, and drafting fixes in the round's `drafts/<id>.md` (applied after the
-  reading). No item file is edited or committed. During a known limit wait this work spends the same limit: save
+  reading). No item file is edited or committed. In agent mode, during a known limit wait this work spends the same limit: save
   state first, then only confirm the wrongs already reported (reading the files the confirm checks need, such as
   earlier fixlogs, is part of that). Spot-checks, sweeps, drafts and the search for a refuted universal's other refuters (`references/fixing.md`, "The
   refuter") wait for the reset; a local tool run you

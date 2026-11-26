@@ -8,14 +8,14 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | Trigger | What it shows |
 |---|---|
 | The owner overrules a verdict, or gives a ruling (asked or not) | Your reading of a rule was off, or a ruling was missing from the bar |
-| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1) | Your fix overreached, or an earlier pass missed it |
+| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1; one of origin "missing ruling" takes the first row's lesson instead) | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
 | A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"), which writes no lesson and no `judgments.jsonl` line ("The retro", step 1). A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
 | Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
 | A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks from the next snapshot |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
 | A class turns up that the setup research did not predefine | The research missed a source. Add it to `S/research.md`, and propose adding it to `references/setup.md`'s research sources to the skill's maintainer |
-| An item's field returns to a value it held in an earlier round, unexplained by a ruling or a pin move's decision id (`ltz flips <S> <unit>`, run at each retro, over every round's `fixlog.jsonl`, the `historyFolders` (discovery) included) | A definition is unclear. Take it to the owner with each reading as an option. Until the answer, the item's verdict follows SKILL.md "Verdicts" |
+| An item's field returns to a value it held in an earlier round, unexplained by a ruling, a pin move's decision id or a `judgment:` reference (`ltz flips <S> <unit>`, run at each retro, over every round's `fixlog.jsonl`, the `historyFolders` (discovery) included) | A definition is unclear. Take it to the owner with each reading as an option. Until the answer, the item's verdict follows SKILL.md "Verdicts" |
 | The agreed escalation trigger fires | The loop may not converge. Take the owner the trend, the classes and the cost per pass |
 | The count jumps right after the rules or reader guidance changed | Treat the edit as the cause. Re-check the edited line first |
 | The owner rules, or amends a ruling | If it changes behaviour, carry it into every affected item (`references/fixing.md`). If it only changes how items are judged, back-propagate to the verdicts and edits it overturns (below) |
@@ -111,7 +111,8 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
 the final targeted check confirms a wrong in it, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
 question answered, after the close): the closing pass judged those correctly under the bar of its time. Its status is `closed-leads-pending` from when the first lead is logged
-until that check.
+until that check. In an open unit, a "missing ruling" wrong adjusts the earlier pass that marked it ok, as any
+later find does, so the trend reads under today's bar; only a closing count keeps the bar of its close.
 
 ## The retro (`r<R>/retro.md`)
 1. **Sort each confirmed wrong on two axes.**

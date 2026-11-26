@@ -116,7 +116,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   reasoned ok, or, for a "self-contradiction:" wrong, a note that quotes the item's figures and shows they agree,
   citing the item's own file:line. A dismissal needs the same grounding as a
   confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
-  is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5).
+  is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5). The
+  exception is a wrong in a parent's lines that a re-run replaced: it goes in `retro.md` (`references/briefs.md`,
+  "Verifying the readers' work").
 
 ## 1. Sweep
 - **Write the class's sweep patterns first,** at least as wide as the seed. Sweep along every axis, not just
@@ -187,7 +189,8 @@ Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven boun
 
 ## 3. Dependents
 Search for items that cite the changed item or restate its conclusion, in this unit and in others. Fix them
-the same way. Those outside the unit follow the cross-unit rules. A dependent in this unit that the evidence
+the same way. Those outside the unit follow the cross-unit rules (one made stale only by the fix's new text is
+logged there with verdict "ok", as no find: `references/state-template.md`). A dependent in this unit that the evidence
 refutes at the snapshot is a wrong of the round: confirm it (the confirm checks) and add it to `confirmed.json`
 with `foundBy: "sweep"` before its fix. One made stale only by the fix's new text is logged in `fixlog.jsonl` only.
 
@@ -210,7 +213,8 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
   "only A" turned into "only A and B" is caught. A changed clause holding a list of 3 or more with no hedge word ("such as", "for example", "e.g.", "among
   others") also needs the logged search, even after the universal word is removed (`scripts/README.md`, "New lists"). The
   tool flags only a series written with a comma before its "and" or "or" ("A, B, and C"); a list written without
-  it ("A, B and C") needs the same search, and catching it is yours. Clauses you didn't change aren't flagged: the readers judged
+  it ("A, B and C") needs the same search, and catching it is yours, as it is for an "N per …" clause, which the
+  tools' universal check never flags (`references/reading-classes.md`, "The universal words"). Clauses you didn't change aren't flagged: the readers judged
   them, and your re-read (section 4) covers how your edit changes what they mean.
 - **`judged`.** A search that backs a universal lists every hit you judged at the pin, one entry each:
   `"judged": [{"at": "path:line", "why": "<short reason>"}]`. `ltz diffcheck` re-runs the search and requires the

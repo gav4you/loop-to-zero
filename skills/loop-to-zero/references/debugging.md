@@ -9,8 +9,9 @@ isolate, diagnose, fix), with the fix step changed to "propose": the evidence is
 - **Every new `defect` verdict,** after its confirm checks (`references/fixing.md`) and before the round report.
   A fault in the evidence noticed while fixing a wrong item (`references/round.md`, "Pending owner, defects,
   wishes") gets the same steps.
-- **It is read-only work.** In agent mode it may run while readers are still reading, like the other read-only
-  work in `references/round.md` ("2. Read"), and like it waits for the reset during a known limit wait. In solo mode it runs after the hand-back, never in a reading session.
+- **It is read-only work.** In agent or external-reviewer mode it may run while readers are still reading, like
+  the other read-only work in `references/round.md` ("2. Read"), and like it waits for the reset during a known
+  limit wait in agent mode. In solo mode it runs after the hand-back, never in a reading session.
 - **Never edit the evidence or the pin, and never change a defect's item to match the evidence.** A wrong item
   the fault was found with is still fixed as a wrong (round step 4). Probes run only in a scratch copy (under
   `S/<unit>/r<R>/scratch/writer/`, which `**/scratch/` keeps out of git), and only if the owner

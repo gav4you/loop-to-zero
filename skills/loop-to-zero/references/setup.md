@@ -210,7 +210,10 @@ invented mid-pass. Write the research to `S/research.md`, citing each finding.
    - earlier verification reports;
    - **the owner's own catches:** ask the owner for two or three recent errors they found by hand in the items,
      and the traps they know of. With little or no review history this is the main past-error source. Record
-     each in `S/research.md`; it seeds a class, and its items become the class pattern's known instances.
+     each in `S/research.md`; it seeds a class, and its items that still hold the wrong text become the class
+     pattern's known instances (`ltz sweep` looks for a known instance only in the items and the rounds'
+     snapshots and fixlogs: `scripts/README.md`, "Sweeps"). For one already fixed, keep its old text in
+     `research.md` and check the pattern against that text by hand.
 
    Group them by root cause; each recurring cause is a class.
 4. **Rules and rulings.** Read the decision records, approved exceptions and verification rules. The governing
@@ -380,8 +383,10 @@ the skill's maintainer).
    Items that are not in git: copy their source files to a dated backup in `S/` before each round's fixes are
    applied.
 
-**Policy and config evidence.** When a statement differs from the policy text it cites, that is a copying
-error: fix the statement. When the policy differs from the config, that is a `defect` for the owner: a
+**Policy and config evidence.** When a statement of what a policy says (a requirement item included) differs
+from the policy text it cites, that is a copying error: fix the statement. A statement of what the system does
+is judged against the config: one that gives the config's value but cites only the policy keeps its value and
+gets the config cite (C1). When the policy differs from the config, that is a `defect` for the owner: a
 requirement item is left as it is, and so is a descriptive item that states both values correctly. A descriptive
 item that gives the policy's value as what the system does is `wrong` as well (it misstates the config), with
 the mismatch logged as its own defect entry (`references/round.md`, "Pending owner, defects, wishes"). This
