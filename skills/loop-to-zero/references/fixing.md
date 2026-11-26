@@ -158,8 +158,8 @@ First ask whether exclusivity is the point of the item. Every "only" or "no" ass
 test. It is the point when the item exists to state it (without the "only" or "no", it would tell a reader
 nothing they need, as in an item about who reads a table).
 You decide, and note why in the item's `confirmed.json` note (for an item in another unit, in its
-`cross-unit-edits.txt` line; for a dependent logged in `fixlog.jsonl` only, in the round's `retro.md` under its
-batch's expected effect, step 5). A requirement item never takes this path: it keeps
+`cross-unit-edits.txt` line; for a dependent logged in `fixlog.jsonl` only, or a known wrong applied in round F, in
+the round's `retro.md` under its batch's expected effect, step 5). A requirement item never takes this path: it keeps
 its claim, or the gap is a `defect` (a copying error from its own source is fixed: "Requirement items", below). For a descriptive item: if it is, keep the claim, state its scope and prove it (3 below). If it isn't, or it's
 unclear, subtract (1 below), or keep the claim with a proven scope (3 below).
 Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven bounds, one wording per class).
@@ -190,7 +190,7 @@ Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven boun
 ## 3. Dependents
 Search for items that cite the changed item or restate its conclusion, in this unit and in others. Fix them
 the same way. Those outside the unit follow the cross-unit rules (one made stale only by the fix's new text is
-logged there with verdict "ok", as no find: `references/state-template.md`). A dependent in this unit that the evidence
+logged there with verdict "ok", as no find, or, in a closed unit, as a `stale` lead: `references/state-template.md`). A dependent in this unit that the evidence
 refutes at the snapshot is a wrong of the round: confirm it (the confirm checks) and add it to `confirmed.json`
 with `foundBy: "sweep"` before its fix. One made stale only by the fix's new text is logged in `fixlog.jsonl` only.
 
@@ -214,7 +214,10 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
   others") also needs the logged search, even after the universal word is removed (`scripts/README.md`, "New lists"). The
   tool flags only a series written with a comma before its "and" or "or" ("A, B, and C"); a list written without
   it ("A, B and C") needs the same search, and catching it is yours, as it is for an "N per …" clause, which the
-  tools' universal check never flags (`references/reading-classes.md`, "The universal words"). Clauses you didn't change aren't flagged: the readers judged
+  tools' universal check doesn't flag by default (`references/reading-classes.md`, "The universal words"). One
+  logged search clears every flagged clause and list in its field, so a second bound in the same field needs its
+  own search: log the edit as two chained entries for that field (the first one's `new` holds only the first
+  bound), each with its search. Clauses you didn't change aren't flagged: the readers judged
   them, and your re-read (section 4) covers how your edit changes what they mean.
 - **`judged`.** A search that backs a universal lists every hit you judged at the pin, one entry each:
   `"judged": [{"at": "path:line", "why": "<short reason>"}]`. `ltz diffcheck` re-runs the search and requires the
@@ -292,7 +295,9 @@ a fix, through the fix checker. "Write-checked" is not "judged".
 An "old text held" find means the wrong the fix answered was false: confirm it at the pin, then treat it as an
 overturned verdict ("Reverting fixes caused by false wrongs", below) and log a lesson. Fix its other real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
 checker on that follow-up's items (iteration
-K+1). Repeat until a check returns 0; it usually takes one or two.
+K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
+the round's `retro.md` under its iteration, with its reason and the file:line that answers it; a check whose only
+wrongs are so dismissed counts as returning 0.
 
 ## Reverting fixes caused by false wrongs
 When a verdict is overturned (by the owner, your own re-check (recorded as `spot-check`), a fix checker's "old text held" or a ruling):
@@ -329,4 +334,5 @@ When an item states a requirement (a control or a policy) and the evidence does 
   still judge includes whether the evidence meets the requirement.
 
 `ltz diffcheck` enforces this for items whose `type` is `"requirement"`: every changed field's fixlog entry needs
-`"basis": "copying-error"` with `"source"` (the file:line the item copies), or a `"ruling"` id.
+`"basis": "copying-error"` with `"source"` (the file:line the item copies), or a `"ruling"` id. It accepts any
+non-empty `ruling`, so checking that it names a bar ruling (never a pin move's `P-n` alone) is yours.

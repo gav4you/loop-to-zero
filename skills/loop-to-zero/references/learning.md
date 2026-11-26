@@ -64,9 +64,10 @@ retire; quiet is not a reason to delete one.
   unit's latest full pass that read it as adjusted, and count it toward that unit's escalation trigger. If that
   unit's current round already holds it in its find list, it counts there only, and that round fixes it. A hit
   logged for it as "deferred" counts in the round that judges it (`references/round.md`, step 3). A find edited
-  into a unit with no full pass yet counts toward its escalation trigger and in the report's cross-unit counts
-  (`references/owner-asks.md`, "Reporting a round", item 4), never in its round 1's count: round 1 reads the
-  fixed text.
+  into a unit with no full pass yet counts in the report's cross-unit counts (`references/owner-asks.md`,
+  "Reporting a round", item 4), never in its round 1's count, since round 1 reads the fixed text, and toward that
+  unit's escalation trigger only if the owner's rule counts finds no pass accepted (the recommended rule doesn't:
+  `references/setup.md`, question 0).
 - **Closed units' earlier rounds:** their `judgments.jsonl` lines and adjusted counts are written at the final
   targeted check.
 - **Fix-checker finds** on text written after the snapshot count in the retro as "own edit". They are not part
@@ -82,9 +83,9 @@ retire; quiet is not a reason to delete one.
 - **Fix-checker finds in this unit's old text** (a named item, an unchanged field) go into this round's
   `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's items are handled as in
   `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit").
-- **Revert leads.** A revert lead alone sets `closed-leads-pending`. The closing count (the confirmed count of the
-  pass that closed the unit) changes for wrongs the final targeted check confirms (not "evidence moved" or
-  "missing ruling" ones: "Back-propagation", below), never for reverts.
+- **Revert and stale leads.** Either alone sets `closed-leads-pending`. The closing count (the confirmed count of
+  the pass that closed the unit) changes for wrongs the final targeted check confirms (not "evidence moved" or
+  "missing ruling" ones: "Back-propagation", below), never for reverts or stale dependents.
 - **The escalation trigger counts per unit.** Finds in other units count toward their own unit.
 - **"Who found it"** includes "none (writer)" for the writer's own re-check of a past verdict, recorded as
   `foundBy: "spot-check"` unless a sweep found it.

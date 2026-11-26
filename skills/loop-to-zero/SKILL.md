@@ -16,7 +16,8 @@ A unit closes only when one full pass over all of its items finds 0 wrong. Each 
 - **learn.**
 
 Every correction to your judgment becomes a lesson. Each lesson is applied forwards, and also backwards to
-the earlier verdicts and edits it could have spoiled. **The owner's rulings override everything here.**
+the earlier verdicts and edits it could have spoiled. **The owner's decisions override everything here:** bar rulings, and process decisions such as an approved stopping
+rule or an override.
 
 ## Terms
 Map the project's own words onto these, and use the project's words with the owner.
@@ -36,14 +37,14 @@ Map the project's own words onto these, and use the project's words with the own
 | bar | What counts as wrong, kept in `classes.md`: the approved classes, the accepted-by-ruling entries, the three lenses, the universal words, "When two classes fit", "Accepted forms" and any reader guidance. Open: classes found later are added and reported. Frozen: no new classes after a stated round (owner rulings still enter); a wrong outside the classes goes in `confirmed.json`'s `outsideBar` list (not a false alarm) and is listed for the owner, not counted. |
 | class | A named kind of wrong, with a definition and a fix form. |
 | sweep / seed | A search over every item for one class. The seed is the confirmed wrong that starts it. |
-| refuter | The file:line at the pin that shows an item wrong. |
+| refuter | The file:line at the pin that shows an item wrong. A lead or a `cross-unit-edits.txt` line with no such line (a revert, a stale dependent, a pin move's reach) holds instead the ruling id, judgment reference, changed item's id or decision id it rests on (`references/state-template.md`). |
 | cold | Reading without earlier verdicts, fix reasons or lessons. |
 | union | Every wrong that any reader of a chunk marked. |
 | find list | `confirmed.json`: the round's confirmed wrongs. |
 | fix checker | A cold reader of the items a fix changed. |
 | gate | The scripts that must pass before a commit is accepted. |
 | discovery | Repeated pre-loop passes over every item under the three lenses. They end at zero or when the owner says. |
-| lead | An item in a closed unit that needs action (such as a sweep match, a revert, an amended ruling's item, an outside review's find, or one a pin move reaches), logged in `closed-unit-leads.txt` rather than edited. |
+| lead | An item in a closed unit that needs action (such as a sweep match, a revert, a dependent another unit's fix made stale, an amended ruling's item, an outside review's find, or one a pin move reaches), logged in `closed-unit-leads.txt` rather than edited. |
 | adjusted | A past count restated after a verdict changed, written `n (adj m, reason, date)`. |
 | canary | A planted test item (known wrong or known ok), shown only inside readers' windows. |
 | ruling / decision log | A ruling is an owner decision about how items are judged (a bar ruling, numbered like `R-n`). A process decision (`P-n`) covers how the loop runs, including the close rules and the approval of the class set (its content is `classes.md` itself). The decision log holds both, verbatim, and is the master copy. Readers never open it. |
@@ -64,7 +65,7 @@ Map the project's own words onto these, and use the project's words with the own
 | writer's lock | `S/writer.lock`: only one session writes to a loop (`ltz lock`). |
 | session | One Claude Code conversation. The writer and each agent count as separate sessions: each has its own context. Under the writer's lock an agent the writer launches is not the writer, though Claude Code runs it under the launching conversation's session id; a writer that itself runs as an agent holds the lock by its agent id (`scripts/hooks/README.md`, "Who the holder is"). |
 | handoff | `S/HANDOFF.md`: the paste-ready prompt to resume in a new session. |
-| hand-back | In solo mode: the point where the writer's steps resume after the round's reading sessions, or after a fix-check session (`references/modes.md`). |
+| hand-back | In solo mode, and after a fix check run in a fresh session or as a self-check: the point where the writer's steps resume after the round's reading sessions, or after a fix-check session (`references/modes.md`). |
 | item type / softening | Whether items describe the evidence or state requirements, and whether fixes may hedge ("such as"). Both are setup questions. |
 | hooks | An optional guard (`scripts/hooks/`) that refuses unsafe commits and edits. |
 | job / slot | One reader's run over one chunk, and its name in `queue.json` (opaque, from `queue init --opaque`, so a reader can't infer another). A fix checker is not queued: it renders under the name `fixcheck-<K>-<part>`, where `<part>` names a part of the fix set (about 70 changed items), and its cost is counted with `ltz cost <transcript>`. |
@@ -78,7 +79,7 @@ Map the project's own words onto these, and use the project's words with the own
 | reader guidance | Notes that state what to bound, carried to readers only in `classes.md`'s "Reader guidance" section. Never new facts. |
 | hedge | Opening a claim with "such as", "for example", "e.g." or "among others" (softening). Stating a proven scope ("outside tests") is not a hedge. Subtraction (dropping a false or unproven clause) is never softening, and is always allowed for descriptive items. A requirement item is never narrowed to fit the evidence (a copying error from its own source is fixed: `references/fixing.md`, "Requirement items"). A qualifier like "probably" fixes nothing. |
 | context reset | A fresh session, or the owner clearing the conversation. What follows starts from `S/HANDOFF.md` (the writer's steps resume) or from the brief of a cold read it runs (such as a solo reading or a fix-check self-check). The writer can't reset itself mid-session: when a step calls for resets, it first gives the owner their order, each with its first prompt, through to the one that resumes from `S/HANDOFF.md`. |
-| final targeted check | After every unit closes (or sooner, between rounds, if the owner asks: `references/round.md`, "Between rounds only"), with the owner's OK per unit: the unit is reopened as `final-check`, and its round F reads its dropped ranges and the chunks holding `evidence-moved` leads, confirms its other `wrong` leads and applies its `revert` leads, fixes the real ones, applies its known wrongs' held drafts, and fix-checks them. It then returns to the closed status `loop.md` kept for it ("was <status>") (`references/round.md`, step 8). |
+| final targeted check | After every unit closes (or sooner, between rounds, if the owner asks: `references/round.md`, "Between rounds only"), with the owner's OK per unit: the unit is reopened as `final-check`, and its round F reads its dropped ranges and the chunks holding `evidence-moved` leads, confirms its other `wrong` leads and applies its `revert` and `stale` leads, fixes the real ones, applies its known wrongs' held drafts, and fix-checks them. It then returns to the closed status `loop.md` kept for it ("was <status>"), unless a lead logged since its snapshot is still open or a verdict it records blocks a close (`references/round.md`, step 8). |
 | escalation trigger | The owner's rule for when a stalled loop goes back to them (setup question 0). |
 | `boundaries.md` | Near-misses: items confirmed ok only after real doubt (`references/round.md`). |
 | `ltz` / `<skill>` | `node <skill>/scripts/ltz.mjs`, where `<skill>` is this skill's folder. |
@@ -169,8 +170,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    - softening;
    - the evidence boundary and pin;
    - the config-to-policy mapping (question 5a);
-   - the reader mode, readers per chunk, concurrency, the fix-checker mode and probes, and in solo mode whether
-     a fresh session the owner opens counts;
+   - the reader mode, readers per chunk, concurrency, the fix-checker mode and probes, and, if the owner decides
+     against subagents, whether a fresh session the owner opens counts;
    - canaries, hooks and masking;
    - an open or frozen bar;
    - the cross-unit policy;
@@ -199,8 +200,8 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    re-record the measure with the sweep's finds counted as "found by none". Finds in other units go to
    their logs, never into this unit's find list.
 5. **Check:** the fix checker reads every changed and named item; follow-ups are checked until a check
-   returns 0. A stronger reviewer, if available, re-judges the find list, the `rejected` list and the
-   near-misses in `boundaries.md`.
+   returns 0. A stronger reviewer, if available, re-judges the find list, the `rejected` list, the wrongs
+   dismissed in `retro.md` (a re-run parent's and a fix checker's) and the near-misses in `boundaries.md`.
 6. **Learn:** the retro (`references/learning.md`).
 7. **Report:** update `loop.md`, the handoff and memory, and report to the owner in the order of
    `references/owner-asks.md` ("Reporting a round"). It is information, not a stop.

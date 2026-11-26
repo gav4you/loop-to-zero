@@ -14,7 +14,7 @@ Fill the `{…}` slots:
 | `{PIN}` | Its pin |
 | `{ROOTS}` | Each repo or folder, read-only, and how to search it at the pin |
 | `{RULES}` | The project's verification rules |
-| `{PRECEDENTS}` | `S/precedents.md`, or "none" |
+| `{PRECEDENTS}` | `r<R>/precedents.md`, the round's copy of `S/precedents.md` (`references/round.md`, step 1), or "none" |
 | `{FROM}` / `{TO}` | The reader's positions in the round's list, counted from 1 (from `chunks.json`) |
 | `{SLOT}` | The reader's slot name in `queue.json`: opaque (`queue init --opaque`), never a chunk-and-letter name, which tells a reader another exists |
 | `{RENDER_CMD}` | `node {SKILL}/scripts/ltz.mjs render {S} {UNIT} {R}` |
@@ -25,7 +25,7 @@ Fill the `{…}` slots:
 | `{BOUNDARY}` | The evidence boundary: which kinds of evidence count (also quoted in `classes.md`) |
 | `{WINDOW}` | The configured window size (`config.json`, usually 16) |
 | `{PROBES}` | Whether probes may run in a scratch copy (the owner's call at setup) |
-| `{SOLO_RULING}` | In solo mode, the owner-ruling clause shown in the reader brief (both briefs use it); otherwise left empty |
+| `{SOLO_RULING}` | In solo mode, and for a fix check run in a fresh session or as a self-check, the owner-ruling clause shown in the reader brief (both briefs use it); otherwise left empty |
 | `{C}` / `{n}` | The fix commit, and how many changed items this checker's input holds (fix checker) |
 | `{K}` | The fix-check iteration (fix checker) |
 | `{PART}` | The fix-check part: a split of the fix set into about 70 changed items each, named `p1`, `p2`, ... |
@@ -69,7 +69,7 @@ so that every line you read is logged.
    Report every wrong you find; one that fits no class gets the class "new" (open bar) or "outside-bar"
    (frozen bar).
 3. The ruling texts quoted in classes.md (never the decision log itself).
-4. {PRECEDENTS: S/precedents.md, worked examples the owner approved, if one exists}
+4. {PRECEDENTS: the round's copy of S/precedents.md, worked examples the owner approved, if one exists}
 
 ## What you may open (an allow-list: nothing else)
 The files in "Read first", your render and show commands and the window files they write, your own result

@@ -14,7 +14,10 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
 - **Snapshot:** `snapshot` writes `snapshot.jsonl` and its hash, copies `S/classes.md` into the round folder
   (readers use that copy all round), writes `list.json`, and cuts the list into `chunks.json` (about 70 items
   each, on window boundaries; positions are counted from 1). It refuses once anything in the round has been
-  rendered. Later tools refuse a snapshot whose hash no longer matches.
+  rendered. Later tools refuse a snapshot whose hash no longer matches. If `S/precedents.md` exists, copy it to
+  `r<R>/precedents.md` yourself before any reader starts: readers use that copy all round, and a precedent the
+  owner approves mid-round waits for the next round's copy, as an approved bar wording does
+  (`references/learning.md`, "Changing the bar's wording", step 3).
 - **Queue:** each chunk's readers are one job each, queued together with `queue init`
   (`references/queue-and-outages.md`).
 - **Canaries, if the owner approved them** (never in solo mode, where the writer is the only reader):
@@ -101,7 +104,8 @@ measure counts them as found by none.
   unit's item is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
   policy).
 - If a stronger reviewer is available (an advisor, say), have it re-judge the find list, the dismissed reader
-  wrongs in `confirmed.json`'s `rejected` list and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
+  wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (a re-run parent's and a fix
+  checker's) and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
   fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`; one from the
   `rejected` list instead moves out of `rejected` into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
   adds to `boundaries.md` in step 3: an
@@ -173,13 +177,14 @@ the fixes, `diffcheck` and the fix checker as usual. Afterwards, take a new base
 `ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
-round F's snapshot is still open. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart), the unit is reported with its adjusted closing
+round F's snapshot is still open. A verdict round F records that would block a close (step 8's conditions) keeps
+the unit in `final-check` until the owner answers, as "Blocked only by what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
 - **Round F needs readers only for a dropped range** from `S/known-wrongs.txt`, or for `evidence-moved` leads: queue just the chunks that cover them (a dropped range by its first and last item ids, not its old positions),
   read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <chunk names, such as c2,c3>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
-  queue). Other `wrong` leads, unless a reader marks them, are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). If the pin moved since the unit closed, count each wrong round F confirms by the two-pin test in "Reopening a closed unit for the move" (below), whether or not the owner reopened the unit for the move. A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never entered in `confirmed.json`, and adjusts no closing count (the earlier round whose wrong it overturns is written as adjusted: `references/learning.md`, "Counting"). `ltz record` accepts a `final-check`
+  queue). Other `wrong` leads, unless a reader marks them, are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). If the pin moved since the unit closed, count each wrong round F confirms by the two-pin test in "Reopening a closed unit for the move" (below), whether or not the owner reopened the unit for the move. A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never entered in `confirmed.json`, and adjusts no closing count (the earlier round whose wrong it overturns is written as adjusted: `references/learning.md`, "Counting"). A `stale` lead is applied as the dependent's edit (`references/fixing.md`, "3. Dependents"), never entered in `confirmed.json`, and adjusts no count. `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
   that closed with them, and a lead that restates one is settled with it, not confirmed again. Re-check the held
@@ -216,7 +221,7 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
   groups per unit, never only the first: the items that cite a changed file; the universal items ("no caller does
   X") that cite none but whose last search finds different hits at the new commit; and the universal items with
   no search to re-run, which you check against the changed files by hand or count in (an "N per …" claim is in no
-  group, since the tools' universal check misses it: treat it as this group; `references/reading-classes.md`, "The
+  group, since the tools' universal check misses it by default: treat it as this group; `references/reading-classes.md`, "The
   universal words"). A hand clearance needs a
   cite or a structured search at the new commit, listed with the item's id in the ask, so the owner sees which
   items you cleared and how. A changed file can break a universal claim it was never cited for. The groups are a
@@ -227,8 +232,8 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
   Re-check earlier fixes' bounds at the new pin with `ltz searches <S> --rounds all --at-current` (and on
   `S/discovery` too, if discovery ran, after pointing its `config.json` evidence at the new pin). A wrong only
   the new evidence refutes has origin "evidence moved" (`references/learning.md`, "The retro"). When its fix
-  returns a field to a value it held before, put the move's decision id in that fixlog entry's `ruling`, so
-  `ltz flips` takes the return as explained (`scripts/README.md`, "Flips").
+  returns a field to a value it held before, put the move's decision id in that fixlog entry's `ruling` (on a requirement item, only
+  beside `"basis": "copying-error"`), so `ltz flips` takes the return as explained (`scripts/README.md`, "Flips").
   - **The move is a process decision** (`P-n`; `references/setup.md`, "Which answers are bar rulings"): record it in
     `config.json` and `loop.md`'s Evidence line, never in `classes.md`. It doesn't touch a frozen bar. An answer
     that also says whether to reopen closed units is the same decision (one id).

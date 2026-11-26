@@ -19,14 +19,15 @@ are for claims about config, policy and values.
   - Where the evidence is code and the brief allows it, run a probe in a scratch copy instead of only
     reading. Probes that ran the code found the most serious faults in one project's plan reviews.
 
-## The universal words (the master list unless config `universalWords` overrides it; S/classes.md quotes the list in use)
+## The universal words (the master list unless config `universalWords` overrides it; S/classes.md quotes the list in use, and the "N per …" line below whatever `universalWords` holds)
 These words make a claim universal:
 - only, every, each, all, always;
 - never, no, none, nothing, nobody;
 - sole, exclusively, any;
 - "no caller", "nothing reads", "exists only", "appears only";
 - "N per …" (readers read it literally; the tools' universal check matches whole words, so `diffcheck` and
-  `reach` do not flag it, and config `universalWords` cannot add it).
+  `reach` do not flag it; config `universalWords` can add it only as the bare word `per`, which also flags "per
+  the spec").
 
 Read them literally. A universal is wrong if anything in the evidence boundary refutes it, unless the item
 bounds it.

@@ -38,8 +38,8 @@ S/
                           a hit or re-judge left to that unit's round (refuter: the hit's file:line, or the
                           lesson or ruling the re-judge follows; no commit). A "deferred" line also has
                           status open|settled (round, date)
-  closed-unit-leads.txt   matches in closed units (unit, id, kind wrong|revert|evidence-moved, class, refuting file:line or
-                          ruling id (evidence-moved: what reached the item (a changed file it cites, the search whose hits changed, the diff lines that touch its claim, or "counted in") and the pin decision id; class none; source the pin decision), source unit+round (or an outside review and its date, or the decision id of an answer or an amended ruling), ruling-level: yes|no,
+  closed-unit-leads.txt   matches in closed units (unit, id, kind wrong|revert|stale|evidence-moved, class, refuting file:line or
+                          ruling id (stale: a dependent another unit's fix made stale, refuter the changed item's id; evidence-moved: what reached the item (a changed file it cites, the search whose hits changed, the diff lines that touch its claim, or "counted in") and the pin decision id; class none; source the pin decision), source unit+round (or an outside review and its date, or the decision id of an answer or an amended ruling), ruling-level: yes|no,
                           status open|settled (round F, date))
   defects.md         `defect` verdicts (behaviour defects and unmet requirements), in the entry form of
                      references/debugging.md (expected, actual, reproduction, root cause, proposed fix,

@@ -160,8 +160,11 @@ test reader may run. The steps match SKILL.md's Setup.
 ## Adopting a loop that already runs
 At setup step 4, with the owner's OK (adopting forgoes discovery: setup question 2's note) and at a round boundary:
 1. **Map its state into `S/`:** the evidence, pin and boundary into `config.json`; its decisions into the decision
-   log, verbatim, with accepted-by-ruling entries in `classes.md` for its bar rulings; its terms into `loop.md`.
-   Later setup steps add to these files, never replace them.
+   log, verbatim, with accepted-by-ruling entries in `classes.md` for its bar rulings; its terms into `loop.md`;
+   its units' statuses into `config.json` and `loop.md`'s Units line. A unit it closed is `closed` only if its
+   closing round meets `references/round.md` step 8's conditions; otherwise ask the owner which closed status it
+   takes (`references/round.md`, "Closed statuses"), or whether to reopen it. Later setup steps add to these
+   files, never replace them.
 2. **Rebuild its past rounds** where the records allow, so replay and the repeat check work: for each round,
    `S/<unit>/r<R>/snapshot.jsonl` (the items as that round read them, from the item files at that round's
    commit) and `confirmed.json` (its find list, mapped to item ids; at step 5, relabel each entry's class with the
@@ -217,8 +220,10 @@ invented mid-pass. Write the research to `S/research.md`, citing each finding.
 
    Group them by root cause; each recurring cause is a class.
 4. **Rules and rulings.** Read the decision records, approved exceptions and verification rules. The governing
-   documents are specs, policies, READMEs, plans, decision records, and the issue tracker if there is one. They give
-   the accepted-by-ruling entries, and any class the rules define. Note which document governs which (the
+   documents are specs, policies, READMEs, plans, decision records, and the issue tracker if there is one. Each
+   decision or approved exception they hold that bears on how items are judged goes into the decision log first,
+   verbatim with its source, as a bar ruling (`R-n`) for the owner to confirm at question 1, and only then gets
+   its accepted-by-ruling entry. They also give any class the rules define. Note which document governs which (the
    hierarchy): it decides whether a mismatch is a copying error or a defect. If the project has no verification rules,
    draft them from the research into `S/rules.md` for the owner to approve at question 1. The approved text is
    what the briefs quote as `{RULES}`.
@@ -251,7 +256,7 @@ another.
 **The draft bar.** Each proposed class's name, definition, what makes it wrong, what it is not, its ok example and fix form go into a draft
 `S/classes.md` for the r0 test reader (its example ids, pattern, source and replay result stay in `research.md`),
 together with quoted copies of the three lenses from `references/reading-classes.md`, the universal words
-(config `universalWords` when set, otherwise that file's list) its "When two classes fit" and its "Accepted forms". Readers can
+(config `universalWords` when set, otherwise that file's list, with its "N per …" line either way), its "When two classes fit" and its "Accepted forms". Readers can
 not open this skill's files, so `classes.md` has to carry them. Once the owner
 approves, amends or adds, it becomes round 1's bar.
 
@@ -352,7 +357,8 @@ the skill's maintainer).
      items.
    - **Hooks** (`scripts/hooks/README.md`). Recommend enabling the guard in the project's settings. It
      refuses item commits while any reader job is still open, edits to item files whose units are all closed, a second writer,
-     and capped searches. `.ltz-state` goes in the repo's `.gitignore`. The settings change is committed only
+     and a search piped into `head` or `Select-Object -First` (not `-m` or a tool's own result cap:
+     `scripts/hooks/README.md`, "Not covered"). `.ltz-state` goes in the repo's `.gitignore`. The settings change is committed only
      with the owner's OK.
    - **Masking.** Report how many cited lines `render` masked in r0. Recommend stripping secrets at export,
      and use `maskAllow` and `maskExclude` in the config, so that claims about settings stay checkable. Prose
@@ -384,13 +390,14 @@ the skill's maintainer).
    applied.
 
 **Policy and config evidence.** When a statement of what a policy says (a requirement item included) differs
-from the policy text it cites, that is a copying error: fix the statement. A statement of what the system does
-is judged against the config: one that gives the config's value but cites only the policy keeps its value and
-gets the config cite (C1). When the policy differs from the config, that is a `defect` for the owner: a
-requirement item is left as it is, and so is a descriptive item that states both values correctly. A descriptive
-item that gives the policy's value as what the system does is `wrong` as well (it misstates the config), with
-the mismatch logged as its own defect entry (`references/round.md`, "Pending owner, defects, wishes"). This
-applies only when the item cites both, or a ruling says the config implements the cited policy.
+from the policy text it cites, that is a copying error: fix the statement. The rest of this paragraph applies
+only when the item cites both the policy and the config, or a ruling says the config implements the cited
+policy. When the policy differs from the config, that is a `defect` for the owner: a requirement item is left
+as it is, and so is a descriptive item that states both values correctly. A descriptive item that gives the
+policy's value as what the system does is `wrong` as well (it misstates the config); one that gives the
+config's value but cites only the policy is `wrong` under C1 (its cite says something else), and keeps its
+value while its cite is corrected. Either way the mismatch is logged as its own defect entry
+(`references/round.md`, "Pending owner, defects, wishes").
 
 **Which answers are bar rulings and which are process decisions.**
 - **Bar rulings** (numbered like `R-n`) change how items are judged: the evidence boundary, the config-to-policy

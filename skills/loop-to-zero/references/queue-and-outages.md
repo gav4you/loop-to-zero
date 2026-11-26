@@ -75,8 +75,9 @@
   the reset time.
 - **During a known limit wait, launch nothing new.** Queued jobs wait for the reset. While a recorded
   reset is still ahead, `ltz queue next` lists nothing to launch.
-- **After the wait,** send each stopped agent "continue from position P" with SendMessage. Then resume
-  launching queued jobs up to the cap.
+- **After the wait,** send each stopped agent "continue from position P" with SendMessage (an external
+  reviewer's run, which can't take a message, is relaunched instead: "When a fresh launch is allowed", below).
+  Then resume launching queued jobs up to the cap.
 - **If a continue fails** on a limit or credits, wait again. The loop never gives up and never drops work. A
   reader whose context is full: "When a fresh launch is allowed" (below). A refusal, or any other error: stop and
   tell the owner (`references/modes.md`).
@@ -107,8 +108,9 @@ reset (`references/modes.md`). A fresh launch never changes the round's reader m
 - **in solo mode, items a sweep showed you before you read them** (`references/round.md`, step 2): their range is
   re-read after a context reset;
 - **a rerun of an owner-dropped tail**, with the owner's OK (`references/round.md`, step 8);
-- **a reader whose context is full**, so a continue fails: a fresh agent with its brief continues from its resume
-  position (`queue replace`, below);
+- **a reader that can't be continued by message** (its context is full, so a continue fails, or it is an external
+  reviewer's run after a wait): a fresh run with its brief continues from its resume position (`queue replace`,
+  below);
 - **an account change or a new session** (below).
 
 A fix checker has no queue slot: in either of the last two cases, relaunch it from the same
@@ -162,5 +164,6 @@ marked there that the re-run doesn't (`references/briefs.md`).
   a reply as `foundBy: "spot-check"`. Never copy a reply-only verdict into a reader's file.
 - **Confirm what a stopped or killed run actually did,** after it has really stopped, before re-running it.
   A "nothing written" check made too early was wrong, and the re-run then failed on the leftover file.
-- **Dry-run new tooling on a recorded round,** with writes to the repos disabled, before using it live.
-  Include a simulated limit stop and resume.
+- **Dry-run new tooling on a copy of a recorded round** in its own state folder, as the reader-setup trial runs
+  (`references/learning.md`, "Changing the reader setup"), never in `S/`'s round folders, and with writes to the
+  repos disabled, before using it live. Include a simulated limit stop and resume.

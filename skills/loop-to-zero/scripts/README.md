@@ -58,7 +58,7 @@ Its summary counts what each check examined, so a clean run shows that it checke
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> init --opaque [--per-chunk N] [--chunks c2,...]` | Creates `queue.json` with short random slot names, N per chunk (default 2), and prints the `--chunk-readers` arguments for `record` (see "Opaque slot names"). `--chunks` queues only those chunks, for a `final-check` unit only. |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> next --cap N` | Lists stopped jobs to continue, then slots to launch within the cap: pairs whole, reruns one by one. During a known limit wait it lists nothing to launch, and a chunk with more queued readers than the cap is a PROBLEM (see "Queue"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> mark <slot> <state> [--agent id] [--transcript path] [--reset <date-time>] [--ruling id]` | Sets a job's state. `done` is refused unless the result file covers the range. `replaced` closes an abandoned slot. `dropped-by-owner` needs `--ruling` with its decision id (see "Dropped ranges"). `--transcript` stores the agent's transcript path (see "Transcripts and cost"). `--reset <date-time>` records when a limit resets (for `stopped-limit`; `next` waits until then). It takes an ISO 8601 date and time, `YYYY-MM-DDTHH:MM`, with optional `:SS`, fractional seconds, and `Z` or a `+HH:MM`/`-HH:MM` offset, such as `2026-11-10T03:00` (local time, with no `Z` or offset). Anything else is refused: a bare clock time (`03:00`), a date with no time (`2026-11-10`), a date with no year (`Nov 10 03:00`), or an invalid date or time (such as `2026-11-31T03:00`, or `24:00`, which ISO 8601 allows). |
-| `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> replace <slot> --agent <newId> [--from P] [--transcript path]` | Puts a fresh agent on the same slot after an account change, in a new session, or when a continue fails because the agent's context is full. The slot stays open (see "Replacing an agent"). |
+| `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> replace <slot> --agent <newId> [--from P] [--transcript path]` | Puts a fresh agent on the same slot after an account change, in a new session, when a continue fails because the agent's context is full, or to restart an external reviewer's run after a wait (it can't take a message). The slot stays open (see "Replacing an agent"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> rerun <slot> --from P --to Q` | Adds a new slot, with an opaque name and its parent recorded, that reads positions P-Q of that slot again. `record` uses its lines there (see "Re-runs and supplementary reads"). |
 | `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status` | Prints each slot's state, result lines, resume position, any dropped range and earlier agents. |
 | `node <skill>/scripts/ltz.mjs diffcheck <S> <unit> <R> [--verify-searches\|--no-verify-searches]` | Checks that the snapshot-to-current change set equals `fixlog.jsonl`, then runs the text, regression and closed-unit checks. It runs every structured search at the pin unless `--no-verify-searches` is given; `--verify-searches` is the default, so it is accepted and changes nothing (see "The diff check" and "Searches"). |
@@ -223,7 +223,9 @@ lines. Item text is never masked.
   - inside such a clause, any list of 2 or more members joined by and/or (a closed list).
 
   **The clearing rule.** A flagged clause is cleared only in one of two ways:
-  - a fixlog `search` with `hits` (a number, 0 allowed) for that **id and field**;
+  - a fixlog `search` with `hits` (a number, 0 allowed) for that **id and field**. One such entry clears
+    every flagged clause in the field, so proving each bound is the writer's (`references/fixing.md`, "5. The
+    diff check");
   - the edit removing the universal word from that clause ("only the API imports X" -> "the API
     imports X").
 
@@ -250,7 +252,8 @@ lines. Item text is never masked.
 - **Requirement items are never narrowed to fit the evidence.** For an item whose `type` is
   `"requirement"` (in the snapshot or now), every fixlog entry for a changed field, the whole item
   (`"*"`) and `type` itself included, needs either `"basis": "copying-error"` with a non-empty
-  `"source"` (the `file:line` the item copies), or a `"ruling"` id. Otherwise it is a PROBLEM:
+  `"source"` (the `file:line` the item copies), or a `"ruling"` id (any non-empty one: checking that it
+  names a bar ruling is yours). Otherwise it is a PROBLEM:
   "a requirement item changed without a copying-error basis or a ruling (a requirement the evidence
   does not meet is a defect, not a fix)". This holds for cross-unit edits too. Items with no `type`,
   or `"description"`, are unaffected.
@@ -417,7 +420,8 @@ carries a `ruling`:
   `judgments.jsonl`. `<folder>` must equal a `historyFolders` entry as written (a trailing `/` aside);
   any other folder leaves the flip unexplained, and nothing is looked up elsewhere.
 
-Any other flip fails the command.
+Any other flip fails the command. The tool looks up only `judgment:` references: any other non-empty
+`ruling` counts as explained, so checking that it names a real ruling or decision is yours.
 
 ## Queue
 **Job states:** `queued`, `running`, `stopped-limit`, `stopped-credits`, `stopped-context`, `done`,
@@ -445,7 +449,7 @@ started at the same moment do not lose each other's update.
 - A lock file older than 30 seconds was left by a crashed command, and is replaced.
 - `next` and `status` only read, and take no lock.
 
-**Replacing an agent.** After an account change, in a new session, or when its context is full, an old agent cannot be continued.
+**Replacing an agent.** After an account change, in a new session, or when its context is full, an old agent cannot be continued; nor can an external reviewer's run, which takes no message.
 Then, in this order:
 1. Run `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> status`. The slot's `resume` value, P below, is
    the first position its result file lacks (the slot's first position when it has no file).
@@ -500,7 +504,8 @@ check) runs round F with readers only for the chunks covering a dropped range fr
 `S/known-wrongs.txt` (even one another reader read), or holding `evidence-moved` leads after a pin move. The writer chooses those chunks; the tool does not
 read that file. `wrong` leads that no reader marks (every one, in a chunk no reader reads) are confirmed by the
 writer, with a `foundBy`;
-`revert` leads are applied as reverts and never entered in `confirmed.json` (`references/round.md`, step 8).
+`revert` leads are applied as reverts, and `stale` leads as the dependent's edit, never entered in
+`confirmed.json` (`references/round.md`, step 8).
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
   empty, `finalCheck: true`). Without a `queue.json` at all, `record` works the same.
@@ -980,7 +985,7 @@ Notes on these fields:
   | `scopeText` | with `scopeNote` | The scope words the item states. They must appear (case- and spacing-insensitive) in the field's current text: in diffcheck the item's current value, in `searches` the last `new` logged for that field in the round. So a later edit that drops the bound is caught. |
   | `ruling` | on an entry that returns a field to an earlier value; or, instead of `basis`, on any change to a requirement item | A ruling id, `judgment:<round>:<id>`, `judgment:<folder>/<round>:<id>` for a judgments line in a history folder, or, for a return only a pin move calls for, that move's decision id; it marks that flip as explained (see "Flips"). On a requirement item's change with no `basis`, it is the ruling that allows it (see "The diff check"). |
   | `basis` | on a change to a requirement item, unless it has a `ruling` | `"copying-error"`: the item miscopied its source, which the edit restores. The only accepted value. |
-  | `source` | with `basis` | The `file:line` the item copies, such as a policy line or a config value; non-empty. |
+  | `source` | with `basis` | The `file:line` the item copies: the requirement's own source, such as a policy line, never the config that implements it; non-empty. |
 - **`S/judgments.jsonl`:** `{"date", "unit", "round", "id", "was", "now", "by", "reason", "lesson"?, "backprop"?}`, one line per changed verdict per round. A line goes in the `judgments.jsonl` of the state folder that holds the verdict's round: `S/judgments.jsonl` for `S/`'s rounds, a history folder's own (such as `S/discovery/judgments.jsonl`) for its rounds. `replay` reads each folder's file for that folder's rounds, to leave out overturned wrongs. `flips` reads it to check `judgment:` references: `judgment:<round>:<id>` in the folder holding the fixlog entry, and `judgment:<folder>/<round>:<id>` from a fixlog entry in another folder (see "Flips").
 
 **Patterns and canaries:**
