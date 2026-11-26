@@ -53,7 +53,7 @@ Map the project's own words onto these, and use the project's words with the own
 | named item | An item the new text of a fix names, given to the fix checker for context. |
 | snapshot | The unit's items frozen at a round's start (`snapshot.jsonl`, hashed). Readers judge it. |
 | full depth | Every item read in full, with every cited line rendered. Never filtered, tiered or skimmed. |
-| skim | What a reader did when it misses a canary, admits shortcuts or unchecked areas, or `record` flags its ok notes as templated. A supplementary read comes before the pass counts: of the reader's whole range (its slot's FROM to TO) after a canary miss or templated notes, and of the ranges it names after admitted shortcuts. A late fall in lines read per item alone is not a skim: that reader gets extra spot-check picks, and the next snapshot shorter chunks (`references/round.md`, step 3). |
+| skim | What a reader did when it misses a canary, admits shortcuts or unchecked areas, or `record` flags its ok notes as templated. A supplementary read comes before the pass counts: of the reader's whole range (its slot's FROM to TO, short of any tail the owner dropped) after a canary miss or templated notes, and of the ranges it names after admitted shortcuts. A late fall in lines read per item alone is not a skim: that reader gets extra spot-check picks, and the next snapshot shorter chunks (`references/round.md`, step 3). |
 | measure / found by none | `measure.json`'s counts. "Found by none" means confirmed by the writer's own check (`spot-check`, which also covers a raise no other value names, such as a stronger reviewer's), a sweep, a mapped outside finding (`audit`), the fix checker in old text (`fixcheck`) or the extract (`extract`), not by any reader. |
 | r0 | The setup's cost-measurement read of one window. Its verdicts don't count. |
 | stopping rule | An owner-approved condition for closing a unit other than a zero pass. A unit closed that way is `closed-by-stopping-rule`, unless it closes with a confirmed wrong unfixed or over a dropped range (then `closed-known-wrongs`: `references/round.md`, "Closed statuses"). |
@@ -209,14 +209,16 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    what a re-read can't clear"): then wait for the owner.
 
 ## Cross-unit effects
-- **Units not yet closed** may be edited from another unit's round, such as for a sweep hit. Log each edit in `cross-unit-edits.txt` (the line carries
+- **Units not yet closed** (a unit in `final-check` counts as closed here) may be edited from another unit's round, such as for a sweep hit. Log each edit in `cross-unit-edits.txt` (the line carries
   the verdict and the refuter). The round's fix checker reads those items with the rest; that unit's next round
   then reads them normally. A unit with no snapshot yet (r0's doesn't count) needs a baseline before the first such edit:
   `ltz snapshot <S> <unit> 1`, which that unit's round 1 takes again when it starts. Re-take it only after the
   editing round's last `diffcheck` and commit (its fix checks' follow-ups and any reverts included), or that diffcheck fails on its own logged edits.
 - **Units whose round 1 hasn't started** may instead have their hits logged for them, verdict "deferred", in
   `cross-unit-edits.txt`, if the owner chose that at setup (`references/setup.md`, question 8). That unit's
-  round step 3 judges them. They are not leads, which only closed units have.
+  round step 3 judges them. They are not leads, which only closed units have. Back-propagation's re-judges in any
+  unit not yet closed are logged for it the same way, whatever the policy (`references/learning.md`,
+  "Back-propagation").
 - **Closed units** are never edited. Log each match as a lead.
   - Leads are deferred under the recommended policy, once the owner decides it.
   - A final targeted check handles all leads after every unit closes (or sooner, between rounds, if the owner asks).

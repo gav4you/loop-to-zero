@@ -169,7 +169,7 @@ Then report, in this order:
    retro", step 2), naming any class that is not falling.
    - **Bridge each count from the last round's; never give it alone.** Say what became of the last round's
      wrongs and where this round's came from: "round 4 found 7, all fixed (fix check returned 0); round 5 found
-     4, all new: none is a repeat or in text I edited". Split the new ones into repeats (from `record`'s output), finds in your
+     4, all new: none is a repeat or in text I edited". Split the new ones into repeats (from `record`'s output; an `evidence-moved` one apart, as no fix failure), finds in your
      own edits (from the retro's origin axis: `references/learning.md`, "The retro", step 1) and the rest.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
    your own edit, a new class, a missing ruling, writer misjudgment, evidence moved) and by who found them (both readers, one only, none), plus
@@ -182,7 +182,7 @@ Then report, in this order:
    - the found-by-only-one-reader count;
    - what the clean results can and cannot show (`references/round.md`, "What a clean result shows"). Never
      present a clean round as proof that nothing is left.
-4. **Cross-unit counts:** edits in units not yet closed, and leads in closed units.
+4. **Cross-unit counts:** edits and open "deferred" lines in units not yet closed, and leads in closed units.
 5. **Cost:** tokens and wall-clock time, against the estimate.
 6. **Lessons logged**, and any change to the skill that you propose to its maintainer (to SKILL.md, `references/`,
    `scripts/` or `tests/`): the report is where each such proposal is written.

@@ -39,7 +39,7 @@
 
 ## The queue (on disk: `S/<unit>/r<R>/queue.json`)
 - **Job states:** queued, running (with its `agent` id), stopped-limit, stopped-credits, stopped-context (the
-  reader stopped early with a next position), done, replaced (an abandoned slot, closed), and dropped-by-owner
+  reader stopped early with a next position), done, replaced (closed: a slot nobody will read, below), and dropped-by-owner
   (a range the owner approved dropping, with its decision id, usually `P-n`).
 - **Done means covered.** Before marking a job done, check that its result file covers its whole range.
   Otherwise mark it stopped-context and send "continue from position P".
@@ -98,12 +98,14 @@
 "A fresh agent" here means a fresh reader of the round's own kind: a new agent in agent mode, a fresh run of the
 external reviewer under the same brief when it is the reader mode, and in solo mode your own read after a context
 reset (`references/modes.md`). A fresh launch never changes the round's reader mode (`references/round.md`,
-"Between rounds only"). There are five cases:
+"Between rounds only"). There are six cases:
 - **cites trimmed or never rendered, or a render that errored,** in a reader's file (`references/briefs.md`, "When a check
   fails"): that range is re-run with a fresh agent. A range that is only incomplete is continued, not
   re-run;
 - **a reader that skims** (it misses a canary, admits shortcuts, or `record` flags its ok notes as templated): a fresh agent gives a
   supplementary read to its whole range or, after admitted shortcuts, to the ranges it names;
+- **in solo mode, items a sweep showed you before you read them** (`references/round.md`, step 2): their range is
+  re-read after a context reset;
 - **a rerun of an owner-dropped tail**, with the owner's OK (`references/round.md`, step 8);
 - **a reader whose context is full**, so a continue fails: a fresh agent with its brief continues from its resume
   position (`queue replace`, below);
@@ -123,7 +125,9 @@ marked there that the re-run doesn't (`references/briefs.md`).
      position P", where P is its resume position from `ltz queue <S> <unit> <R> status`;
   2. record it at once with `ltz queue <S> <unit> <R> replace <slot> --agent <newId> --from P --transcript
      <path>`. The slot stays open,
-     and the old agent id moves to its history. `mark <slot> replaced` is only for closing an abandoned slot.
+     and the old agent id moves to its history. `mark <slot> replaced` is only for a slot nobody will read, such as a rerun no longer
+     needed or an abandoned r0. A slot whose range the round still needs is never closed that way: continue it,
+     `replace` its agent, or, with the owner's decision, mark it `dropped-by-owner`.
 - All state lives on disk, so `S/HANDOFF.md` only needs to name this skill and its folder, and give four steps
   (solo mode adds its own after them:
   `references/round.md`, step 1, and `references/modes.md`):

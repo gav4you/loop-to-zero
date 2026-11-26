@@ -31,10 +31,13 @@ S/
                       reason, lesson, backprop: [ids re-judged]}
   cross-unit-edits.txt    edits in units not yet closed, made from another unit's round
                           (unit, id, verdict, refuter, source unit+round, commit, and for a fix a note on
-                          why exclusivity is or isn't the item's point); a "deferred" line instead
-                          has status open|settled (round, date)
+                          why exclusivity is or isn't the item's point). The verdict is "wrong" for a fix
+                          (refuter: file:line or ruling id), "ok" for a revert (refuter: its fixlog entry's
+                          ruling) or "deferred" for a hit or re-judge left to that unit's round (refuter: the
+                          hit's file:line, or the lesson or ruling the re-judge follows; no commit); a
+                          "deferred" line also has status open|settled (round, date)
   closed-unit-leads.txt   matches in closed units (unit, id, kind wrong|revert|evidence-moved, class, refuting file:line or
-                          ruling id (evidence-moved: the changed file or the search whose hits changed, and the pin decision id; class none; source the pin decision), source unit+round (or an outside review and its date), ruling-level: yes|no,
+                          ruling id (evidence-moved: what reached the item (a changed file it cites, the search whose hits changed, the diff lines that touch its claim, or "counted in") and the pin decision id; class none; source the pin decision), source unit+round (or an outside review and its date, or the decision id of an answer or an amended ruling), ruling-level: yes|no,
                           status open|settled (round F, date))
   defects.md         `defect` verdicts (behaviour defects and unmet requirements), in the entry form of
                      references/debugging.md (expected, actual, reproduction, root cause, proposed fix,
@@ -100,7 +103,7 @@ Evidence: <what the items are judged against>, pinned at <tag/commit/dated expor
 Evidence boundary: <what counts; what is excluded>
 Zero: <what it is for>; `rule-meaning` questions block close: <yes|no>; escalation trigger: <rule>
 Item type: <describes evidence | states requirements>; defects block close: <yes|no>; softening: <yes|no>
-Units: <id: item count, status open|closed|closed-leads-pending|closed-owner-questions-open|closed-known-wrongs|closed-by-stopping-rule|final-check (date, round, and the pin a closed unit closed at); for closed-leads-pending and final-check, "was <status>": the closed status it returns to (references/round.md, "Closed statuses"), which final-check carries forward from closed-leads-pending>
+Units: <id: item count, status open|closed|closed-leads-pending|closed-owner-questions-open|closed-known-wrongs|closed-by-stopping-rule|final-check (date, round, and the pin a closed unit closed at); for closed-leads-pending and final-check, "was <status>": the closed status it returns to (references/round.md, "Closed statuses"), which final-check carries forward from closed-leads-pending; and any note references/round.md adds: "checked at <new pin>, round F", "known wrongs fixed in the final check (date)", or the open rule-meaning questions of a unit closed by an override or a stopping rule>
 Unit order: <ids in order>; the next unit waits for the owner's go: <yes|no>
 Rulings: <ids with one-line summaries; the decision log is the master copy>
 Reader mode: <solo | N readers per chunk | external>; chunk ≈ 70 items; concurrency cap <n>; probes <yes|no>

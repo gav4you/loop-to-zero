@@ -65,6 +65,9 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
       - `evidence-moved`: only the new evidence refutes it, after a pin move (origin "evidence moved":
         `references/learning.md`, "The retro"); the `repeatNote` names the pin move's decision id. It is no fix
         failure and no miss: it logs no lesson and does not count toward the escalation trigger.
+
+      Where several fit, `plain-fix-failure` wins while the refuted claim still stands, and then
+      `evidence-moved` when only the new evidence refutes it.
     - **A rule's meaning is in dispute, and the item's truth turns on that meaning** (SKILL.md, Verdicts). Record it
       as `pending-owner` (`rule-meaning`) and ask the owner. A
       ruling is probably missing from the bar.
@@ -243,7 +246,8 @@ or a fix.
 - **Show that the search can hit.** Zero hits back a bound only after the same command, on the same paths,
   finds something known to be there (the item's own cited name, or a line you have read). A wrong path, a bad
   escape, a skipped file type or an encoding mismatch also prints nothing. Check the exit status too (`rg` exits
-  2 on an error, 1 on no match). Name the control in the note.
+  2 on an error, 1 on no match). Name the control in the note (for a fix's search, where "2. Fix the seed and the
+  hits" has you note why: the item's `confirmed.json` note, its `cross-unit-edits.txt` line, or `retro.md`).
 - **No output limit at any layer:** no `| head`, the search tool's own result cap off, and shell output not
   truncated. To keep each output small, split the boundary into path sets that together cover it; `-l` or `-c` shows
   where the hits are, and each hit is then read.

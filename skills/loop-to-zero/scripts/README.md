@@ -404,8 +404,8 @@ A flip is explained, listed apart and not a failure, when the fixlog entry that 
 carries a `ruling`:
 - **a ruling id**, such as `"R-12"`;
 - **a pin move's decision id**, such as `"P-6"`, for a return that only the new evidence calls for
-  (origin "evidence moved"), on a descriptive item. A requirement item's change never takes it: an unmet
-  requirement is a defect;
+  (origin "evidence moved"). On a requirement item, only a copying-error fix (`"basis": "copying-error"`,
+  the source it copies having moved) takes it: an unmet requirement is a defect;
 - **`"judgment:<round>:<id>"`**, for an overturn that was not a ruling (a spot-check, say). It counts
   only when the `judgments.jsonl` of the state folder holding that entry (`S/`, or the history folder
   for a history round) has an entry for this unit with that round and id, and that entry concerns the
@@ -467,7 +467,9 @@ What `replace` does:
   `resume none (not clean: ...)`, `next` lists it as `unclean` when it is stopped, and `mark <slot> done`
   says to remove those lines.
 
-Use `mark <slot> replaced` only to close an abandoned slot that nobody will read.
+Use `mark <slot> replaced` only to close a slot nobody will read, such as a rerun no longer needed or an
+abandoned r0. A slot whose range the round still needs is never closed that way: it is continued, given a fresh
+agent with `replace` (above), or, with the owner's decision, `dropped-by-owner` (below).
 
 ### Dropped ranges
 When the owner approves dropping the rest of a reader's range:
@@ -496,7 +498,8 @@ slot name that another reader shares its range.
 A unit whose `status` in `config.json` is `final-check` (a closed unit reopened for the final targeted
 check) runs round F with readers only for the chunks covering a dropped range from
 `S/known-wrongs.txt` (even one another reader read), or holding `evidence-moved` leads after a pin move. The writer chooses those chunks; the tool does not
-read that file. `wrong` leads in chunks no reader reads are confirmed by the writer, with a `foundBy`;
+read that file. `wrong` leads that no reader marks (every one, in a chunk no reader reads) are confirmed by the
+writer, with a `foundBy`;
 `revert` leads are applied as reverts and never entered in `confirmed.json` (`references/round.md`, step 8).
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
@@ -516,14 +519,14 @@ read that file. `wrong` leads in chunks no reader reads are confirmed by the wri
 ### Re-runs and supplementary reads
 `node <skill>/scripts/ltz.mjs queue <S> <unit> <R> rerun <slot> --from P --to Q` adds a new slot that
 reads positions P-Q of `<slot>` again: a re-run of a range whose cites were trimmed or never rendered, or whose render errored,
-a supplementary read of a skimming reader's range, or (with the owner's OK) a read of an
-owner-dropped tail.
+a supplementary read of a skimming reader's range, in solo mode a re-read of items a sweep showed the writer
+before it read them, or (with the owner's OK) a read of an owner-dropped tail.
 - **The new slot.** It gets an opaque name and records its `parent`, and starts `queued`. The output
   says how to launch it (`FROM = P`). It is an open job like any other, so it blocks item commits
   until it is closed.
 - **Refusals.** P-Q must lie inside the parent's range. A rerun of a rerun is refused: rerun the
   parent instead.
-- **Launching.** `queue next` launches a queued rerun on its own (it is in no pair), after any
+- **Launching.** `queue next` lists a queued rerun to launch on its own (it is in no pair), after any
   half-launched pair; it counts against the cap.
 - **In `record`.** Name only the parents in `--chunk-readers`; a rerun slot named there is refused.
   `record` builds each parent's lines as a merged view:
@@ -852,7 +855,8 @@ Notes on these fields:
       - `"evidence-moved"`: only the new evidence refutes it, after a pin move. It is no fix failure and no
         miss (`references/learning.md`, "The retro").
 
-      **Tie-break:** if the refuted claim is still standing, it is `"plain-fix-failure"`.
+      **Tie-break:** if the refuted claim is still standing, it is `"plain-fix-failure"`; otherwise, if only the
+      new evidence refutes it, `"evidence-moved"`.
     - **It goes in `pending`, for the owner, only for** a dispute over a rule's meaning
       (`rule-meaning`), a boundary that is silent on the refuter's evidence kind (`boundary-silent`),
       or wording a ruling approved (`ruled-wording`).
@@ -974,7 +978,7 @@ Notes on these fields:
   | `blindSpots` | with a structured `search` | What the search cannot see (it may also sit inside `search`). |
   | `scopeNote` | when `paths` are narrower than `boundaryPaths`, or for any search that backs a scoped claim | Why the claim is deliberately bounded. Whenever it is present, `scopeText` is checked. |
   | `scopeText` | with `scopeNote` | The scope words the item states. They must appear (case- and spacing-insensitive) in the field's current text: in diffcheck the item's current value, in `searches` the last `new` logged for that field in the round. So a later edit that drops the bound is caught. |
-  | `ruling` | on an entry that returns a field to an earlier value; or, instead of `basis`, on any change to a requirement item | A ruling id, `judgment:<round>:<id>`, `judgment:<folder>/<round>:<id>` for a judgments line in a history folder, or, for a return only a pin move calls for, that move's decision id; it marks that flip as explained (see "Flips"). On a requirement item's change it is the ruling that allows it (see "The diff check"). |
+  | `ruling` | on an entry that returns a field to an earlier value; or, instead of `basis`, on any change to a requirement item | A ruling id, `judgment:<round>:<id>`, `judgment:<folder>/<round>:<id>` for a judgments line in a history folder, or, for a return only a pin move calls for, that move's decision id; it marks that flip as explained (see "Flips"). On a requirement item's change with no `basis`, it is the ruling that allows it (see "The diff check"). |
   | `basis` | on a change to a requirement item, unless it has a `ruling` | `"copying-error"`: the item miscopied its source, which the edit restores. The only accepted value. |
   | `source` | with `basis` | The `file:line` the item copies, such as a policy line or a config value; non-empty. |
 - **`S/judgments.jsonl`:** `{"date", "unit", "round", "id", "was", "now", "by", "reason", "lesson"?, "backprop"?}`, one line per changed verdict per round. A line goes in the `judgments.jsonl` of the state folder that holds the verdict's round: `S/judgments.jsonl` for `S/`'s rounds, a history folder's own (such as `S/discovery/judgments.jsonl`) for its rounds. `replay` reads each folder's file for that folder's rounds, to leave out overturned wrongs. `flips` reads it to check `judgment:` references: `judgment:<round>:<id>` in the folder holding the fixlog entry, and `judgment:<folder>/<round>:<id>` from a fixlog entry in another folder (see "Flips").
