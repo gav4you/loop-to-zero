@@ -60,11 +60,11 @@ retire; quiet is not a reason to delete one.
 - **A wrong that an earlier pass missed counts in the round that finds it.** The latest full pass that marked
   it ok is shown as adjusted (`n (adj n+1, reason, date)`), never added into the trend a second time. Skip the
   adjustment if that pass read text that was changed afterwards.
-- **A find in another open unit's item counts for that unit,** never in the finding round's count: show that
+- **A find in another open unit's item counts for that unit** (a unit in `final-check` counts as closed here: SKILL.md, "Cross-unit effects"), never in the finding round's count: show that
   unit's latest full pass that read it as adjusted, and count it toward that unit's escalation trigger. If that
   unit's current round already holds it in its find list, it counts there only, and that round fixes it. A hit
-  logged for it as "deferred" counts in the round that judges it (`references/round.md`, step 3). If that unit
-  has no full pass yet, count the find toward its escalation trigger and in the report's cross-unit counts
+  logged for it as "deferred" counts in the round that judges it (`references/round.md`, step 3). A find edited
+  into a unit with no full pass yet counts toward its escalation trigger and in the report's cross-unit counts
   (`references/owner-asks.md`, "Reporting a round", item 4), never in its round 1's count: round 1 reads the
   fixed text.
 - **Closed units' earlier rounds:** their `judgments.jsonl` lines and adjusted counts are written at the final
@@ -103,7 +103,7 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
 - **Where it runs:**
   - in the current unit: re-judge now; the reverts (here, and of the cross-unit edits its false wrongs caused)
     follow after the round's reading (`references/fixing.md`, "Reverting");
-  - in units not yet closed, their own verdicts at their next round: log them for that unit
+  - in units not yet closed (a unit in `final-check` counts as closed here: SKILL.md, "Cross-unit effects"), their own verdicts at their next round: log them for that unit
     (`cross-unit-edits.txt`, verdict "deferred"), which that round handles (`references/round.md`, step 3; during discovery, main round 1 of that unit:
     `references/setup.md`, step 9);
   - in closed units, as leads.

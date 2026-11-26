@@ -301,7 +301,7 @@ When a verdict is overturned (by the owner, your own re-check (recorded as `spot
    Re-run `record`.
 1. Re-read every edit it caused, siblings included.
 2. Revert the edits that removed accurate content or now contradict the ruling, after the round's reading: in
-   this unit, and in units not yet closed where this unit's false wrongs caused cross-unit edits (log those as
+   this unit, and in units not yet closed (a unit in `final-check` counts as closed here: SKILL.md, "Cross-unit effects") where this unit's false wrongs caused cross-unit edits (log those as
    cross-unit edits). In closed units, log a lead instead. Other units' own verdicts that the same flaw could
    have produced are re-judged at their next round (`references/learning.md`, "Back-propagation").
 3. Log each revert in `fixlog.jsonl` with `"ruling": "<ruling id>"`, or `"judgment:<round>:<id>"` for an overturn

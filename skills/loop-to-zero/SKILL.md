@@ -209,13 +209,15 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    what a re-read can't clear"): then wait for the owner.
 
 ## Cross-unit effects
-- **Units not yet closed** (a unit in `final-check` counts as closed here) may be edited from another unit's round, such as for a sweep hit. Log each edit in `cross-unit-edits.txt` (the line carries
+- **Units not yet closed** (a unit in `final-check` counts as closed here and in every cross-unit rule of the
+  references, though the tools treat it as open) may be edited from another unit's round, such as for a sweep hit. Log each edit in `cross-unit-edits.txt` (the line carries
   the verdict and the refuter). The round's fix checker reads those items with the rest; that unit's next round
   then reads them normally. A unit with no snapshot yet (r0's doesn't count) needs a baseline before the first such edit:
   `ltz snapshot <S> <unit> 1`, which that unit's round 1 takes again when it starts. Re-take it only after the
   editing round's last `diffcheck` and commit (its fix checks' follow-ups and any reverts included), or that diffcheck fails on its own logged edits.
 - **Units whose round 1 hasn't started** may instead have their hits logged for them, verdict "deferred", in
-  `cross-unit-edits.txt`, if the owner chose that at setup (`references/setup.md`, question 8). That unit's
+  `cross-unit-edits.txt`, if the owner chose that at setup (`references/setup.md`, question 8; never during
+  discovery, whose fixes edit every unit). That unit's
   round step 3 judges them. They are not leads, which only closed units have. Back-propagation's re-judges in any
   unit not yet closed are logged for it the same way, whatever the policy (`references/learning.md`,
   "Back-propagation").

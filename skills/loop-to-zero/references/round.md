@@ -165,7 +165,8 @@ may still count it. If a later round finds it again at the same pin, it stays cl
   never as a zero. A unit that closes with a confirmed wrong still unfixed, or over a dropped range, is
   `closed-known-wrongs` instead (SKILL.md, "Owner overrides"), whatever rule closed it.
 
-`final-check` is not a closed status: the tools treat it as open. It marks a closed unit reopened, with the
+`final-check` is not a closed status: the tools treat it as open (the cross-unit rules count it as closed: SKILL.md,
+"Cross-unit effects"). It marks a closed unit reopened, with the
 owner's OK, for the final targeted check. The check runs as the unit's next round, F (a round that so far holds only a baseline snapshot is taken again as F): `ltz snapshot <S> <unit> <F>`
 before any edit, then the reading of any chunk it queues (below) and step 3's checks of its readers' work, then
 the fixes, `diffcheck` and the fix checker as usual. Afterwards, take a new baseline with
