@@ -106,7 +106,7 @@ refutes its wording), note it in {SCRATCH}rulings.md, and go back to reading."}
 {S}/{UNIT}/r{R}/agent-{SLOT}.jsonl. After each window, APPEND one JSON line per item, in list order:
 Before citing a refuter you found by searching, show it with {SHOW_CMD}: a cite you never rendered is refused.
 {"unit":"{UNIT}","id":"…","verdict":"ok"|"wrong","class":["<class>", …],"note":"<why; a wrong names the
-refuting file:line at the pin>","cites":["path:line", …]}
+refuting file:line at the pin (a vague relation: the link line you found, or the cited lines showing none)>","cites":["path:line", …]}
 `cites` lists every line your verdict rests on: the item's cites you read, and any line you showed.
 List every class that applies, the first as classes.md's "When two classes fit" says.
 An item its own text refutes (its figures disagree: parts that don't add up to its total, a share that doesn't
@@ -208,12 +208,13 @@ Reply with the path, the counts, and one line per wrong.
      (`references/queue-and-outages.md`).
    - Every cite a reader lists appears in that reader's render log.
    - Every wrong names a refuting file:line, except one whose note starts "self-contradiction:" (it quotes the
-     clashing figures instead).
+     clashing figures instead) and a vague-relation one (it names the link line it found, or the item's own cited
+     lines showing none: `references/fixing.md`, "A vague relation").
 
    **When a check fails** (one rule; never fill an item by hand):
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
      position. A tail the owner dropped is not continued (`references/round.md`, step 8).
-   - **A reader's cites never rendered** (listed in its `cites` but not in its render log), or a render command that errored:
+   - **A reader's cites never rendered** (listed in its `cites`, or named as a wrong's refuter in its note, but not in its render log), or a render command that errored:
      re-run the windows holding those items with a fresh reader of the round's kind (`references/queue-and-outages.md`,
      "When a fresh launch is allowed"). A cite that `render` marks as not found is not this case: it is
      logged as an attempt and may be cited. For one unrendered
@@ -246,10 +247,12 @@ Reply with the path, the counts, and one line per wrong.
      question "amend <ruling>?"), unless the ruling's entry records that the owner kept it after that question:
      then list it in `confirmed.json`'s `ruledKept` (`{"id", "ruling"}`), unless the id is also in the wrongs,
      `pending`, `defects`, `withdrawn`, `outsideBar` or `restated` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
-     Where the id is already a wrong or `restated` for another claim, it stays there and the question is asked
-     apart, as `references/fixing.md`, check 2, does; where another list would hold it (`withdrawn`,
-     `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as `ruled-wording`
-     instead, with its other point in the question, so the question blocks the close.
+     When the ruling was not kept: where the id is already a wrong or `restated` for another claim, it stays
+     there and the question is asked apart, as `references/fixing.md`, check 2, does; where another list would
+     hold it (`withdrawn`, `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as
+     `ruled-wording` instead, with its other point in the question, so the question blocks the close. Once the
+     owner answers, that other point goes back to its list (`references/round.md`'s placements under "Blocked only
+     by what a re-read can't clear" apply to the ruled point only).
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

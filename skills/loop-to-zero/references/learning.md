@@ -11,7 +11,7 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1; for a "missing ruling" one, "Back-propagation") | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
 | A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"), which writes no lesson and no `judgments.jsonl` line ("The retro", step 1); for a "missing ruling" one, "Back-propagation". A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
-| Only one of two readers found a confirmed wrong | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
+| A reader of the chunk missed a confirmed wrong that another reader found | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
 | A reader misses a canary | Give that reader's range a supplementary read. Misses in late windows only mean it is tiring: also shorten the chunks from the next snapshot |
 | A sweep or search later proves to have missed siblings | Your search was too narrow, or a tool truncated it |
 | A class turns up that the setup research did not predefine | The research missed a source. Add it to `S/research.md`, and propose adding it to `references/setup.md`'s research sources to the skill's maintainer |
@@ -131,14 +131,14 @@ only a closing count keeps the bar of its close.
      `references/round.md`, "Between rounds only"). A verdict of yours later overturned is "writer misjudgment"; when
      a ruling overturns it, it is "missing ruling" if the bar lacked the ruling's point, and "writer misjudgment"
      if the entry covered it and you misread it.
-   - **Who found it:** both readers; one reader only; none (the writer's own check (`spot-check`), a sweep, an audit, the fix
+   - **Who found it:** every reader of its chunk; some but not all (name the reader that missed it); none (the writer's own check (`spot-check`), a sweep, an audit, the fix
      checker in old text, or the extract).
 
    **For each wrong a reader missed, check its render log** before choosing a remedy. If the reader never
    showed the refuting line, it failed to look: the remedy is reading depth (window size, through a side-by-side trial: "Changing the reader setup"; the whole-context
    lens, shorter chunks from the next snapshot), not a sharper class wording. If it showed the line and still marked ok, it
-   misjudged: then a sharper wording is the remedy (Triggers, "Only one of two readers found a confirmed
-   wrong").
+   misjudged: then a sharper wording is the remedy (Triggers, "A reader of the chunk missed a confirmed
+   wrong that another reader found").
 
    Count reader false alarms separately. A reader wrong overturned by a ruling given mid-round (a new one, or an amendment) is not a false
    alarm, and it is not in the round's count: its origin is "missing ruling" (an overturn under an entry that already
@@ -151,7 +151,8 @@ only a closing count keeps the bar of its close.
    falling total can hide a class that is flat or rising; name any such class in the report.
 3. **The scores:** the canary scores, the remaining-wrongs estimate, the early-versus-late reading depth, and the
    recall of the unit's outside findings (`references/setup.md`, "Existing outside findings").
-   **Calibrate the estimate:** for each earlier round of the unit, compare its total remaining estimate (`total.estimate.remaining` in its `measure.json`) with the wrongs
+   **Calibrate the estimate:** for each earlier round of the unit, compare its total remaining estimate (`total.estimate.remaining` in its `measure.json`; a round whose
+   `total.estimate.estimated` is false made no estimate and gets no ratio) with the wrongs
    later rounds confirmed in text that round read, unedited since, of any origin but "evidence moved" (repeats with `earlier-miss`, and
    `judgments.jsonl` lines that turned that round's ok to wrong). Record the ratio found-later / estimated in
    `retro.md`; the report quotes it (`references/owner-asks.md`, "Reporting a round", item 3). A round whose
@@ -192,7 +193,7 @@ say "no held-out history yet" rather than quoting the in-sample recall.
   Hits that turn out right are candidate wrongs (confirm checks as usual); false hits mean the check is fixed first.
   Regression patterns are the exception: they block at once, because their known instances test them.
   A new hook rule is not yours to add: propose it to the skill's maintainer, who tests it before it ships.
-- **A new method for a round** (narrow falsifiers, a different sweep; a new reading order only for a discovery
+- **A new method for a round** (a different sweep, say; a new reading order only for a discovery
   pass, since rounds keep list order): before trying it,
   write in the round's `retro.md` the test that decides whether to keep it, for example "keep if it confirms at
   least as many wrongs as the last sweep of the class did, at no more cost". After the round, apply that test and

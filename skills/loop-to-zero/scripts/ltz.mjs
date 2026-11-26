@@ -76,7 +76,7 @@ render <S> <unit> <R> <slot> show <cite>...
   confirmed, reported "outside-bar" when a reader read it, named in the summary; it never blocks a
   zero. A restated id (a final-check unit's round only: a reader wrong restating a known wrong, or a
   revert or stale lead's flaw, that the round fixes without confirming; "of" names it) is neither
-  confirmed nor a false alarm (measure.json restated), reported "wrong" with "restated"; in any other
+  confirmed nor a false alarm (measure.json restated), reported "wrong" with "restated" when a reader read it (unread otherwise), and it blocks a zero as a wrong does; in any other
   unit, or also confirmed, pending, a defect, withdrawn, outsideBar or rejected, it is a PROBLEM. Every ok whose note starts
   "ruled: <ruling id>", in a reader's lines or a fix checker's fixcheck-<K>-<part>.jsonl, is listed
   in measure.json ruledOks, with a warning unless the id is pending
@@ -226,7 +226,8 @@ cost --timeline <transcript.jsonl>
   (before the first render) and each window: tokens, messages and minutes.`,
   replay: `replay <S> <pattern.json|classfile> --rounds <unit>[,<unit>...|all] [--holdout <unit>/r<R>[,...]]
   Run the pattern(s) over each past round's snapshot.jsonl that has a confirmed.json, and report recall
-  on confirmed wrongs of the pattern's class and false hits on items not confirmed wrong. With config
+  on confirmed wrongs of the pattern's class and false hits on items not confirmed wrong (a hit on a restated
+  id is neither). With config
   "historyFolders", each folder's <folder>/<unit>/r* rounds are replayed too, first (labelled such as
   discovery/u1/r3); a missing folder is a PROBLEM. A confirmed wrong whose latest judgments.jsonl
   line for that unit and round, in the state folder holding the round (S/ or the history folder), has

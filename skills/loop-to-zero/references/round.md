@@ -109,7 +109,7 @@ measure counts them as found by none.
   wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (`references/fixing.md`,
   "The confirm checks" and "After the fix checker"), the `restated` list and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
   fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`; one from the
-  `rejected` list instead moves out of `rejected` into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
+  `rejected` or `restated` list instead moves out of that list into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
   adds to `boundaries.md` in step 3: an
   item confirmed ok after real doubt (a near-miss), with one line on why.
 
@@ -180,8 +180,9 @@ calls for, below), take a new baseline with `ltz snapshot <S> <unit> <F+1>`, so 
 final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
-round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
-defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
+round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, an "amend
+<ruling>?" question asked apart on a round-F wrong or `restated` id (`references/briefs.md`, "Ruled wording"), or an
+open defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
 what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check

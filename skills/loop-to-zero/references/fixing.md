@@ -245,9 +245,11 @@ First re-run the project's extract script, so that `S/items.jsonl` holds the edi
 - **Closed units.** No changed item may belong to a closed unit.
 - **Patterns.** No changed item may still match a regression pattern. `ltz diffcheck` re-runs them all. A match only
   in wording the rules forbid you to change (wording a ruling approved, wording parked under an open owner
-  question, or a requirement's claim) means the pattern is too wide for that item: narrow its regex until it no
-  longer matches that wording, check with `ltz sweep` that it still hits its known instances, and note the change
-  and why in `retro.md`.
+  question, or a requirement's claim) means the pattern is too wide for that item: narrow its regex by context particular
+  to that item (never by dropping the phrase itself) until it no longer matches that wording, check with `ltz sweep`
+  that it still hits its known instances, and note the change and why in `retro.md`; for parked wording, restore
+  the pattern once the owner answers. Where no regex spares the item and still hits the known instances, hold that
+  item's fix as a draft and ask the owner.
 - **Shape.** Check the whole changed field, not a window around the edit: run-on sentences from appended
   clauses, stacked parentheticals, a clause appended with no sentence stop.
 - **Change set.** Diff every field of every item against the round's snapshot. The changed set must equal
@@ -336,7 +338,7 @@ When a verdict is overturned (by the owner, your own re-check (recorded as `spot
    discovery pass's verdict; within discovery, the plain form). `ltz flips` then reports the revert as a flip the
    ruling explains, not as an unclear definition. Retire any regression pattern born from the false wrong: set its
    `"regression"` to false (the file stays, for its known instances).
-4. Run the fix checker on the reverts.
+4. Re-run extract, run `ltz diffcheck` and commit (sections 5 and 6), then run the fix checker on the reverts.
 5. List the harmless hedges in the round's `retro.md`, for the report to the owner, instead of reverting them.
 
 ## Requirement items

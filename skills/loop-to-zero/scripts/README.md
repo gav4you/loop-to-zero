@@ -655,6 +655,8 @@ on that round's confirmed wrongs of the pattern's class, and the false hits.
 - **Items no reader read.** When the round has a `report.json`, a hit on an item it marks `unread` (a
   final-check round's unqueued chunk, a dropped range) is listed apart and counts as neither a recalled
   wrong nor a false hit.
+- **Restated items.** A hit on an id in the round's `restated` list (`confirmed.json`) is listed apart and
+  counts as neither a recalled wrong nor a false hit.
 - **Matching a line.** As in `flips`: the line's `unit` is that unit, or the line has no `unit`, and its
   `round` is the round's number (`2` or `"r2"`).
 

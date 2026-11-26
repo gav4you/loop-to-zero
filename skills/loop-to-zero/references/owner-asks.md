@@ -173,7 +173,7 @@ Then report, in this order:
      4, all new: none is a repeat or in text I edited". Split the new ones into repeats (from `record`'s output; an `evidence-moved` one apart, as no fix failure), finds in your
      own edits (from the retro's origin axis: `references/learning.md`, "The retro", step 1) and the rest.
 2. **This round's wrongs, on the two axes** (`references/learning.md`, "The retro"): by origin (pre-existing text,
-   your own edit, a new class, a missing ruling, writer misjudgment, evidence moved) and by who found them (both readers, one only, none), plus
+   your own edit, a new class, a missing ruling, writer misjudgment, evidence moved) and by who found them (every reader of the chunk, some but not all, none), plus
    reader false alarms. A round still being read is reported as "at least n (reading incomplete)".
 3. **How much is likely still unfound:**
    - the remaining-wrongs estimate, with its caveat, its range and any low-confidence flag from `measure.json`;
