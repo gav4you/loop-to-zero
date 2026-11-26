@@ -214,18 +214,19 @@ Reply with the path, the counts, and one line per wrong.
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
      position. A tail the owner dropped is not continued (`references/round.md`, step 8).
    - **A reader's cites trimmed or never rendered** (not in its render log), or a render command that errored:
-     re-run that range with a fresh reader of the round's kind (`references/queue-and-outages.md`, "When a fresh
-     launch is allowed"). A cite that `render` marks as not found is not this case: it is
+     re-run the windows holding those items with a fresh reader of the round's kind (`references/queue-and-outages.md`,
+     "When a fresh launch is allowed"). A cite that `render` marks as not found is not this case: it is
      logged as an attempt and may be cited. For one unrendered
      refuter, the range is just that window.
    - **Coverage is computed from the files,** never taken from a reader's word. A sampled pass once left 384
      items uncovered.
    - **A reader that trims its cites to pass the check** (a result line whose note relies on a line its `cites`
-     omit, or with no `cites` for an item that has some) has that range re-read.
+     omit, or with no `cites` for an item that has some) has its whole range (its slot's FROM to TO, short of any tail the owner dropped) re-read.
    - **A reader whose ok notes repeat one text, or are blank,** on 5 or more items (`ltz record` warns, refs
      and numbers aside) wrote a default, not a reading: give that reader's whole range (its slot's FROM to TO, short of any tail the owner dropped) a supplementary read, as below.
    - **A reader that admits shortcuts or unchecked areas** ("read only the first lines", "area 2 not
-     checked") gets a supplementary read of those ranges before acceptance.
+     checked") gets a supplementary read of the ranges it names before acceptance, or of its whole range
+     (its slot's FROM to TO, short of any tail the owner dropped) when it names no positions.
    - **After any re-run or supplementary read,** `record` takes the re-run's lines in place of the parent's for
      that range, so run the confirm checks on any wrong the parent marked there that the re-run doesn't mark.
      Record the real ones as `foundBy: "spot-check"`, and note the others in `retro.md` (`references/fixing.md`, "The confirm checks") as that
@@ -242,9 +243,10 @@ Reply with the path, the counts, and one line per wrong.
      ruled wording; `references/fixing.md`).
    - **Ruled wording.** Every ok (a reader's or a fix checker's) whose note starts "ruled:" and names a differing file:line is checked at the
      evidence. If the evidence refutes the approved wording, record it in `pending` (`ruled-wording`, with the
-     question "amend <ruling>?"; unless the id is in the wrongs for another claim: `references/fixing.md`, check 2), unless the ruling's entry records that the owner kept it after that question:
+     question "amend <ruling>?"; unless the id is in another list the next sentence names: then ask that question apart,
+     as `references/fixing.md`, check 2, does for a wrong, and its warning is expected), unless the ruling's entry records that the owner kept it after that question:
      then list it in `confirmed.json`'s `ruledKept` (`{"id", "ruling"}`), unless the id is also in the wrongs,
-     `pending`, `defects`, `withdrawn` or `outsideBar` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
+     `pending`, `defects`, `withdrawn`, `outsideBar` or `restated` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
      Readers mark these ok, so this is how they surface. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

@@ -182,7 +182,7 @@ closed status `loop.md` kept for it ("was <status>", carried forward from `close
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
 round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
 defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
-what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, a "missing ruling" one that a ruling amended or a question answered after the close made wrong, or one listed only so `record` holds it ("Known wrongs", below): report those apart), the unit is reported with its adjusted closing
+what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than an id the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
@@ -190,14 +190,15 @@ known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "k
   read in the loop's reader mode even where another reader read it (`ltz queue <S> <unit> <F> init --opaque --per-chunk <readers per chunk> --chunks <chunk names, such as c2,c3>`; with neither a dropped range nor an `evidence-moved` lead, `init` alone writes an empty
   queue). Other `wrong` leads, unless a reader marks them, are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). If the pin moved since the unit closed, count each wrong round F confirms by the two-pin test in "Reopening a closed unit for the move" (below), whether or not the owner reopened the unit for the move. A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never itself entered in `confirmed.json`, and adjusts no closing count: the earlier round whose wrong it overturns is written as adjusted, unless that round is the closing pass (a unit closed with known wrongs or by a stopping rule), whose count stays as it was (`references/learning.md`, "Counting"). A `stale` lead is applied as the dependent's edit (`references/fixing.md`, "3. Dependents"), never itself entered in `confirmed.json`, and adjusts no count. A `re-judge` lead is judged with the confirm checks: an ok it overturns is then handled as a `wrong` lead, and a wrong it overturns as a `revert` lead. `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
-- **Known wrongs** from `S/known-wrongs.txt` are not counted again in round F: they stay counted in the round
+- **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
   that closed with them, and a lead that restates one is settled with it, not confirmed again. Re-check the held
   draft against today's bar, rulings and pin (or draft the fix now if its line names none), apply it, log it in round F's fixlog, and
   fix-check it. A round-F reader's wrong that restates a known wrong, or the flaw a `revert` or `stale` lead's
-  edit fixes, is listed in round F's wrongs only so `record` holds it: it adds nothing to the closing count and
-  logs no lesson. On a known wrong it is a repeat, with `repeatReason` `plain-fix-failure` and a `repeatNote`
-  naming its `known-wrongs.txt` line (its fix was held, never applied). A reader's wrong on another claim of such
-  an item is judged as any round-F reader wrong is.
+  edit fixes, goes in `confirmed.json`'s `restated` list (`{"id", "of"}`, `of` naming the `known-wrongs.txt`
+  line or the lead): it is not confirmed again, so it adds to no count and logs no lesson. A reader's wrong on
+  another claim of such an item is judged as any round-F reader wrong is; the id stays one wrong
+  (`references/fixing.md`, "Partly true items"), so where the closing count already holds it, it adds nothing to
+  that count.
 - **Mark each lead settled** in `closed-unit-leads.txt`, and each known wrong and dropped range in `known-wrongs.txt` (round F, date). If new leads are logged
   against a unit after its round F (by round F's sweeps or otherwise), the final targeted check repeats for those
   units, with the owner's OK, until none is open.

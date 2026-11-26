@@ -505,8 +505,9 @@ check) runs round F with readers only for the chunks covering a dropped range fr
 read that file. `wrong` leads that no reader marks (every one, in a chunk no reader reads) are confirmed by the
 writer, with a `foundBy`;
 `re-judge` leads are judged by the writer and then handled as `wrong` or `revert` leads; `revert` leads are
-applied as reverts, and `stale` leads as the dependent's edit, never themselves entered in `confirmed.json` (a
-round-F reader's wrong on their flaw is listed there: `references/round.md`, step 8).
+applied as reverts, and `stale` leads as the dependent's edit, never themselves entered in `confirmed.json`. A round-F
+reader's wrong that restates a known wrong or such a lead's flaw goes in `confirmed.json`'s `restated` list
+(`references/round.md`, step 8).
 - **`queue init`** accepts a subset of the chunks (`--pairs` naming only some, or `--opaque --chunks`),
   or none: `init` with neither `--pairs` nor `--opaque` writes an empty queue (`groups` and `slots`
   empty, `finalCheck: true`). Without a `queue.json` at all, `record` works the same.
@@ -778,16 +779,18 @@ Notes on these fields:
    "outsideBar": [{"id": "<id>", "note": "<what the evidence shows, with file:line>"}],
    "ruledKept": [{"id": "<id>", "ruling": "<ruling id>"}],
    "rejected": [{"id": "<id>", "note": "<why; the file:line that answers the refuter, or history: ...>"}],
+   "restated": [{"id": "<id>", "of": "<the known-wrongs.txt line, or the lead>"}],
    "defects": ["<id>", ...]}
   ```
-  - `pending`, `withdrawn`, `outsideBar`, `ruledKept`, `rejected` and `defects` are reserved keys.
+  - `pending`, `withdrawn`, `outsideBar`, `ruledKept`, `rejected`, `restated` and `defects` are reserved keys.
   - **`rejected`** lists every reader wrong the writer did not confirm (a false alarm), each with a note that
     names a file:line answering the refuter (for a "self-contradiction:" wrong, the item's own file:line, with its
     figures shown to agree), or starts "history:" and names the earlier reasoned ok. The file:line needs a
     path with a folder or a file extension, or one a reader of the round rendered (`localhost:8080` and
     `node:18` are not one), and "history:" needs text after it. A reader
-    wrong (canaries aside) that is not confirmed, pending, a defect, withdrawn, outside the bar or rejected is
-    a PROBLEM, and so is a note with neither, or an id also in the wrongs, `pending`, `defects`, `withdrawn` or `outsideBar`
+    wrong (canaries aside) that is not confirmed, pending, a defect, withdrawn, outside the bar, restated or
+    rejected is a PROBLEM, and so is a note with neither, or an id also in the wrongs, `pending`, `defects`,
+    `withdrawn`, `outsideBar` or `restated`
     (`ruledKept` may hold the same id: the other reader's ruled ok, kept). One no reader marked gives a
     warning. In `measure.json` they stay false alarms; `report.json` shows them `ok`, with the note under
     `rejected`.
@@ -820,10 +823,19 @@ Notes on these fields:
     - an id that is not a ruled ok of this round (a reader's or a fix checker's);
     - a `ruling` that no ruled ok of that id names (the ruling is compared as written; another
       ruled ok of the same id under a different ruling still warns);
-    - an id that is also confirmed, pending, a defect, withdrawn or in `outsideBar`.
+    - an id that is also confirmed, pending, a defect, withdrawn, in `outsideBar` or `restated`.
 
     The tool reads neither `S/classes.md` nor the decision log for this: the writer checks the
     ruling's entry.
+  - **`restated`** (optional; a `final-check` unit's round only) lists round-F reader wrongs that restate a
+    known wrong, or the flaw a `revert` or `stale` lead's edit fixes: the round fixes them without confirming
+    them again (`references/round.md`, step 8). They are not confirmed wrongs (so not repeats, and out of the
+    confirmed count) and not false alarms; `measure.json` counts them as `restated` (per chunk and in total),
+    `report.json` shows each one `wrong` with `restated` (its `of`), and `record`'s summary gives the count.
+    Each of these is a PROBLEM: the list in a unit that is not `final-check`; an entry that is not an
+    `{"id", "of"}` object; an id listed twice, not in the snapshot, or also confirmed, pending, a defect,
+    withdrawn, in `outsideBar` or rejected; an `of` that is missing or blank. One no reader marked wrong gives a
+    warning.
   - `foundBy`, `class`, `repeatReason`, `repeatNote` and `rulingsChecked` are optional; `class` is used by `replay` and the repeat check.
   - **`pending`** entries each need a `pendingReason`, or `record` refuses (a PROBLEM):
     - `"rule-meaning"`: a rule's meaning is in dispute, and the item's truth turns on that meaning (SKILL.md, Verdicts);
@@ -903,6 +915,7 @@ Notes on these fields:
   - for a `pending-owner` item, `pendingReason`;
   - for an `ok` item a ruling withdrew, `withdrawnByRuling`: the ruling id (not the per-slot count
     `measure.json` keeps under that name);
+  - for a `wrong` item in `restated`, `restated`: what it restates;
   - `note`;
   - `cites_read`: only from the render logs;
   - `cites_read_by`, keyed by slot;
@@ -928,6 +941,7 @@ Notes on these fields:
     - `falseAlarms.<slot>`, `falseAlarmIds.<slot>`, `pendingMarkedWrong.<slot>`,
       `defectMarkedWrong.<slot>`;
     - `withdrawn`, `withdrawnByRuling.<slot>` (reader wrongs a ruling overturned; not false alarms);
+    - `restated` (round-F reader wrongs restating a known wrong or a lead's flaw; not false alarms, not confirmed);
     - `outsideBar.<slot>`, `outsideBarItems`, `outsideBarIds` (reader wrongs outside a frozen bar,
       listed for the owner; not false alarms, not confirmed);
     - `estimate`: `{pair, n1, n2, m, N, foundByReaders, remaining, range, lowConfidence, why?, caveat, partial?,

@@ -63,9 +63,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
     - **The evidence plainly refutes the claim under the current bar.** Your earlier fix failed
       (`plain-fix-failure`, `new-text`), or an earlier pass missed it (`earlier-miss`), or, after a pin move,
       only the new evidence refutes it (`evidence-moved`). It is `wrong`: fix it, and log a lesson (not for
-      `evidence-moved`, nor for a round-F reader's wrong on a known wrong: `references/round.md`, "Known wrongs"; for a repeat that only a ruling
-      given or amended since makes wrong, origin "missing ruling", the first row's lesson in
-      `references/learning.md`, "Triggers"). In `confirmed.json`, give it a `"repeatReason"` and a non-empty
+      `evidence-moved`). In `confirmed.json`, give it a `"repeatReason"` and a non-empty
       `"repeatNote"`:
       - `plain-fix-failure`: the claim an earlier round refuted still stands, perhaps reworded, whatever the
         refuter now is;
@@ -76,9 +74,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
         failure and no miss: it logs no lesson and does not count toward the escalation trigger.
 
       Where several fit, `plain-fix-failure` wins while the refuted claim still stands, and then
-      `evidence-moved` when only the new evidence refutes it. A repeat of origin "missing ruling" takes `new-text`
-      (in text a fix wrote) or `earlier-miss` (in old text), with the ruling id first in its `repeatNote`, by which
-      the report shows it apart (`references/owner-asks.md`, "Reporting a round", item 1).
+      `evidence-moved` when only the new evidence refutes it.
     - **A rule's meaning is in dispute, and the item's truth turns on that meaning** (SKILL.md, Verdicts). Record it
       as `pending-owner` (`rule-meaning`) and ask the owner. A
       ruling is probably missing from the bar.
@@ -112,7 +108,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   ambiguity class (if the bar has none: "A class found mid-pass" on an open bar). Rewrite the item to say one
   thing (a requirement item only by an owner ruling: "Requirement items", below). On a frozen bar with no such
   class it is not counted: list it in `outsideBar` for the owner,
-  unedited unless the owner says otherwise. It becomes a
+  unedited unless the owner says otherwise (in text a fix wrote, fix it in the follow-up instead:
+  `references/learning.md`, "Counting"). It becomes a
   `pending-owner` question only if the ambiguity is in a rule.
 - **Requirement items.** If the item states a requirement and the evidence does not meet it, record the
   verdict `defect`, work it and log it in `S/defects.md` (`references/debugging.md`), and leave the item (see
@@ -128,11 +125,10 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   citing the item's own file:line. A dismissal needs the same grounding as a
   confirmation: doubt you can't tie to a line you read is not a reason. `ltz record` refuses a reader wrong that
   is in no list, and the stronger reviewer re-judges the rejected list (`references/round.md`, step 5). The
-  exceptions are reader wrongs `record` doesn't hold: a parent's in lines a re-run replaced (`references/briefs.md`,
-  "Verifying the readers' work"), a `replaced` rerun's (`record` uses none of its lines), a removed duplicate or
-  stray line's, a reply-only one
-  (`references/queue-and-outages.md`), and the solo cold sample's (`references/modes.md`). Each goes in `retro.md`
-  with its reason and the file:line that answers it, and counts with that reader's false alarms in the report
+  exceptions are reader wrongs in no line `record` uses, such as a parent's or an earlier rerun's in lines a later
+  re-run supersedes (`references/briefs.md`, "Verifying the readers' work"), a `replaced` rerun's, a removed
+  duplicate or stray line's, a reply-only one (`references/queue-and-outages.md`), and the solo cold sample's
+  (`references/modes.md`). Each goes in `retro.md` with its reason and the file:line that answers it, and counts with that reader's false alarms in the report
   (`references/owner-asks.md`, "Reporting a round", item 2).
 
 ## 1. Sweep
@@ -200,7 +196,8 @@ Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven boun
 5. **Write each fix's expected effect before applying a batch,** in the round's `retro.md` under that batch: the
    ids and fields it changes, and what it should leave unchanged. After the commit, compare the diff and `fixlog.jsonl` with it; a change you didn't
    expect (another field, another item, a fix that didn't land) is checked before the fix checker, and is a lesson.
-   With two fixes to one field in a batch, the later one wins: merge them into one.
+   With two fixes to one field in a batch, the later one wins: merge them into one edit of the field. If each adds a
+   bound, log that edit as chained entries, each with its own search (section 5).
 
 ## 3. Dependents
 Search for items that cite the changed item or restate its conclusion, in this unit and in others. Fix them
@@ -312,9 +309,9 @@ overturned verdict ("Reverting fixes caused by false wrongs", below) and log a l
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
 the round's `retro.md` under its iteration, with its reason and the file:line that answers it; one on wording
-parked under an open owner question (check 2) waits on that question, noted the same way. A check whose only
-wrongs are so dismissed or waiting counts as returning 0 (`record` still counts them, so report it as "returned 0 after n
-dismissed", naming `retro.md`).
+parked under an open owner question (check 2) waits on that question, noted with the question it waits on. A check
+whose only wrongs are so dismissed or waiting counts as returning 0 (`record` still counts them, so report it as
+"returned 0 after n dismissed and m waiting on <question id>", naming `retro.md`).
 
 ## Reverting fixes caused by false wrongs
 When a verdict is overturned (by the owner, your own re-check (recorded as `spot-check`), a fix checker's "old text held" or a ruling):

@@ -67,14 +67,17 @@ render <S> <unit> <R> <slot> show <cite>...
   r<R>/confirmed.json ({"<id>": {"note", "foundBy"?: "sweep"|"spot-check"|"audit"|"fixcheck"|"extract",
   "class"?, "repeatReason"?, "repeatNote"?, "rulingsChecked"?: [{"ruling", "why"}]}, "pending": [{"id",
   "pendingReason": "rule-meaning"|"boundary-silent"|"ruled-wording"}], "withdrawn": [{"id", "ruling"}],
-  "outsideBar": [{"id", "note"}], "ruledKept": [{"id", "ruling"}], "defects": [ids]});
+  "outsideBar": [{"id", "note"}], "ruledKept": [{"id", "ruling"}], "restated": [{"id", "of"}], "defects": [ids]});
   a pending id without a valid pendingReason is a PROBLEM. A withdrawn id (a reader wrong a ruling
   given mid-round overturned) is not a false alarm (withdrawnByRuling.<slot>) and not confirmed; its
   ruling must match config "rulingIdPattern" and be in the decision log. An outsideBar id (a reader
   wrong that fits no class of a frozen bar; its note says what the evidence shows, with file:line) is
   listed for the owner and not counted: not a false alarm (outsideBar.<slot>, outsideBarItems), not
   confirmed, reported "outside-bar" when a reader read it, named in the summary; it never blocks a
-  zero. Every ok whose note starts
+  zero. A restated id (a final-check unit's round only: a reader wrong restating a known wrong, or a
+  revert or stale lead's flaw, that the round fixes without confirming; "of" names it) is neither
+  confirmed nor a false alarm (measure.json restated), reported "wrong" with "restated"; in any other
+  unit, or also confirmed, pending, a defect, withdrawn, outsideBar or rejected, it is a PROBLEM. Every ok whose note starts
   "ruled: <ruling id>", in a reader's lines or a fix checker's fixcheck-<K>-<part>.jsonl, is listed
   in measure.json ruledOks, with a warning unless the id is pending
   as ruled-wording or listed in "ruledKept" with the same ruling (the writer checked it and the owner

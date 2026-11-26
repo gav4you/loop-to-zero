@@ -13,7 +13,7 @@ import {
 } from './coverage.mjs';
 import { estimateRemaining, estimateRange, ESTIMATE_CAVEAT, round2 } from './estimate.mjs';
 
-const RESERVED = new Set(['pending', 'defects', 'withdrawn', 'outsideBar', 'ruledKept', 'rejected']);
+const RESERVED = new Set(['pending', 'defects', 'withdrawn', 'outsideBar', 'ruledKept', 'rejected', 'restated']);
 // plain-fix-failure: the earlier fix did not settle it; new-text: the wrong is in text an earlier fix
 // introduced; earlier-miss: a different claim of the same class in old text, missed earlier;
 // evidence-moved: only the new evidence refutes it, after a pin move (no fix failure and no miss).
@@ -37,12 +37,16 @@ export const ALWAYS_BLOCKING_PENDING = ['boundary-silent', 'ruled-wording'];
  * Parse confirmed.json:
  * {"<id>": {note, foundBy?, class?, repeatReason?, repeatNote?, rulingsChecked?},
  *  "pending": [{id, pendingReason, question?}], "withdrawn": [{id, ruling}],
- *  "outsideBar": [{id, note}], "ruledKept": [{id, ruling}], "defects": [ids], "rejected": [{id, note}]}
+ *  "outsideBar": [{id, note}], "ruledKept": [{id, ruling}], "defects": [ids], "rejected": [{id, note}],
+ *  "restated": [{id, of}]}
+ * "restated" (a final-check round only) holds reader wrongs that restate a known wrong, or the flaw a revert
+ * or stale lead's edit fixes: the round fixes them without confirming them, so they are neither confirmed
+ * wrongs nor false alarms; "of" names the known-wrongs.txt line or the lead.
  * "rejected" lists each reader wrong the writer did not confirm, with the reason and the file:line that
  * answers the refuter (or a note starting "history:" naming the earlier reasoned ok).
  * A bare id in "pending" (rounds before pending reasons) is read, with no reason; record refuses it.
- * "outsideBar", "ruledKept" and "rejected" are read leniently: their shape errors come back in outsideBarShape,
- * ruledKeptShape and rejectedShape, which record reports as PROBLEMs (other callers, such as replay and the
+ * "outsideBar", "ruledKept", "rejected" and "restated" are read leniently: their shape errors come back in
+ * outsideBarShape, ruledKeptShape, rejectedShape and restatedShape, which record reports as PROBLEMs (other callers, such as replay and the
  * earlier-round repeat scan, ignore them).
  */
 export function loadConfirmed(file) {
@@ -123,7 +127,21 @@ export function loadConfirmed(file) {
       rejected.set(x.id, x.note);
     });
   }
-  return { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape, rejected, rejectedShape };
+  const sv = raw.restated === undefined ? [] : raw.restated;
+  const restated = new Map();
+  const restatedShape = [];
+  if (!Array.isArray(sv)) restatedShape.push('confirmed.json: "restated" must be an array of {"id", "of"} entries');
+  else {
+    sv.forEach((x, i) => {
+      if (!isObj(x) || typeof x.id !== 'string' || !x.id.trim()) {
+        restatedShape.push(`confirmed.json: "restated" entry ${i + 1} (${JSON.stringify(x)}) is not an {"id", "of"} entry`);
+        return;
+      }
+      if (restated.has(x.id)) restatedShape.push(`confirmed.json: "restated" lists ${x.id} twice`);
+      restated.set(x.id, x.of);
+    });
+  }
+  return { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape, rejected, rejectedShape, restated, restatedShape };
 }
 
 /** The owner's close rulings: {ownerQuestionsBlock (default true), defectsBlock (default false)}. */
@@ -462,7 +480,7 @@ export function record({ S, unit, R, chunkReaders }) {
   }
 
   // Confirmed wrongs, pending ids and defects.
-  const { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape, rejected, rejectedShape } = loadConfirmed(confirmedPath);
+  const { wrongs, pending, pendingReasons, defects, withdrawn, outsideBar, outsideBarShape, ruledKept, ruledKeptShape, rejected, rejectedShape, restated, restatedShape } = loadConfirmed(confirmedPath);
   for (const [id, v] of wrongs) {
     if (canaryMap.has(id)) problems.push(`confirmed.json: ${id} is a canary; canaries are scored, never confirmed`);
     else if (!byId.has(id)) problems.push(`confirmed.json: ${id} is not an item in this round's snapshot`);
@@ -527,8 +545,22 @@ export function record({ S, unit, R, chunkReaders }) {
   problems.push(...rejectedShape);
   for (const [id, note] of rejected) {
     if (!byId.has(id)) problems.push(`confirmed.json: rejected id ${id} is not an item in this round's snapshot`);
-    for (const [has, what] of [[wrongs, 'confirmed wrong'], [pending, 'pending'], [defects, 'a defect'], [withdrawn, 'withdrawn'], [outsideBar, 'outside the bar']]) {
+    for (const [has, what] of [[wrongs, 'confirmed wrong'], [pending, 'pending'], [defects, 'a defect'], [withdrawn, 'withdrawn'], [outsideBar, 'outside the bar'], [restated, 'restated']]) {
       if (has.has(id)) problems.push(`confirmed.json: ${id} is both rejected and ${what}`);
+    }
+  }
+
+  // Restated (a final-check round only): reader wrongs that restate a known wrong, or the flaw a revert or
+  // stale lead's edit fixes. The round fixes them without confirming them: not confirmed, not false alarms.
+  problems.push(...restatedShape);
+  if (restated.size && !finalCheck) {
+    problems.push(`confirmed.json: "restated" is only for a final-check unit's round (a reader wrong restating a known wrong, or a revert or stale lead's flaw, that round F fixes without confirming); unit ${unit} is ${cfg.units[unit]?.status}`);
+  }
+  for (const [id, of] of restated) {
+    if (!byId.has(id)) problems.push(`confirmed.json: restated id ${id} is not an item in this round's snapshot`);
+    if (typeof of !== 'string' || !of.trim()) problems.push(`confirmed.json: restated ${id} names no known wrong or lead in "of" (its known-wrongs.txt line, or the lead)`);
+    for (const [has, what] of [[wrongs, 'confirmed wrong'], [pending, 'pending'], [defects, 'a defect'], [withdrawn, 'withdrawn'], [outsideBar, 'outside the bar']]) {
+      if (has.has(id)) problems.push(`confirmed.json: ${id} is both restated and ${what}`);
     }
   }
 
@@ -722,7 +754,7 @@ export function record({ S, unit, R, chunkReaders }) {
     else if (!mine.some((x) => x.ruling === k.ruling)) {
       problems.push(`confirmed.json: "ruledKept" lists ${k.id} with ruling ${k.ruling}, but its ruled ok names ${[...new Set(mine.map((x) => x.ruling))].join(', ')}`);
     }
-    for (const [has, what] of [[wrongs, 'confirmed wrong'], [pending, 'pending'], [defects, 'a defect'], [withdrawn, 'withdrawn'], [outsideBar, 'outside the bar']]) {
+    for (const [has, what] of [[wrongs, 'confirmed wrong'], [pending, 'pending'], [defects, 'a defect'], [withdrawn, 'withdrawn'], [outsideBar, 'outside the bar'], [restated, 'restated']]) {
       if (has.has(k.id)) problems.push(`confirmed.json: ${k.id} is both in "ruledKept" and ${what}`);
     }
     kept.add(`${k.id}\u0000${k.ruling}`);
@@ -738,8 +770,8 @@ export function record({ S, unit, R, chunkReaders }) {
     }
   }
   for (const [id, by] of markedBy) {
-    if (wrongs.has(id) || pending.has(id) || defects.has(id) || withdrawn.has(id) || outsideBar.has(id) || rejected.has(id)) continue;
-    problems.push(`confirmed.json: ${id} was marked wrong by ${[...by].sort().join(', ')} but is not confirmed, pending, a defect, withdrawn or outside the bar, and has no "rejected" entry (its reason and the file:line that answers the refuter)`);
+    if (wrongs.has(id) || pending.has(id) || defects.has(id) || withdrawn.has(id) || outsideBar.has(id) || rejected.has(id) || restated.has(id)) continue;
+    problems.push(`confirmed.json: ${id} was marked wrong by ${[...by].sort().join(', ')} but is not confirmed, pending, a defect, withdrawn, outside the bar or restated, and has no "rejected" entry (its reason and the file:line that answers the refuter)`);
   }
   for (const id of rejected.keys()) {
     if (!markedBy.has(id) && byId.has(id)) warnings.push(`confirmed.json: ${id} is rejected, but no reader marked it wrong`);
@@ -803,15 +835,16 @@ export function record({ S, unit, R, chunkReaders }) {
       foundByAll: 0, foundBy: {}, foundByAlone: {}, foundByOneReader: 0, foundByNone: 0, foundByNoneIds: [], foundByNoneBy: {}, foundByAudit: 0, foundByAuditIds: [],
       falseAlarms: {}, falseAlarmIds: {}, pendingMarkedWrong: {}, defectMarkedWrong: {}, withdrawnByRuling: {},
       withdrawn: ids.filter((id) => withdrawn.has(id)).length,
+      restated: ids.filter((id) => restated.has(id)).length,
       outsideBar: {}, outsideBarIds: ids.filter((id) => outsideBar.has(id)),
     };
     m.outsideBarItems = m.outsideBarIds.length;
     for (const s of slots) {
       m.foundBy[s] = conf.filter((id) => marked.get(s).has(id)).length;
       m.foundByAlone[s] = 0;
-      // Pending ids, defects, wrongs withdrawn by a ruling and wrongs outside the bar are neither
-      // confirmed wrongs nor false alarms.
-      const fa = [...marked.get(s)].filter((id) => !wrongs.has(id) && !pending.has(id) && !defects.has(id) && !withdrawn.has(id) && !outsideBar.has(id));
+      // Pending ids, defects, wrongs withdrawn by a ruling, wrongs outside the bar and restated known
+      // flaws are neither confirmed wrongs nor false alarms.
+      const fa = [...marked.get(s)].filter((id) => !wrongs.has(id) && !pending.has(id) && !defects.has(id) && !withdrawn.has(id) && !outsideBar.has(id) && !restated.has(id));
       m.falseAlarms[s] = fa.length;
       m.falseAlarmIds[s] = fa;
       m.pendingMarkedWrong[s] = [...marked.get(s)].filter((id) => pending.has(id)).length;
@@ -822,6 +855,7 @@ export function record({ S, unit, R, chunkReaders }) {
     for (const id of ids) {
       if (withdrawn.has(id) && !union.includes(id)) warnings.push(`confirmed.json: ${id} is withdrawn by ruling ${withdrawn.get(id)}, but no reader marked it wrong`);
       if (outsideBar.has(id) && !union.includes(id)) warnings.push(`confirmed.json: ${id} is listed outside the bar, but no reader marked it wrong`);
+      if (restated.has(id) && !union.includes(id)) warnings.push(`confirmed.json: ${id} is restated, but no reader marked it wrong`);
     }
     for (const id of conf) {
       const finders = slots.filter((s) => marked.get(s).has(id));
@@ -896,6 +930,7 @@ export function record({ S, unit, R, chunkReaders }) {
     tot.foundByAudit = (tot.foundByAudit || 0) + m.foundByAudit;
     tot.foundByOneReader += m.foundByOneReader;
     tot.withdrawn = (tot.withdrawn || 0) + m.withdrawn;
+    tot.restated = (tot.restated || 0) + m.restated;
     tot.outsideBarItems += m.outsideBarItems;
     tot.outsideBarIds.push(...m.outsideBarIds);
     for (const s of slots) {
@@ -1030,6 +1065,12 @@ export function record({ S, unit, R, chunkReaders }) {
       } else if (wrongs.has(id)) {
         verdict = 'wrong';
         note = wrongs.get(id).note;
+      } else if (restated.has(id) && readBy) {
+        // A reader wrong restating a known wrong or a lead's flaw: wrong at the snapshot, fixed in this
+        // final check without being confirmed again.
+        verdict = 'wrong';
+        entryExtra.restated = restated.get(id);
+        note = `restated: ${restated.get(id)} (fixed in this final check, not confirmed again). ${readerNotes}`;
       } else if (withdrawn.has(id) && readBy) {
         // A reader wrong a ruling given mid-round overturned: ok, and not a false alarm.
         entryExtra.withdrawnByRuling = withdrawn.get(id);
@@ -1051,7 +1092,7 @@ export function record({ S, unit, R, chunkReaders }) {
       }
       counts[verdict]++;
       const entry = { id, chunk: name, position: p, verdict, ...entryExtra, note, cites_read: compressLines(citesRead), cites_read_by: citesReadBy, readers: perReader };
-      if (verdict === 'wrong') {
+      if (verdict === 'wrong' && wrongs.has(id)) {
         entry.foundBy = foundByOf.get(id) || [];
         if (wrongs.get(id).foundBy) entry.foundByWriter = wrongs.get(id).foundBy;
         const cls = classesOf(wrongs.get(id));
@@ -1112,7 +1153,7 @@ export function record({ S, unit, R, chunkReaders }) {
     summary:
       `record ${unit} r${measure.round}: ${items.length} items (ok ${counts.ok}, wrong ${counts.wrong}, pending-owner ${counts['pending-owner']}, defect ${counts.defect}, unread ${counts.unread}, outside-bar ${counts['outside-bar']}); ` +
       `full depth ${measure.fullDepth ? 'yes' : 'NO'}, counts as zero ${measure.countsAsZero ? 'yes' : `no (${blockers.join(', ')})`}; ` +
-      `${readers.size} reader files covered${rr}; confirmed ${tot.confirmed}${rptText}, found by one reader ${tot.foundByOneReader}, by none ${tot.foundByNone}, rejected ${rejected.size}${fc}${ob}${canaryText}; ` +
+      `${readers.size} reader files covered${rr}; confirmed ${tot.confirmed}${rptText}, found by one reader ${tot.foundByOneReader}, by none ${tot.foundByNone}, rejected ${rejected.size}${restated.size ? `, restated ${restated.size}` : ''}${fc}${ob}${canaryText}; ` +
       (est.estimated
         ? `estimated remaining ${est.remaining} (range ${est.range[0]}-${est.range[1]}${est.lowConfidenceChunks.length ? `, low confidence in ${est.lowConfidenceChunks.join(', ')}` : ''}${est.chunksNotEstimated.length ? `, chunk(s) ${est.chunksNotEstimated.join(', ')} not estimated` : ''}; ${ESTIMATE_CAVEAT})`
         : `remaining wrongs not estimated (${est.reason})`) +

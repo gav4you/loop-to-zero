@@ -58,7 +58,7 @@ const BASE_READER_WRONGS = ['A02', 'A03', 'A09'];
 function withRejected(o) {
   if (!o || typeof o !== 'object' || Array.isArray(o) || 'rejected' in o) return o;
   const ids = (k) => (Array.isArray(o[k]) ? o[k].map((x) => (typeof x === 'string' ? x : x && x.id)) : []);
-  const taken = new Set([...Object.keys(o), ...ids('pending'), ...ids('defects'), ...ids('withdrawn'), ...ids('outsideBar')]);
+  const taken = new Set([...Object.keys(o), ...ids('pending'), ...ids('defects'), ...ids('withdrawn'), ...ids('outsideBar'), ...ids('restated')]);
   const rejected = BASE_READER_WRONGS.filter((id) => !taken.has(id)).map((id) => ({ id, note: 'src/auth.js:1 answers the reader; fixture dismissal' }));
   return rejected.length ? { ...o, rejected } : o;
 }
@@ -1946,6 +1946,56 @@ test('record: "withdrawn" reader wrongs (overturned by a ruling mid-round) are n
   wj(conf, { ...CONFIRMED, withdrawn: [{ id: 'A10', ruling: 'D-12' }] });
   ok(/WARNING: confirmed\.json: A10 is withdrawn by ruling D-12, but no reader marked it wrong/.test(passes(rec()).out), 'a withdrawn id no reader marked: a warning only');
 });
+test('record: "restated" (final-check only) holds a reader wrong that restates a known wrong or a lead\'s flaw: neither confirmed nor a false alarm', () => {
+  const S = baseCopy();
+  const cfgP = path.join(S, 'config.json');
+  const base = rj(cfgP);
+  const status = (st) => wj(cfgP, { ...base, units: { ...base.units, u1: { ...base.units.u1, status: st } } });
+  const conf = path.join(RD(S), 'confirmed.json');
+  const mp = path.join(RD(S), 'measure.json');
+  const rec = () => ltz(['record', S, 'u1', '1', ...READERS]);
+  status('final-check');
+  // c2-b marked A09 wrong: a false alarm in the base round (control).
+  wj(conf, { ...CONFIRMED, restated: [] });
+  passes(rec(), 'an empty list');
+  const m0 = rj(mp);
+  eq([m0.chunks.c2.falseAlarms['c2-b'], m0.chunks.c2.restated, m0.total.restated], [1, 0, 0], 'control: a false alarm');
+  const of = 'known-wrongs.txt: A09 (u1/r7, held draft drafts/A09.md)';
+  wj(conf, { ...CONFIRMED, restated: [{ id: 'A09', of }] });
+  const r = passes(rec());
+  ok(/rejected 0, restated 1/.test(r.out), r.out);
+  const m = rj(mp);
+  eq([m.chunks.c2.falseAlarms['c2-b'], m.chunks.c2.falseAlarmIds['c2-b'], m.chunks.c2.restated, m.total.restated, m.chunks.c2.confirmed, m.total.confirmed, m.total.repeats ?? m.repeats],
+    [0, [], 1, 1, 1, 3, m0.total.repeats ?? m0.repeats], 'not a false alarm, not confirmed, no repeat');
+  const by = Object.fromEntries(rj(path.join(RD(S), 'report.json')).items.map((x) => [x.id, x]));
+  eq([by.A09.verdict, by.A09.restated], ['wrong', of], 'reported wrong (the item is wrong at the snapshot), with what it restates');
+  ok(by.A09.note.startsWith(`restated: ${of}`), by.A09.note);
+  ok(/counts as zero no \(.*wrong/.test(r.out), 'the round is not a zero');
+  // Only a final-check round takes it.
+  for (const st of ['open', 'closed']) {
+    status(st);
+    fails(rec(), /"restated" is only for a final-check unit's round/, st);
+  }
+  status('final-check');
+  for (const [extra, re] of [
+    [{ restated: [{ id: 'A02', of }] }, /A02 is both restated and confirmed wrong/],
+    [{ pending: [{ id: 'A09', pendingReason: 'rule-meaning' }], restated: [{ id: 'A09', of }] }, /A09 is both restated and pending/],
+    [{ defects: ['A09'], restated: [{ id: 'A09', of }] }, /A09 is both restated and a defect/],
+    [{ outsideBar: [{ id: 'A09', note: 'src/auth.js:1' }], restated: [{ id: 'A09', of }] }, /A09 is both restated and outside the bar/],
+    [{ rejected: [{ id: 'A09', note: 'src/auth.js:1 answers it' }], restated: [{ id: 'A09', of }] }, /A09 is both rejected and restated/],
+    [{ restated: [{ id: 'Z9', of }] }, /restated id Z9 is not an item in this round's snapshot/],
+    [{ restated: [{ id: 'A09' }] }, /restated A09 names no known wrong or lead in "of"/],
+    [{ restated: [{ id: 'A09', of: '  ' }] }, /restated A09 names no known wrong or lead in "of"/],
+    [{ restated: ['A09'] }, /"restated" entry 1 \("A09"\) is not an \{"id", "of"\} entry/],
+    [{ restated: { id: 'A09', of } }, /"restated" must be an array of \{"id", "of"\} entries/],
+    [{ restated: [{ id: 'A09', of }, { id: 'A09', of }] }, /"restated" lists A09 twice/],
+  ]) {
+    wj(conf, { ...CONFIRMED, ...extra });
+    fails(rec(), re);
+  }
+  wj(conf, { ...CONFIRMED, restated: [{ id: 'A09', of }, { id: 'A10', of: 'closed-unit-leads.txt: A10 (stale)' }] });
+  ok(/WARNING: confirmed\.json: A10 is restated, but no reader marked it wrong/.test(passes(rec()).out), 'a restated id no reader marked: a warning only');
+});
 test('record: "outsideBar" reader wrongs (outside a frozen bar) are listed for the owner, not counted: not false alarms, not confirmed', () => {
   const S = baseCopy();
   const conf = path.join(RD(S), 'confirmed.json');
@@ -3766,7 +3816,7 @@ test('record: every reader wrong left unconfirmed needs a "rejected" entry with 
   const bare = { ...CONFIRMED, rejected: [] };
   // c2-b marked A09 wrong and the writer did not confirm it: a silent dismissal is refused.
   wj(conf, bare);
-  fails(rec(), /PROBLEM: confirmed.json: A09 was marked wrong by c2-b but is not confirmed, pending, a defect, withdrawn or outside the bar, and has no "rejected" entry/);
+  fails(rec(), /PROBLEM: confirmed.json: A09 was marked wrong by c2-b but is not confirmed, pending, a defect, withdrawn, outside the bar or restated, and has no "rejected" entry/);
   const NOTE = 'config/app.json:2 is 30, as the item says; the reader misread the unit';
   wj(conf, { ...bare, rejected: [{ id: 'A09', note: NOTE }] });
   const r = passes(rec(), 'with its reason');
