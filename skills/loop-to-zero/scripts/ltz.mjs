@@ -59,7 +59,8 @@ render <S> <unit> <R> <slot> show <cite>...
   render-<slot>.jsonl. Masking as for render.`,
   record: `record <S> <unit> <R> --chunk-readers <chunk>=<slotA>,<slotB> ...
   Check every reader's coverage (each list position exactly once per reader, except a range the owner
-  dropped; every cite in its render log; every wrong names a file:line it rendered); every chunk must
+  dropped; every cite in its render log; every wrong names a file:line it rendered, or a cited file it
+  found missing at the pin, unless its note starts "self-contradiction:"); every chunk must
   have readers, except in a unit whose config status is final-check: there, chunks left out of
   --chunk-readers (all of them, if it is not given) are reported "not read (final check)", and the
   round never counts as a zero. A rerun slot (queue rerun) supplies its positions in place of its parent's lines (the
@@ -85,7 +86,8 @@ render <S> <unit> <R> <slot> show <cite>...
   from the ruled ok's, whose id is also confirmed, pending, a defect, withdrawn, outsideBar or restated, or
   that lacks an id or ruling, is a PROBLEM. A wrong in a parent's (or earlier rerun's) lines that
   the replacing rerun does not mark is a warning. A confirmed id that an earlier round (or, with config "historyFolders",
-  any round but r0 under <folder>/<unit>/) also confirmed with an overlapping class is a PROBLEM
+  any round but r0 under <folder>/<unit>/) also confirmed with an overlapping class (a wrong no later
+  judgments.jsonl line turned ok or pending-owner) is a PROBLEM
   unless it is pending, or has "repeatReason" "plain-fix-failure", "new-text", "earlier-miss" or "evidence-moved" with
   a non-empty "repeatNote" and a "rulingsChecked" list: every bar ruling in the decision log, each
   as {"ruling", "why"} with why it does not cover the item. With config "decisionLog" and
@@ -197,8 +199,9 @@ queue <S> <unit> <R> status
   Across S/<unit>/r*/fixlog.jsonl, report any (id, field) whose value returns to one it held before.
   With config "historyFolders", each folder's <folder>/<unit>/r*/fixlog.jsonl is read first (rounds
   labelled such as discovery/r3). A flip whose returning fixlog entry carries "ruling": "<id>", or
-  "judgment:<round>:<id>" naming an entry in that state folder's judgments.jsonl (for an overturn that
-  was not a ruling), is listed as explained and does not fail. "judgment:<folder>/<round>:<id>"
+  "judgment:<round>:<id>" naming an entry in that state folder's judgments.jsonl for this unit whose id
+  is the flipped item or whose backprop lists it (for an overturn that was not a ruling), is listed as
+  explained and does not fail. "judgment:<folder>/<round>:<id>"
   names an entry in that history folder's judgments.jsonl instead (<folder> as in config
   "historyFolders" with any trailing / dropped, such as discovery); a folder not listed there leaves
   the flip unexplained. Exits non-zero when an unexplained flip is found, or a history folder is
@@ -226,8 +229,8 @@ cost --timeline <transcript.jsonl>
   (before the first render) and each window: tokens, messages and minutes.`,
   replay: `replay <S> <pattern.json|classfile> --rounds <unit>[,<unit>...|all] [--holdout <unit>/r<R>[,...]]
   Run the pattern(s) over each past round's snapshot.jsonl that has a confirmed.json, and report recall
-  on confirmed wrongs of the pattern's class and false hits on items not confirmed wrong (a hit on a restated
-  id is neither). With config
+  on confirmed wrongs of the pattern's class and false hits on items not confirmed wrong (some hits count
+  as neither, such as one on a restated, pending or unread item: scripts/README.md, "Replay"). With config
   "historyFolders", each folder's <folder>/<unit>/r* rounds are replayed too, first (labelled such as
   discovery/u1/r3); a missing folder is a PROBLEM. A confirmed wrong whose latest judgments.jsonl
   line for that unit and round, in the state folder holding the round (S/ or the history folder), has

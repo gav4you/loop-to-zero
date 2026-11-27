@@ -96,7 +96,7 @@ An item's `cites` (and a reader's) take four forms:
 
 A cite that cannot be rendered (a missing file, a folder, a file that is not text, a line before 1 or
 past the end, a key not found, a path no evidence source claims) is marked in the window and logged as
-an attempt, so a reader may cite exactly what was tried. A file is not text when it holds a NUL byte or
+an attempt, so a reader may list exactly what was tried in its `cites`. A file is not text when it holds a NUL byte or
 starts with a UTF-16 byte order mark (status `binary`): export such evidence as UTF-8. A UTF-8 byte
 order mark is dropped, so it is not part of line 1.
 

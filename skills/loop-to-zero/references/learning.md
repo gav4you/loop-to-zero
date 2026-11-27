@@ -8,7 +8,7 @@ round) to the `judgments.jsonl` of the state folder that holds that verdict's ro
 | Trigger | What it shows |
 |---|---|
 | The owner overrules a verdict, or gives a ruling (asked or not) | Your reading of a rule was off, or a ruling was missing from the bar |
-| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1; for a "missing ruling" one, "Back-propagation") | Your fix overreached, or an earlier pass missed it |
+| A reader, a later round or the fix checker finds a wrong in an item you edited, or in one a past pass marked ok (not one of origin "evidence moved": "The retro", step 1; for a "missing ruling" one, "Back-propagation"; nor a `restated` one: `references/round.md`, "Known wrongs") | Your fix overreached, or an earlier pass missed it |
 | Confirmation overturns a reader's wrong, or a spot-check overturns one of its oks | The brief or the classes are unclear |
 | A repeat: an id an earlier round confirmed is confirmed again for an overlapping class (`ltz record` flags it) | The evidence plainly refutes it: your fix failed, or an earlier pass missed it (`earlier-miss`), so it is `wrong`. After a pin move, a repeat only the new evidence refutes is neither: origin "evidence moved" (`references/fixing.md`, "A repeat"), which writes no lesson and no `judgments.jsonl` line ("The retro", step 1); for a "missing ruling" one, "Back-propagation". A rule's meaning is in dispute, and the item's truth turns on that meaning: it is `pending-owner` (`references/fixing.md`) |
 | A reader of the chunk missed a confirmed wrong that another reader found | Check the missing reader's render log first ("The retro", step 1). It showed the refuter and still passed: the class is easy to miss, so propose a sharper wording. It never showed it: it failed to look, so the remedy is reading depth, not wording |
@@ -60,8 +60,9 @@ retire; quiet is not a reason to delete one.
 - **A wrong that an earlier pass missed counts in the round that finds it.** The latest full pass that marked
   it ok is shown as adjusted (`n (adj n+1, reason, date)`), never added into the trend a second time. Skip the
   adjustment if that pass read text that was changed afterwards.
-- **A find in another open unit's item counts for that unit** (a unit in `final-check` counts as closed here: SKILL.md, "Cross-unit effects"), never in the finding round's count: show that
-  unit's latest full pass that read it as adjusted, and count it toward that unit's escalation trigger. If that
+- **A find in another open unit's old text counts for that unit** (`references/round.md`, step 5; a unit in `final-check` counts as closed here: SKILL.md, "Cross-unit effects"), never in the finding round's count: show that
+  unit's latest full pass that read it as adjusted, and count it toward that unit's escalation trigger (an
+  "evidence moved" one does neither: "The retro", step 1). If that
   unit's current round already holds it in its find list, it counts there only, and that round fixes it. A hit
   logged for it as "deferred" counts in the round that judges it (`references/round.md`, step 3). A find edited
   into a unit with no full pass yet counts in the report's cross-unit counts (`references/owner-asks.md`,
@@ -188,7 +189,8 @@ say "no held-out history yet" rather than quoting the in-sample recall.
 
 ## Trying a new check or a new method
 - **A new mechanical check in the gate** (a project check in `S/checks/`) runs warn-only for one round first: it reports what it would have blocked, and you judge each hit, before it is allowed to block.
-  Hits that turn out right are candidate wrongs (confirm checks as usual); false hits mean the check is fixed first.
+  Hits that turn out right are candidate wrongs (confirm checks as usual; one no reader marked takes
+  `"foundBy": "spot-check"`, as a cite group's does: `references/round.md`, step 3); false hits mean the check is fixed first.
   Regression patterns are the exception: they block at once, because their known instances test them.
   A new hook rule is not yours to add: propose it to the skill's maintainer, who tests it before it ships.
 - **A new method for a round** (narrow falsifiers, a different sweep; a new reading order only for a discovery

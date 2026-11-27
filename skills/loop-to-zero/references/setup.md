@@ -154,7 +154,7 @@ test read may run (its reader, and an external reviewer on the same window when 
    - **Put items an earlier fix changed first** in the pass's `--order` files, then the rest in this pass's order, and weight spot-checks toward them; never tell readers which items were fixed. In one project, about 40% of later finds sat on
      items an earlier fix had changed, against a 7% base rate.
    - **Aim each pass at the class that survived.** You (the writer) build an inventory of every instance of its mechanism at
-     the source (all refusal sites, all writers), then judge every item that names one.
+     the source (all refusal sites, all writers), then judge every item that names one, confirming its finds as a sweep's (`references/round.md`, step 4).
    - **When you judge, show yourself each item beside the rulings, entries and siblings that bear on it** (readers get only what their brief allows). When an aid like that is
      added mid-pass, run it back over the items already read.
    - **A discovery pass that never reaches zero** still ends when the owner says. In one project, discovery ran

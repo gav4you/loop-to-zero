@@ -43,7 +43,7 @@ Your judgments get no independent check, so the mode makes up for it with order 
   (`references/round.md`, "Between rounds only"): at confirm for a reading, or when you take the fix
   checker's results.
 - **Ruling-level leads:** ask the owner at once; what the lead touches waits for the answer (SKILL.md,
-  "Cross-unit effects"). In solo mode, "at once" holds mid-reading too: when one (from a sweep run too early),
+  "Cross-unit effects"). In solo mode, "at once" holds mid-reading too: when one,
   or an outside finding that refutes wording a ruling approved, surfaces during a reading session, finish the current window, then send the owner a one-line
   flag (the ruling, the item, what refutes its wording) and go back to reading. The flag needs nothing read, so
   it doesn't break the cold read. The full costed ask follows after the hand-back, once you have read the

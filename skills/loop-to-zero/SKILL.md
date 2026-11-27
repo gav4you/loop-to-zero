@@ -193,9 +193,9 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    canaries.
 2. **Read:** cold readers in the owner's mode. No item file is edited or committed until the reading is done (fixes are
    drafted in `drafts/<id>.md`).
-3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`), and judge the
-   cite groups `ltz crosscheck` flags and this unit's open `cross-unit-edits.txt` lines with verdict "deferred"
-   (`references/round.md`, step 3); write the find
+3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`) and the other
+   finds step 3 lists, such as the cite groups `ltz crosscheck` flags and this unit's open "deferred"
+   `cross-unit-edits.txt` lines (`references/round.md`, step 3); write the find
    list and run `record` (it scores the canaries); give any supplementary reads; spot-check 10 oks per reader, add
    their finds and run `record` again. Work each new `defect` through
    `references/debugging.md`, and never edit the evidence.
@@ -231,7 +231,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
   - A final targeted check handles all leads after every unit closes (or sooner, between rounds, if the owner asks).
   - A lead that would change what a ruling permits goes to the owner at once. Items in open units that depend
     on the answer (it would change their verdict, or the wording of their fix): `ruled-wording` where the evidence refutes wording the ruling approved; `rule-meaning` where
-    the item's truth turns on the ruling's meaning; an item plainly refuted otherwise stays `wrong`, with its
+    the item's truth turns on the ruling's meaning (`boundary-silent` for the evidence boundary's ruling: Terms, "rule"); an item plainly refuted otherwise stays `wrong`, with its
     fix drafted and held.
 
 ## Red flags: stop
@@ -244,7 +244,7 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
 | "Commit fixes while a reader is still reading" | Readers judge the snapshot |
 | "Copy the item's cites into cites_read", or "fill a missing item myself" | The coverage check would pass while checking nothing |
 | "`grep \| head` is enough" | Truncation at any layer hides the refuter |
-| "Change 'only A' to 'only A and B'" | That is a new universal. Prove it with an unlimited search, or rewrite it without the universal word (subtract, or hedge if softening is allowed); a list of 3 or more with no hedge word still needs the logged search (`references/fixing.md`, "5. The diff check") |
+| "Change 'only A' to 'only A and B'" | That is a new universal. Prove it with an unlimited search, or rewrite it without the universal word (as `references/fixing.md`, "2. Fix the seed and the hits", allows); a list of 3 or more with no hedge word still needs the logged search (`references/fixing.md`, "5. The diff check") |
 | "The sweep for the fixed wording came back clean" | That proves no regression. Sweep by subject, cite and file |
 | "I read the diff; the fix is fine" | Open every named item, and every field of the changed item |
 | "My fix is obviously right; skip the fix checker" | Your own clauses are the most-missed wrongs |

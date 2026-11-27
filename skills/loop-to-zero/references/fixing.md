@@ -47,7 +47,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 4. **The refuter, the item type and the classes** (below). Otherwise, the evidence plainly refutes it: `wrong`.
 
 - **History.** Earlier reasoned oks live in each round's `report.json` notes, readers' `agent-*.jsonl` lines and
-  `fixcheck-*.jsonl` lines (r0 excluded; this round's included), and your near-misses in `S/boundaries.md`; earlier wrongs in
+  `fixcheck-*.jsonl` lines (r0 excluded; this round's included), and your near-misses in `S/boundaries.md` and dismissals in each round's `retro.md`; earlier wrongs in
   `confirmed.json`. Look up the item's id in
   those, in the unit's earlier `S/<unit>/r*/confirmed.json` files, in `S/judgments.jsonl`,
   and in any discovery state folder (the same files under `S/discovery/`, its `boundaries.md` and `judgments.jsonl`
@@ -192,8 +192,7 @@ Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven boun
    - **Which search to log:** one over the whole boundary. Judge every hit, including those the scope excludes,
      and add a `scopeNote` and `scopeText` (the scope words), so `ltz diffcheck` keeps the bound in the text
      after later edits.
-   - Adding a member to a closed list ("only A and B") is a new universal. It needs the same proof; without
-     it, subtract, or open the list if softening is allowed.
+   - Adding a member to a closed list ("only A and B") is a new universal. It needs the same proof.
 4. **One wording per class.** Fix every hit of a class with one wording, reused from an earlier fix of that class
    already found correct (not `S/precedents.md`, which readers read) or the source's own words. Don't write fresh prose for each item.
    - **A wording no fix of the class has used yet is tried on one item first:** take that item through steps 3
@@ -340,7 +339,8 @@ When a verdict is overturned (by the owner, your own re-check (recorded as `spot
 3. Log each revert of an earlier round's edit in `fixlog.jsonl` with `"ruling": "<ruling id>"`, or
    `"judgment:<round>:<id>"` for an overturn that isn't a ruling (a spot-check, say; `"judgment:discovery/<round>:<id>"` when a main-loop entry cites a
    discovery pass's verdict; within discovery, the plain form). `ltz flips` then reports the revert as a flip the
-   ruling explains, not as an unclear definition. A revert that returns a field to this round's snapshot value
+   ruling explains, not as an unclear definition, when that judgments line concerns the reverted item
+   (`scripts/README.md`, "Flips"). A revert that returns a field to this round's snapshot value
    instead drops that field's entries from this round's `fixlog.jsonl` (`ltz diffcheck` refuses an entry for a
    field that did not change), and is recorded with its reference in `retro.md`. Retire any regression pattern born
    from the false wrong: set its `"regression"` to false (the file stays, for its known instances).

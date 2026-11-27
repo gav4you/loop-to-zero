@@ -219,7 +219,7 @@ Reply with the path, the counts, and one line per wrong.
      position. A tail the owner dropped is not continued (`references/round.md`, step 8).
    - **A reader's cites never rendered** (listed in its `cites`, or named as a wrong's refuter in its note, but not in its render log), or a render command that errored:
      re-run the windows holding those items with a fresh reader of the round's kind (`references/queue-and-outages.md`,
-     "When a fresh launch is allowed"). A cite that `render` marks as not found is not this case: it is
+     "When a fresh launch is allowed"). A cite whose file `render` found missing at the pin is not this case: it is
      logged as an attempt and may be cited. For one unrendered
      refuter, the range is just that window.
    - **Coverage is computed from the files,** never taken from a reader's word. A sampled pass once left 384
@@ -239,8 +239,8 @@ Reply with the path, the counts, and one line per wrong.
      "Changing the bar's wording" to the class found mid-pass). Meanwhile its wrongs go through the confirm
      checks (`references/fixing.md`) like any other.
 2. **Confirm every wrong in the union** at the evidence, with the confirm checks in `references/fixing.md`.
-   Round step 3 also judges the cite groups `ltz crosscheck` flags and the unit's deferred cross-unit lines
-   (`references/round.md`, step 3).
+   Round step 3 also confirms or judges the other finds it lists, such as the cite groups `ltz crosscheck` flags,
+   the unit's deferred cross-unit lines and its mapped outside findings (`references/round.md`, step 3).
    - A repeat the evidence plainly refutes is `wrong`, with `repeatReason` (`plain-fix-failure` when the refuted
      claim still stands, `new-text`, `earlier-miss`, or `evidence-moved` when only a moved pin refutes it), a `rulingsChecked` list (`references/fixing.md`)
      and a `repeatNote`. Only the Verdicts exceptions go in `pending` (a rule's meaning, a silent boundary, or

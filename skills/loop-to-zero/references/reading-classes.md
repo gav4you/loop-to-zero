@@ -62,7 +62,7 @@ ready for the owner. The pair is what stops two readers filing one wrong under d
 `references/fixing.md` ("Classes"), so order `S/classes.md` with the narrower, more mechanical classes first.
 
 Where softening is not allowed (setup question 4), the "Fix form" column's hedge forms don't apply.
-Subtraction still does, for descriptive items. Prove the scope; a requirement item the evidence fails is a `defect`.
+Subtraction still does, for descriptive items, where `references/fixing.md`, "2. Fix the seed and the hits", allows it. Prove the scope; a requirement item the evidence fails is a `defect`.
 
 **The search rule.** A search that backs a universal runs with no output limit at any layer: no `head`, no
 tool result cap, no truncated shell output. It covers the whole evidence boundary, and it looks for aliases,
