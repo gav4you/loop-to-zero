@@ -629,7 +629,7 @@ can hold it. The close follows
 `zeroBlockers` may still count it (`zeroBlockers` counts the ids in `defects`, as "1 defect (defectsBlock)",
 without naming them; a code fault logged while fixing a wrong item is never there, since its item is `wrong`).
 The fix checker's own results (`fixChecker`) do not enter this: the wrongs it finds in the new text are
-fixed before the next round. A wrong it finds in this unit's old text (snapshot text the fix did not change), which
+fixed before the next round. A wrong it finds in this unit's old text (`references/round.md`, step 5), which
 the writer copies into `confirmed.json` with `"foundBy": "fixcheck"`, does: it is a confirmed wrong of
 the round like any other, so the round does not count as zero.
 

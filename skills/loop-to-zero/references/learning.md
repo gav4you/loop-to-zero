@@ -70,8 +70,8 @@ retire; quiet is not a reason to delete one.
   `references/setup.md`, question 0).
 - **Closed units' earlier rounds:** their `judgments.jsonl` lines and adjusted counts are written at the final
   targeted check.
-- **Fix-checker finds** on text written after the snapshot take their origin in the retro by "The retro", step 1.
-  They are not part of the round's reading count.
+- **Fix-checker finds** on text written after the snapshot count in the retro as "own edit". They are not part
+  of the round's reading count.
 - **Past rounds' `confirmed.json` and `report.json` stay as history.** Only `loop.md`'s trend shows adjusted
   counts. A ruling given during the current round edits that round's `confirmed.json`, and `record` is re-run.
 - **`judgments.jsonl` "was"** is the latest verdict on record for the item, or `"fix-text"` for a find in text
@@ -82,7 +82,7 @@ retire; quiet is not a reason to delete one.
   miss, unless its origin is "evidence moved" ("The retro", step 1).
 - **Fix-checker finds in this unit's old text** (`references/round.md`, step 5) go into this round's
   `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's old text are handled as in
-  `references/round.md`, step 5. Finds in text a fix wrote stay out of it and are fixed in the
+  `references/round.md`, step 5. Finds in text a fix wrote or made wrong stay out of it (origin "own edit") and are fixed in the
   follow-up, an `outside-bar` one included: `outsideBar` holds only snapshot text.
 - **Revert and stale leads.** Either alone sets `closed-leads-pending`. The closing count (the confirmed count of
   the pass that closed the unit) changes only as `references/round.md`, step 8, says.
@@ -120,7 +120,7 @@ only a closing count keeps the bar of its close.
 
 ## The retro (`r<R>/retro.md`)
 1. **Sort each confirmed wrong on two axes.**
-   - **Origin:** pre-existing text; your own edit; a new class; a missing ruling; evidence moved (the owner moved the pin and only the new evidence
+   - **Origin:** pre-existing text (only when no other origin fits); your own edit; a new class; a missing ruling; evidence moved (the owner moved the pin and only the new evidence
      refutes the item: the pin in the `pin.json` of the last round that judged that text ok (for a fix's text no
      round has read since, the fix's own round) doesn't refute it; such a wrong adjusts no
      earlier round's count and is no miss of any kind (a reader's, an earlier pass's or the fix checker's): it
@@ -128,9 +128,7 @@ only a closing count keeps the bar of its close.
      the estimate's calibration (step 3), and does not count toward the escalation trigger;
      `references/round.md`, "Between rounds only"). A verdict of yours later overturned is "writer misjudgment"; when
      a ruling overturns it, it is "missing ruling" if the bar lacked the ruling's point, and "writer misjudgment"
-     if the entry covered it and you misread it. Each wrong takes one origin: the first that fits of evidence moved,
-     missing ruling (the ruling alone made it wrong), your own edit, a new class and writer misjudgment, else
-     pre-existing text.
+     if the entry covered it and you misread it.
    - **Who found it:** every reader of its chunk; some but not all (name the reader that missed it); none (the writer's own check (`spot-check`), a sweep, an audit, the fix
      checker in old text, or the extract).
 

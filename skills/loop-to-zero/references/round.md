@@ -100,7 +100,7 @@ measure counts them as found by none.
   Build its `--list` input file from the changed items (with `changed`, each edited field's `old` text included) plus the named items (without it).
 - Fix its real wrongs as a follow-up commit, as `references/fixing.md` says (a find in old text is swept first), and
   check that follow-up too, until a check returns 0. Its finds in
-  this unit's old text (snapshot text the fix did not change: a named item, an unchanged field, or a clause the fix kept word for word) go into
+  this unit's old text (snapshot text the fix did not change, already wrong before it: a named item, an unchanged field, or a clause the fix kept word for word) go into
   `confirmed.json` (`"foundBy": "fixcheck"`). An "old text held" find is not one: it overturns the fix's wrong
   (`references/fixing.md`, "After the fix checker"). Re-run `record` after every fix check, a clean one included: it reads the checker's
   result files (the fix-check counts, and any "ruled:" ok). A find in another
