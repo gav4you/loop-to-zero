@@ -58,7 +58,8 @@ groups and the deferred lines below are this step's own):
   `retro.md` notes that no reader marked (`foundBy: "spot-check"`; `references/setup.md`, steps 4 and 6);
 - run `ltz crosscheck <S> --unit <unit>`: it lists the cites two or more items share and flags those whose
   items state different numbers. Readers see one window at a time and never compare items, so judge each
-  flagged cite group together, at the evidence, whether or not it holds a confirmed wrong;
+  flagged cite group together, at the evidence, whether or not it holds a confirmed wrong (one it confirms that no
+  reader marked goes in `confirmed.json` with `"foundBy": "spot-check"`);
 - handle this unit's open lines in `S/cross-unit-edits.txt` with verdict "deferred" (hits another unit's round
   logged for it, and back-propagation re-judges logged for it: `references/learning.md`, "Back-propagation"; a
   discovery pass leaves them to main round 1: `references/setup.md`, step 9): judge each with the confirm checks, add a hit confirmed wrong that no reader marked to

@@ -174,13 +174,14 @@ First ask whether exclusivity is the point of the item. Every "only" or "no" ass
 test. It is the point when the item exists to state it (without the "only" or "no", it would tell a reader
 nothing they need, as in an item about who reads a table).
 You decide, and note why in the item's `confirmed.json` note (for an item in another unit, in its
-`cross-unit-edits.txt` line; for a dependent logged in `fixlog.jsonl` only, or a known wrong applied in round F, in
-the round's `retro.md` under its fix batch's expected effect, step 5). A requirement item never takes this path: it keeps
+`cross-unit-edits.txt` line; for a fix with no `confirmed.json` entry, such as a dependent logged in `fixlog.jsonl`
+only, a known wrong applied in round F or a follow-up of a find in text a fix wrote, in the round's `retro.md` under
+its fix batch's expected effect, step 5). A requirement item never takes this path: it keeps
 its claim, or the gap is a `defect` (a copying error from its own source is fixed: "Requirement items", below). For a descriptive item: if it is, keep the claim, state its scope and prove it (3 below). If it isn't, or it's
 unclear, subtract (1 below), or keep the claim with a proven scope (3 below).
 Every fix follows sub-steps 2 to 4 below (new facts read at the pin, proven bounds, one wording per class).
-1. **Subtraction** (dropping a false or unproven clause) is never softening, and is always allowed for descriptive items. **If
-   softening is also allowed,** you may hedge: open the list with "such as"
+1. **Subtraction** (dropping a false or unproven clause) is never softening. **If
+   softening is allowed,** you may hedge: open the list with "such as"
    or "for example". **If it is not allowed,** subtract, or keep the claim and state its proven scope (for a
    descriptive item). A requirement item is never narrowed to fit the evidence: a requirement the evidence does not meet
    is a `defect`, not a fix (see "Requirement items").

@@ -2,10 +2,8 @@
 
 ## Sizing
 - **Chunks of about 70 items,** cut on window boundaries (a window is about 16 items).
-  - That is small enough to finish in one sitting with the rules fresh, and large enough to see patterns
-    across neighbouring items.
-  - Below about 35 items, each agent's startup reading dominates its cost, and readers lose the links
-    between neighbouring items.
+  - That is small enough to finish in one sitting with the rules fresh.
+  - Below about 35 items, each agent's startup reading dominates its cost.
 - **Two independent readers per chunk,** with the union of their wrongs. Each round, measure the confirmed
   wrongs found by only one reader:
   - several per chunk means one reader misses things, so consider three;

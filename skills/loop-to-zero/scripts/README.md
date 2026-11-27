@@ -565,7 +565,8 @@ before it read them, or (with the owner's OK) a read of an owner-dropped tail.
   agent's. A slot keeps a list, so earlier agents' transcripts still count.
 - **`node <skill>/scripts/ltz.mjs cost --queue <S> <unit> <R>`** sums every stored transcript of that
   round, each counted once. A missing file is a PROBLEM, and the rest are still summed; slots with no
-  transcript are named in a warning.
+  transcript are named in a warning, and with none stored for any slot it fails (total such a round from
+  `retro.md`: `references/modes.md`, "External reviewer").
 - **`node <skill>/scripts/ltz.mjs cost --timeline <transcript.jsonl>`** prints one line per message:
   its timestamp, the time since the first message, its tokens and the running total. A message seen
   on several lines counts once, at the max of each field, with its earliest time. Each message that
