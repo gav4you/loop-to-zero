@@ -36,7 +36,7 @@ export const ALWAYS_BLOCKING_PENDING = ['boundary-silent', 'ruled-wording'];
 /**
  * Parse confirmed.json:
  * {"<id>": {note, foundBy?, class?, repeatReason?, repeatNote?, rulingsChecked?},
- *  "pending": [{id, pendingReason, question?}], "withdrawn": [{id, ruling}],
+ *  "pending": [{id, pendingReason, question?, foundBy?}], "withdrawn": [{id, ruling}],
  *  "outsideBar": [{id, note}], "ruledKept": [{id, ruling}], "defects": [ids], "rejected": [{id, note}],
  *  "restated": [{id, of}]}
  * "restated" (a final-check round only) holds reader wrongs that restate a known wrong, or the flaw a revert

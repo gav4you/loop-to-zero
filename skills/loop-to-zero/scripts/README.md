@@ -778,7 +778,7 @@ Notes on these fields:
             "repeatReason": "plain-fix-failure|new-text|earlier-miss|evidence-moved", "repeatNote": "...",
             "rulingsChecked": [{"ruling": "<ruling id>", "why": "<why it does not cover this item>"}]},
    "pending": [{"id": "<id>", "pendingReason": "rule-meaning|boundary-silent|ruled-wording",
-                "question": "..."}],
+                "question": "...", "foundBy": "..."}],
    "withdrawn": [{"id": "<id>", "ruling": "<ruling id>"}],
    "outsideBar": [{"id": "<id>", "note": "<what the evidence shows, with file:line>"}],
    "ruledKept": [{"id": "<id>", "ruling": "<ruling id>"}],

@@ -258,7 +258,7 @@ Reply with the path, the counts, and one line per wrong.
      point wrong (`references/round.md`, "Blocked only by what a re-read can't clear").
      Readers mark ruled wording ok, so this is how it surfaces. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
-     the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is
+     the round in which the amendment lands (`foundBy: "spot-check"`, unless its `pending` entry kept another; `references/learning.md`, "Counting"), or a lead if its unit is
      closed (SKILL.md, "Cross-unit effects"). A ruled ok whose approved wording the evidence doesn't refute
      stays ok: its `record` warning stays too, and blocks nothing.
    - `confirmed.json` may be drafted while readers are still reading; run `record` only after the reading is done.
