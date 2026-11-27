@@ -148,7 +148,7 @@ re-reading unchanged text can't clear a question or a defect. Wait for the owner
 answer an existing entry already covers, it goes in `rejected` with the entry's `S/classes.md:<line>`) and `record` is re-run. Make any edits the answer calls for first
 (`references/fixing.md`, "Carrying a ruling into the items" and "Reverting"); then that pass counts if it still meets the conditions
 above. If the answer makes the item wrong, it is a wrong of that
-pass: fix it and continue.
+pass (one no reader marked takes the `foundBy` its `pending` entry kept): fix it and continue.
 The same holds while any open owner question holds drafted fixes (such as an override question or a ruling-level lead):
 a new round would read text known to be wrong. Wait for the answer, then apply the drafts (or close as the owner
 chose).

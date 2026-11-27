@@ -255,7 +255,7 @@ Reply with the path, the counts, and one line per wrong.
      `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as `ruled-wording` all the
      same, its other point in the question and any fix that point needs held (`references/fixing.md`, check 2).
      Once the owner answers, the id goes back to its other list, or to the wrongs if the answer makes the ruled
-     point wrong.
+     point wrong (`references/round.md`, "Blocked only by what a re-read can't clear").
      Readers mark ruled wording ok, so this is how it surfaces. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

@@ -848,7 +848,9 @@ Notes on these fields:
     - `"boundary-silent"`: the boundary is silent on the refuter's kind of evidence;
     - `"ruled-wording"`: a ruling approved the refuted wording (the question is "amend <ruling>?").
 
-    `question` is optional. The reason decides whether the item blocks a zero (see "Counting a round
+    `question` is optional, and so is `foundBy`: an id no reader marked keeps there the value its wrong would
+    take, for when the answer makes it one (`references/round.md`, "Blocked only by what a re-read can't clear").
+    The reason decides whether the item blocks a zero (see "Counting a round
     as zero"), and `report.json` shows it on the item. A bare id (rounds written before pending
     reasons) is still read by the repeat check and `replay`; only `record` of the round itself refuses
     it.
