@@ -87,8 +87,8 @@ An item whose wording an "accepted by ruling" entry approves is not wrong for th
 judge its other claims and citations as usual. If the evidence differs from that wording,
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
-the evidence (a config only where the item cites it or `classes.md` maps it to its policy) does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
-defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
+the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
+defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config; an item that cites only its policy, with no config mapped to that policy, is not judged against a config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
 the policy for the config's value, fixes as a wrong and logs the defect beside it).
@@ -106,7 +106,7 @@ refutes its wording), note it in {SCRATCH}rulings.md, and go back to reading."}
 {S}/{UNIT}/r{R}/agent-{SLOT}.jsonl. After each window, APPEND one JSON line per item, in list order:
 Before citing a refuter you found by searching, show it with {SHOW_CMD}: a cite you never rendered is refused.
 {"unit":"{UNIT}","id":"…","verdict":"ok"|"wrong","class":["<class>", …],"note":"<why; a wrong names the
-refuting file:line at the pin (a vague relation: the link line you found, or the cited lines showing none)>","cites":["path:line", …]}
+refuting file:line at the pin (a vague relation: the link line you found, or the cited lines showing none; a cited file missing at the pin: that cite)>","cites":["path:line", …]}
 `cites` lists every line your verdict rests on: the item's cites you read, and any line you showed.
 List every class that applies, the first as classes.md's "When two classes fit" says.
 An item its own text refutes (its figures disagree: parts that don't add up to its total, a share that doesn't
@@ -168,8 +168,8 @@ An item whose wording an "accepted by ruling" entry approves is not wrong for th
 judge its other claims and citations as usual. If the evidence differs from that wording,
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
-the evidence (a config only where the item cites it or `classes.md` maps it to its policy) does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
-defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
+the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
+defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config; an item that cites only its policy, with no config mapped to that policy, is not judged against a config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
 the policy for the config's value, fixes as a wrong and logs the defect beside it).
@@ -208,10 +208,11 @@ Reply with the path, the counts, and one line per wrong.
      (`references/queue-and-outages.md`).
    - Every cite a reader lists appears in that reader's render log.
    - Every wrong names a refuting file:line, except one whose note starts "self-contradiction:" (it quotes the
-     clashing figures instead) and a vague-relation one (it names the link line it found, or the item's own cited
-     lines showing none: `references/reading-classes.md`, U13). `record` checks only that a wrong's note names at
-     least one line in that reader's render log (a not-found attempt does not count); that the refuter it names is
-     among them is yours to check.
+     clashing figures instead), a vague-relation one (it names the link line it found, or the item's own cited
+     lines showing none: `references/reading-classes.md`, U13) and one whose cited file is missing at the pin (it
+     names that cite). `record` checks only that a wrong's note names at least one line in that reader's render
+     log, or a path one of its attempts found missing at the pin (no other failed attempt counts); that the
+     refuter it names is among them is yours to check.
 
    **When a check fails** (one rule; never fill an item by hand):
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
@@ -253,9 +254,7 @@ Reply with the path, the counts, and one line per wrong.
      `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as `ruled-wording` all the
      same, its other point in the question and any fix that point needs held (`references/fixing.md`, check 2).
      Once the owner answers, the id goes back to its other list, or to the wrongs if the answer makes the ruled
-     point wrong. Where the ruling was not kept, a fix checker's ok instead leaves the id where it is, in a list or in
-     none (the checker reads after the fix commit; its `record` warning is expected), and asks "amend <ruling>?" in
-     `S/owner-questions.md`.
+     point wrong.
      Readers mark ruled wording ok, so this is how it surfaces. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

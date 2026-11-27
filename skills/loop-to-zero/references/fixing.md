@@ -29,7 +29,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    `pending-owner` (`boundary-silent`) and ask the owner.
 
    An item parked by check 1's ruled wording or by check 2 stays `pending-owner` even if another of its claims is
-   plainly refuted: that claim's fix is drafted in `drafts/<id>.md` and held; once the owner answers, the item is a
+   plainly refuted: that claim's fix is drafted in `drafts/<id>.md` and held (where a fix checker's ruled ok parks the item, its fix is already committed and stays); once the owner answers, the item is a
    wrong of that pass (a known wrong's or `restated` id excepted: `references/round.md`, "Known wrongs") and the
    draft is applied (`references/round.md`, "Blocked only by what a re-read can't clear").
 3. **History**, including an earlier reasoned ok. If an earlier verdict gave a reasoned ok on this exact point,
@@ -351,7 +351,7 @@ A value mismatch depends on what the cite is:
 - the cite is the requirement's own source (the policy): a copying error, so fix the item;
 - the cite is the implementation (the config): a `defect`.
 
-When an item states a requirement (a control or a policy) and the evidence (a config only where the item cites it or `classes.md` maps it to its policy) does not meet it:
+When an item states a requirement (a control or a policy) and the evidence does not meet it (which configs count: `references/setup.md`, "Policy and config evidence"):
 - the mismatch goes to `S/defects.md` for the owner;
 - the item is not softened to match the evidence, unless the owner rules so;
 - a copying error (a wrong file, key, value or name) is fixed like any other wrong;

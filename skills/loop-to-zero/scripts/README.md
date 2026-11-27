@@ -762,7 +762,7 @@ Notes on these fields:
   - Bad JSON, a missing id or a duplicate id is refused.
 
 **Reader files:**
-- **`r<R>/agent-<slot>.jsonl`** (reader results): `{"unit", "id", "verdict": "ok|wrong", "class": [...], "note", "cites": [...]}`. A `wrong` note names a `file:line` that the reader rendered, unless it starts "self-contradiction:" and quotes the clashing figures. The path is looked for among the paths in the reader's render log, so it may hold any character (a space, brackets, a non-ASCII letter), and a range may be written in either order.
+- **`r<R>/agent-<slot>.jsonl`** (reader results): `{"unit", "id", "verdict": "ok|wrong", "class": [...], "note", "cites": [...]}`. A `wrong` note names a `file:line` that the reader rendered, unless it starts "self-contradiction:" and quotes the clashing figures, or names a path one of the reader's cite attempts found missing at the pin (status `not-found-at-pin`, or `not-found` for a folder source; a cited file that is not there has no line to show). The path is looked for among the paths of the lines in the reader's render log, so it may hold any character (a space, brackets, a non-ASCII letter), and a range may be written in either order.
 - **`r<R>/fixcheck-<K>-<part>.jsonl`** (fix-checker results, iteration `<K>`, in the reader schema): `record` reads them into `measure.json`'s `fixChecker`. A line without an `id`, or with a verdict other than `ok` or `wrong`, is a PROBLEM, and so is a `fixcheck-*.jsonl` file not named this way.
 - **`r<R>/render-<slot>.jsonl`** (render log, written only by render and show):
   - `{"t": "item", "id"}`: an item shown in a window;

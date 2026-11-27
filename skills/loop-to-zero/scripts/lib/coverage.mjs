@@ -20,6 +20,7 @@ export function loadRenderLog(file) {
     items: new Set(),
     lines: new Map(), // path -> Set(line)
     attempts: new Set(), // normalised cite strings rendered (any status)
+    absent: new Set(), // paths an attempt found missing at the pin (no such file there)
     keyLines: new Map(), // path\nkey -> Set(line)
     byItem: new Map(), // id -> Map(path -> Set(line))
   };
@@ -28,7 +29,10 @@ export function loadRenderLog(file) {
   log.errors = errors;
   for (const { obj: e } of rows) {
     if (e.t === 'item') log.items.add(e.id);
-    else if (e.t === 'cite') log.attempts.add(e.cite);
+    else if (e.t === 'cite') {
+      log.attempts.add(e.cite);
+      if ((e.status === 'not-found-at-pin' || e.status === 'not-found') && typeof e.path === 'string') log.absent.add(normPath(e.path));
+    }
     else if (e.t === 'line' && typeof e.path === 'string' && Number.isInteger(e.line)) {
       addTo(log.lines, e.path, e.line);
       if (e.key) addTo(log.keyLines, `${e.path}\n${e.key}`, e.line);
@@ -129,6 +133,26 @@ export function noteNamesLoggedLine(log, note) {
       const a = Number(m[1]);
       const b = Number(m[2] || m[1]);
       for (const n of set) if (n >= Math.min(a, b) && n <= Math.max(a, b)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * True when the note names a path that one of this log's cite attempts found missing at the pin: a cited
+ * file that is not there has no line to show, so the attempt is a C1 wrong's evidence. The whole path must be
+ * named: "a.md" is not found inside "docs/ba.md" or "a.mdx".
+ */
+export function noteNamesAbsentPath(log, note) {
+  const text = String(note ?? '').replace(/\\/g, '/');
+  for (const p of log.absent) {
+    let i = -1;
+    while ((i = text.indexOf(p, i + 1)) >= 0) {
+      const before = text.slice(0, i).replace(/(?:\.\/)+$/, '');
+      if (/[\p{L}\p{N}_\/@+~.-]$/u.test(before)) continue; // the tail of a longer path
+      const after = text.slice(i + p.length);
+      if (/^[\p{L}\p{N}_\/@+~-]/u.test(after) || /^\.[\p{L}\p{N}]/u.test(after)) continue; // a longer path
+      return true;
     }
   }
   return false;

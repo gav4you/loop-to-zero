@@ -346,8 +346,8 @@ the skill's maintainer).
 5. **The evidence boundary and pin.** Which evidence kinds count, and which pin. The written boundary is the
    ruling; config `boundaryPaths` implements it, and if they disagree, the config is corrected.
    - **5a: config-to-policy mapping.** Which configs implement which cited policies. Without a
-     mapping, a policy-vs-config mismatch is judged only where an item cites both (so a requirement item that cites
-     only its policy is not judged against an unmapped config). The approved mapping is a bar ruling: quote its table
+     mapping, a policy-vs-config mismatch is judged only where an item cites both ("Policy and config evidence",
+     below). The approved mapping is a bar ruling: quote its table
      in `classes.md` with the boundary, so readers also open the mapped config of an item that cites only the
      policy. Readers mark a mismatch wrong with a note starting "policy vs config"; you record it as a `defect`,
      except where "Policy and config evidence" (below) makes the item `wrong` and fixed, with the defect logged
@@ -396,7 +396,8 @@ the skill's maintainer).
    applied.
 
 **Policy and config evidence.** When a statement of what a policy says (a requirement item included) differs
-from the policy text it cites, that is a copying error: fix the statement. The rest of this paragraph applies
+from the policy text it cites, that is a copying error: fix the statement. An item that cites only its policy, with no config
+mapped to that policy, is not judged against a config. The rest of this paragraph applies
 only when the item cites both the policy and the config, or a ruling says the config implements the cited
 policy. When the policy differs from the config, that is a `defect` for the owner: a requirement item is left
 as it is, and so is a descriptive item that states both values correctly. A descriptive item that gives the

@@ -54,7 +54,9 @@ In this order (the checks of the readers' work are `references/briefs.md`, "Veri
 groups and the deferred lines below are this step's own):
 - coverage, computed from the files;
 - confirm every wrong in the union with the confirm checks in `references/fixing.md`, and the unit's mapped
-  outside findings that no reader marked (`foundBy: "audit"`; `references/setup.md`, "Existing outside findings");
+  outside findings that no reader marked (`foundBy: "audit"`; `references/setup.md`, "Existing outside findings"),
+  and, in the first pass that reads them, the items flagged at extract (`foundBy: "extract"`) and the wrongs r0's
+  `retro.md` notes that no reader marked (`foundBy: "spot-check"`; `references/setup.md`, steps 4 and 6);
 - run `ltz crosscheck <S> --unit <unit>`: it lists the cites two or more items share and flags those whose
   items state different numbers. Readers see one window at a time and never compare items, so judge each
   flagged cite group together, at the evidence, whether or not it holds a confirmed wrong;
@@ -103,7 +105,7 @@ measure counts them as found by none.
   `confirmed.json` (`"foundBy": "fixcheck"`). An "old text held" find is not one: it overturns the fix's wrong
   (`references/fixing.md`, "After the fix checker"). Re-run `record` after every fix check, a clean one included: it reads the checker's
   result files (the fix-check counts, and any "ruled:" ok). A find in another
-  unit's item is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
+  unit's old text is handled like a sweep hit there (SKILL.md, "Cross-unit effects", under the owner's cross-unit
   policy).
 - If a stronger reviewer is available (an advisor, say), have it re-judge the find list, the dismissed reader
   wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (`references/fixing.md`,

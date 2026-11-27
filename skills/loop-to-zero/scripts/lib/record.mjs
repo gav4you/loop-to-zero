@@ -9,7 +9,7 @@ import {
 import { decisionLogIds, barRulings } from './rulings.mjs';
 import { pinRecord, loadPinRecord, pinDifference } from './sources.mjs';
 import {
-  loadRenderLog, citeInLog, citeLinesRead, mergeLineMaps, noteRefs, fileRefs, refInLog, noteNamesLoggedLine, slotCoverage, fmtPositions,
+  loadRenderLog, citeInLog, citeLinesRead, mergeLineMaps, noteRefs, fileRefs, refInLog, noteNamesLoggedLine, noteNamesAbsentPath, slotCoverage, fmtPositions,
 } from './coverage.mjs';
 import { estimateRemaining, estimateRange, ESTIMATE_CAVEAT, round2 } from './estimate.mjs';
 
@@ -664,8 +664,9 @@ export function record({ S, unit, R, chunkReaders }) {
           if (o.verdict === 'wrong' && !/^\s*self-contradiction:/i.test(String(o.note ?? ''))) {
             // The paths this reader rendered are looked for in the note, so a path may hold any character
             // (a space, brackets, a non-ASCII letter), which the reference pattern alone would cut short.
+            // A cited file missing at the pin has no line to name: the reader's own attempt at it stands in.
             const refs = noteRefs(o.note);
-            if (!refs.some((ref) => refInLog(log, ref)) && !noteNamesLoggedLine(log, o.note)) {
+            if (!refs.some((ref) => refInLog(log, ref)) && !noteNamesLoggedLine(log, o.note) && !noteNamesAbsentPath(log, o.note)) {
               if (!refs.length) problems.push(`${where}: wrong, but its note names no file:line`);
               else problems.push(`${where}: wrong, but none of the file:line refs in its note (${refs.map((x) => x.raw).join(', ')}) is in its render log`);
             }

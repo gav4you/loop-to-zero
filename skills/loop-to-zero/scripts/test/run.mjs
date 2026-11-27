@@ -807,6 +807,26 @@ test('record: a wrong naming a file:line the reader never rendered is a PROBLEM'
   editJsonl(path.join(RD(S), 'agent-c1-a.jsonl'), (rows) => rows.map((r) => (r.id === 'A02' ? { ...r, note: 'see src/billing.js:9' } : r)));
   fails(ltz(['record', S, 'u1', '1', ...READERS]), /c1-a: A02 .*none of the file:line refs in its note \(src\/billing\.js:9\) is in its render log/);
 });
+test('record: a wrong may name a cited file its reader found missing at the pin (C1), and nothing else unrendered', () => {
+  const S = baseCopy();
+  const note = (n) => editJsonl(path.join(RD(S), 'agent-c1-a.jsonl'), (rows) => rows.map((r) => (r.id === 'A02' ? { ...r, note: n } : r)));
+  const rec = () => ltz(['record', S, 'u1', '1', ...READERS]);
+  note('C1: src/missing.js:1 does not exist at the pin');
+  fails(rec(), /c1-a: A02 .*none of the file:line refs in its note \(src\/missing\.js:1\) is in its render log/, 'never tried');
+  fails(ltz(['show', S, 'u1', '1', 'c1-b', 'src/missing.js:1']), /could not be shown/);
+  fails(rec(), /c1-a: A02 .*src\/missing\.js:1/, "the other reader's attempt does not count");
+  fails(ltz(['show', S, 'u1', '1', 'c1-a', 'src/missing.js:1']), /could not be shown/);
+  passes(rec(), 'tried and missing at the pin: the attempt stands in');
+  note('C1: src/missing.js does not exist at the pin.');
+  passes(rec(), 'the path alone, at the end of a sentence');
+  note('C1: src/missing.jsx:1 does not exist');
+  fails(rec(), /c1-a: A02 .*src\/missing\.jsx:1/, 'a longer path is not that attempt');
+  note('C1: lib/src/missing.js:1 does not exist');
+  fails(rec(), /c1-a: A02 .*lib\/src\/missing\.js:1/, 'nor is a path that only ends with it');
+  fails(ltz(['show', S, 'u1', '1', 'c1-a', 'src/billing.js:999']), /could not be shown/);
+  note('C1: src/billing.js:999 is past the end of the file');
+  fails(rec(), /c1-a: A02 .*src\/billing\.js:999/, 'a file that exists: its lines can be shown, so a line past its end is no refuter');
+});
 test('record: an item judged but never rendered is a PROBLEM', () => {
   const S = baseCopy();
   editJsonl(path.join(RD(S), 'render-c2-a.jsonl'), (rows) => rows.filter((e) => e.id !== 'A10'));

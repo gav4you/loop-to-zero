@@ -81,7 +81,7 @@ retire; quiet is not a reason to delete one.
 - **Fix-checker misses.** A later round's find in text the fix checker passed counts in the retro as a fix-checker
   miss, unless its origin is "evidence moved" ("The retro", step 1).
 - **Fix-checker finds in this unit's old text** (a named item, an unchanged field) go into this round's
-  `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's items are handled as in
+  `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's old text are handled as in
   `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit") and are fixed in the
   follow-up, an `outside-bar` one included: `outsideBar` holds only snapshot text.
 - **Revert and stale leads.** Either alone sets `closed-leads-pending`. The closing count (the confirmed count of
