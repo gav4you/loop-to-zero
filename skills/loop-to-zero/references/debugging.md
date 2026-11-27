@@ -8,8 +8,8 @@ isolate, diagnose, fix), with the fix step changed to "propose": the evidence is
 ## When
 - **Every new `defect` verdict,** after its confirm checks (`references/fixing.md`) and before the round report.
   A fault in the evidence found with a wrong item or while fixing one (`references/round.md`, "Pending owner,
-  defects, wishes"), and a gap an outside finding shows that no item covers (`references/setup.md`, "Existing
-  outside findings"), get the same steps.
+  defects, wishes"), and a gap an outside finding shows that no item covers, where the evidence falls short (`references/setup.md`,
+  "Existing outside findings"), get the same steps.
 - **It is read-only work.** In agent or external-reviewer mode it may run while readers are still reading, like
   the other read-only work in `references/round.md` ("2. Read"), and like it waits for the reset during a known
   limit wait while Claude agents read. In solo mode it runs after the hand-back, never in a reading session.

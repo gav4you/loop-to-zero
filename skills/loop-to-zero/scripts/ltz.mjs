@@ -86,8 +86,8 @@ render <S> <unit> <R> <slot> show <cite>...
   from the ruled ok's, whose id is also confirmed, pending, a defect, withdrawn, outsideBar or restated, or
   that lacks an id or ruling, is a PROBLEM. A wrong in a parent's (or earlier rerun's) lines that
   the replacing rerun does not mark is a warning. A confirmed id that an earlier round (or, with config "historyFolders",
-  any round but r0 under <folder>/<unit>/) also confirmed with an overlapping class (a wrong no later
-  judgments.jsonl line turned ok or pending-owner) is a PROBLEM
+  any round but r0 under <folder>/<unit>/) also confirmed with an overlapping class (unless its latest
+  judgments.jsonl line for that unit and round says "now" "ok" or "pending-owner") is a PROBLEM
   unless it is pending, or has "repeatReason" "plain-fix-failure", "new-text", "earlier-miss" or "evidence-moved" with
   a non-empty "repeatNote" and a "rulingsChecked" list: every bar ruling in the decision log, each
   as {"ruling", "why"} with why it does not cover the item. With config "decisionLog" and

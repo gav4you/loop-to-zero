@@ -189,8 +189,8 @@ say "no held-out history yet" rather than quoting the in-sample recall.
 
 ## Trying a new check or a new method
 - **A new mechanical check in the gate** (a project check in `S/checks/`) runs warn-only for one round first: it reports what it would have blocked, and you judge each hit, before it is allowed to block.
-  Hits that turn out right are candidate wrongs (confirm checks as usual; one no reader marked takes
-  `"foundBy": "spot-check"`, as a cite group's does: `references/round.md`, step 3); false hits mean the check is fixed first.
+  Hits that turn out right are candidate wrongs (confirm checks as usual; one in this unit's old text that no reader marked takes `"foundBy": "spot-check"`,
+  as a cite group's does: `references/round.md`, steps 3 and 5); false hits mean the check is fixed first.
   Regression patterns are the exception: they block at once, because their known instances test them.
   A new hook rule is not yours to add: propose it to the skill's maintainer, who tests it before it ships.
 - **A new method for a round** (narrow falsifiers, a different sweep; a new reading order only for a discovery
