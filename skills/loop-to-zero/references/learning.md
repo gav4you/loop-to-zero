@@ -129,7 +129,7 @@ only a closing count keeps the bar of its close.
      `references/round.md`, "Between rounds only"). A verdict of yours later overturned is "writer misjudgment"; when
      a ruling overturns it, it is "missing ruling" if the bar lacked the ruling's point, and "writer misjudgment"
      if the entry covered it and you misread it. Each wrong takes one origin: the first that fits of evidence moved,
-     missing ruling, a new class, writer misjudgment and your own edit, else pre-existing text.
+     missing ruling, your own edit, a new class and writer misjudgment, else pre-existing text.
    - **Who found it:** every reader of its chunk; some but not all (name the reader that missed it); none (the writer's own check (`spot-check`), a sweep, an audit, the fix
      checker in old text, or the extract).
 
