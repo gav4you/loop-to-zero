@@ -859,8 +859,7 @@ Notes on these fields:
     - `"spot-check"`: the writer's own check, such as a spot-check, or a wrong the writer confirmed from
       a source no other value names (such as a stronger reviewer or a solo cold sample read);
     - `"audit"`: a known outside finding, such as an audit or review;
-    - `"fixcheck"`: a fix checker found it in old, snapshot text, such as a named item or an unchanged
-      field;
+    - `"fixcheck"`: a fix checker found it in this unit's old text (`references/round.md`, step 5);
     - `"extract"`: the extract flagged the item with no usable cite.
 
     Each counts as found by none in `measure.json`, and `foundByNoneBy` counts them per value; audit

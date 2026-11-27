@@ -76,7 +76,8 @@ Your judgments get no independent check, so the mode makes up for it with order 
   `retro.md`). At setup, that output for its read of r0's window gives the option's cost (`references/setup.md`,
   step 6).
 - **A fix check that neither the reviewer nor an agent runs** (a fresh session or a self-check) follows Solo's
-  "The fix check" bullet and "A ruling given in a solo reading or fix-check session", the hand-back included.
+  "Before every context reset", "The fix check" and "A ruling given in a solo reading or fix-check session"
+  bullets, the hand-back included.
 - **A stand-in is labelled.** A stand-in's report says it is a stand-in. Every item it judged, and every fix
   made on its finds, goes on `S/owed-rechecks.txt` for the external reviewer. Unless the owner decides otherwise, anything that freezes a
   release, or the items as the reference (setup question 0, `references/setup.md`), tags or publishes waits until every owed item is settled (below).
@@ -90,11 +91,11 @@ Your judgments get no independent check, so the mode makes up for it with order 
   or have a fresh Claude reader stand in, with the same brief, for the whole next round. If it becomes
   unavailable mid-round, wait. The stand-in's reading is the round's reading, and commits follow it as
   usual. When the external reviewer returns, ask the owner how it re-checks the open owed items (a process
-  decision), listing them by unit and saying which units have closed (a find there is a lead, below). A report
+  decision), listing them by unit and saying which units have closed or are in `final-check` (a find there is a lead, below). A report
   from a re-check outside the rounds is an outside finding (`references/setup.md`, "Existing outside
   findings"): keep it in `S/inputs/`, and map its finds to item ids in `S/inputs/audit-map.json` when it
   arrives. A find in an open unit whose current round is past its verify step (`references/round.md`, step 3) is
   handled as step 5 handles a fix checker's find in that unit (`foundBy: "audit"` where it goes into
-  `confirmed.json`). A find in a closed unit is also a lead (SKILL.md, "Cross-unit effects"). Mark an owed item settled
+  `confirmed.json`). A find in a closed unit (a unit in `final-check` included) is also a lead (SKILL.md, "Cross-unit effects"). Mark an owed item settled
   in `S/owed-rechecks.txt` once the external reviewer has judged it, in such a review or in its normal reading
   or fix check.

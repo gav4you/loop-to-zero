@@ -29,7 +29,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    `pending-owner` (`boundary-silent`) and ask the owner.
 
    An item parked by check 1's ruled wording or by check 2 stays `pending-owner` even if another of its claims is
-   plainly refuted: that claim's fix is drafted in `drafts/<id>.md` and held (where a fix checker's ruled ok parks the item, its fix is already committed and stays); once the owner answers, the item is a
+   plainly refuted: that claim's fix is drafted in `drafts/<id>.md` and held (where the item is parked after that fix was committed, such as by a fix checker's line, the fix stays); once the owner answers, the item is a
    wrong of that pass (a known wrong's or `restated` id excepted: `references/round.md`, "Known wrongs") and the
    draft is applied (`references/round.md`, "Blocked only by what a re-read can't clear").
 3. **History**, including an earlier reasoned ok. If an earlier verdict gave a reasoned ok on this exact point,
@@ -312,14 +312,15 @@ Anything written in bulk (fields filled in bulk, applied owner answers, mass rel
 a fix, through the fix checker. "Write-checked" is not "judged".
 
 ## After the fix checker
-An "old text held" find on an edit that answered no confirmed wrong (a revert, a stale dependent, a ruling carried
+An "old text held" find on an edit that answered no wrong (a revert, a stale dependent, a ruling carried
 into the items, an applied owner answer) overturns nothing: note it in `retro.md` with the edit's basis, and judge
 only the new text. On a fix, it means the wrong the fix answered was false: confirm it at the pin, then treat it as an
 overturned verdict ("Reverting fixes caused by false wrongs", below) and log a lesson. Fix its other real wrongs as a follow-up commit (a find in old text is swept first: steps 1 to 6), then run the fix
 checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
 the round's `retro.md` under its iteration, with its reason and the file:line that answers it, or, where the
-confirm checks park it, the question it waits on; a check whose only wrongs are so noted counts as returning 0 (`record` still counts them, so report it as "returned 0 after
+confirm checks park it, the question it waits on; a check whose only wrongs are so noted, or placed where no follow-up fixes them (such as an `outsideBar` entry, a
+lead or a "deferred" line), counts as returning 0 (`record` still counts them, so report it as "returned 0 after
 n noted", naming `retro.md`).
 
 ## Reverting fixes caused by false wrongs

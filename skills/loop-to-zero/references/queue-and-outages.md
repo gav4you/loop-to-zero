@@ -50,7 +50,7 @@
 - **Launching.** Fill up to the cap. When a job's completion notification arrives:
   1. check its result file;
   2. mark it done;
-  3. launch the next job `ltz queue next` lists (none during a known limit wait).
+  3. launch the next job `ltz queue next` lists (none during a limit or credit wait: "Limits and credits", below).
 - **Lost notifications.** Keep a fallback wakeup of 20 to 30 minutes in case a notification is lost.
 - **Resume position.** A job's resume position is read from its result file, which is appended window by
   window, so every continue is exact. After a hard stop mid-window, continue from the first missing position,
@@ -73,7 +73,7 @@
 
   Never check credits more often than that; they cool down for hours. For a usage limit, schedule one wake at
   the reset time.
-- **During a known limit wait, launch nothing new.** Queued jobs wait for the reset. While a recorded
+- **During a known limit wait, or while a job waits on credits, launch nothing new.** Queued jobs wait for the reset. While a recorded
   reset is still ahead, `ltz queue next` lists nothing to launch.
 - **After the wait,** send each stopped agent "continue from position P" with SendMessage (an external
   reviewer's run, which can't take a message, is relaunched instead: "When a fresh launch is allowed", below).

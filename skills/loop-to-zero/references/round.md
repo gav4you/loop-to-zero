@@ -55,7 +55,8 @@ groups and the deferred lines below are this step's own):
 - confirm every wrong in the union with the confirm checks in `references/fixing.md`, and the unit's mapped
   outside findings that no reader marked (`foundBy: "audit"`; `references/setup.md`, "Existing outside findings"),
   and, in the first pass that reads them, the items flagged at extract (`foundBy: "extract"`) and the wrongs r0's
-  `retro.md` notes that no reader marked (`foundBy: "spot-check"`; `references/setup.md`, steps 4 and 6);
+  `retro.md` notes and the owner's catches whose items still hold the wrong text, that no reader marked
+  (`foundBy: "spot-check"`; `references/setup.md`, steps 4 to 6);
 - run `ltz crosscheck <S> --unit <unit>`: it lists the cites two or more items share and flags those whose
   items state different numbers. Readers see one window at a time and never compare items, so judge each
   flagged cite group together, at the evidence, whether or not it holds a confirmed wrong (one it confirms that no
@@ -110,7 +111,8 @@ measure counts them as found by none.
 - If a stronger reviewer is available (an advisor, say), have it re-judge the find list, the dismissed reader
   wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (`references/fixing.md`,
   "The confirm checks" and "After the fix checker"), the `restated` list and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
-  fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`; one from the
+  fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json` (a wrong dismissed in `retro.md` keeps the value
+  its source takes, such as `"fixcheck"` for a fix checker's); one from the
   `rejected` list, or a `restated` one the reviewer shows is another claim than its `of` names, instead moves
   out of that list into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
   adds to `boundaries.md` in step 3: an
@@ -182,7 +184,8 @@ the fixes, `diffcheck` and the fix checker as usual. Just before setting it back
 calls for, below), take a new baseline with `ltz snapshot <S> <unit> <F+1>`, so `diffcheck` doesn't flag the
 final-check edits. Then set the unit back to the
 closed status `loop.md` kept for it ("was <status>", carried forward from `closed-leads-pending`, never
-`closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
+`closed-leads-pending` itself; note on its Units line any `rule-meaning` items round F leaves open, as "Closed
+statuses" does for an override's close), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
 round F's snapshot is still open. What "Blocked only by what a re-read can't clear" waits on (such as a `pending-owner` verdict round F records
 that blocks a close, an open defect when `defectsBlock` is set, or an owner question holding drafted fixes) keeps
 the unit in `final-check` until the owner answers. If round F confirmed any wrong in text the closing pass read (other than an "evidence moved" one, or a "missing ruling" one that a ruling given or amended, or a question answered, after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
@@ -260,7 +263,7 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
     claim, or "counted in"; a universal item you cleared by hand is not logged), which makes the unit `closed-leads-pending`. Round F queues readers only for
     the chunks holding those items (`--chunks`), read at the new pin. A wrong it confirms that only the new pin refutes
     is fixed with origin "evidence moved" and does not adjust the unit's closing count: that count was true at its
-    pin. A wrong the old pin also refutes is an earlier miss, which does. The
+    pin. A wrong the old pin also refutes adjusts it only as step 8 says. The
     check runs when leads' final targeted check does (after every unit closes) unless the owner asks for it
     sooner, and then only between rounds of the open units. The Units line keeps the old pin and adds "checked at
     <new pin>, round F".
