@@ -174,7 +174,7 @@ First ask whether exclusivity is the point of the item. Every "only" or "no" ass
 test. It is the point when the item exists to state it (without the "only" or "no", it would tell a reader
 nothing they need, as in an item about who reads a table).
 You decide, and note why in the item's `confirmed.json` note (for an item in another unit, in its
-`cross-unit-edits.txt` line; for a fix with no `confirmed.json` entry, such as a dependent logged in `fixlog.jsonl`
+`cross-unit-edits.txt` line; for any other fix with no `confirmed.json` entry, such as a dependent logged in `fixlog.jsonl`
 only, a known wrong applied in round F or a follow-up of a find in text a fix wrote, in the round's `retro.md` under
 its fix batch's expected effect, step 5). A requirement item never takes this path: it keeps
 its claim, or the gap is a `defect` (a copying error from its own source is fixed: "Requirement items", below). For a descriptive item: if it is, keep the claim, state its scope and prove it (3 below). If it isn't, or it's

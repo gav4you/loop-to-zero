@@ -339,7 +339,7 @@ the skill's maintainer).
      owner the borderline items.
    - Ask the granularity question here, if step 4 left it open (is "3.2.1(a)" its own item?).
 4. **Softening.** May fixes hedge ("such as", "for example")? Subtraction and stating a proven scope ("outside
-   tests") are not softening, and are allowed for descriptive items either way. A requirement item is never
+   tests") are not softening. A requirement item is never
    narrowed to fit the evidence: keep the claim, or log a defect; narrow it only by an owner ruling (a copying
    error from its own source is fixed: `references/fixing.md`, "Requirement items"). For requirements and controls,
    recommend no softening: keep the claim, or log a defect.
