@@ -28,7 +28,7 @@ Fill the `{…}` slots:
 | `{SOLO_RULING}` | In solo mode, and for a fix check run in a fresh session or as a self-check, the owner-ruling clause shown in the reader brief (both briefs use it); otherwise left empty |
 | `{C}` / `{n}` | The fix commit, and how many changed items this checker's input holds (fix checker) |
 | `{K}` | The fix-check iteration (fix checker) |
-| `{PART}` | The fix-check part: a split of the fix set into about 70 changed items each, named `p1`, `p2`, ... |
+| `{PART}` | The fix-check part: a split of the fix batch into about 70 changed items each, named `p1`, `p2`, ... |
 
 The two readers of a chunk get the same brief apart from their slot. Keep each filled brief, as sent, in
 `r<R>/briefs/<slot>.md`: a replacement agent gets that text unchanged (its {FROM} stays the slot's first
@@ -126,7 +126,7 @@ refuting file:line), and the paths of any helper scripts.
 
 ## Fix-checker brief (after every fix commit, including follow-ups)
 
-Split large fix sets into parts of about 70 changed items, one checker per part, named `p1`, `p2`, ... (the `{PART}`
+Split a large fix batch into parts of about 70 changed items, one checker per part, named `p1`, `p2`, ... (the `{PART}`
 value; not a round chunk). Name the files by check iteration `{K}` (1 for the fix commit, 2 for its first
 follow-up, and so on) and by part. A fix checker is not queued, but it counts toward the concurrency cap, and the
 limit rules in `references/queue-and-outages.md` cover it (wait, then continue it). Keep each filled brief, as
@@ -216,7 +216,7 @@ Reply with the path, the counts, and one line per wrong.
 
    **When a check fails** (one rule; never fill an item by hand):
    - **A range left incomplete** (a limit, or the reader stopped early): continue that reader from its resume
-     position. A tail the owner dropped is not continued (`references/round.md`, step 8).
+     position (after a limit, once the wait is over: `references/queue-and-outages.md`, "Limits and credits"). A tail the owner dropped is not continued (`references/round.md`, step 8).
    - **A reader's cites never rendered** (listed in its `cites`, or named as a wrong's refuter in its note, but not in its render log), or a render command that errored:
      re-run the windows holding those items with a fresh reader of the round's kind (`references/queue-and-outages.md`,
      "When a fresh launch is allowed"). A cite whose file `render` found missing at the pin is not this case: it is

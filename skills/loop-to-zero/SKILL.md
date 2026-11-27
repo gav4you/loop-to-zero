@@ -31,7 +31,7 @@ Map the project's own words onto these, and use the project's words with the own
 | round | One read, fix, check and learn cycle on one unit. |
 | pass | One read of every item in a unit from one snapshot. It counts toward zero only at full depth. A discovery pass is one such read of every unit. |
 | chunk | A range of about 70 items. Each of its readers is one job. |
-| part | A fix-check part: a split of a fix set into about 70 changed items, one fix checker each, named `p1`, `p2`, ... (`fixcheck-<K>-<part>`). Not a chunk. |
+| part | A fix-check part: a split of a fix batch into about 70 changed items, one fix checker each, named `p1`, `p2`, ... (`fixcheck-<K>-<part>`). Not a chunk. |
 | window | The items a reader renders at once, about 16. |
 | evidence | What the items are judged against. It is fixed at a **pin** (a tag, commit or dated export) and limited by the **evidence boundary** (which kinds count). |
 | bar | What counts as wrong, kept in `classes.md`: the approved classes, the accepted-by-ruling entries, the three lenses, the universal words, "When two classes fit", "Accepted forms" and any reader guidance. Open: classes found later are added and reported. Frozen: no new classes after a stated round (owner rulings still enter); a wrong outside the classes in snapshot text goes in `confirmed.json`'s `outsideBar` list (not a false alarm) and is listed for the owner, not counted. |
@@ -69,7 +69,7 @@ Map the project's own words onto these, and use the project's words with the own
 | item type / softening | Whether items describe the evidence or state requirements, and whether fixes may hedge ("such as"). Both are setup questions. |
 | hooks | An optional guard (`scripts/hooks/`) that refuses unsafe commits and edits. |
 | fix batch | The edits of one fix commit, checked together by one fix-check iteration. Never a unit, whatever the project calls its units. |
-| job / slot | One reader's run over one chunk, and its name in `queue.json` (opaque, from `queue init --opaque`, so a reader can't infer another). A fix checker is not queued: it renders under the name `fixcheck-<K>-<part>`, where `<part>` names a part of the fix set (about 70 changed items), and its cost is counted with `ltz cost <transcript>`. |
+| job / slot | One reader's run over one chunk, and its name in `queue.json` (opaque, from `queue init --opaque`, so a reader can't infer another). A fix checker is not queued: it renders under the name `fixcheck-<K>-<part>`, where `<part>` names a part of the fix batch (about 70 changed items), and its cost is counted with `ltz cost <transcript>`. |
 | stronger reviewer | A more capable model or advisor, used if available to re-judge the find list. It is a second opinion, not a cold read, and never replaces the fix checker. |
 | external reviewer | A model that is not a Claude agent, used as the reader mode: it reads the chunks, checks the fixes, or both, as the owner set at setup question 6, under the same briefs (`references/modes.md`). Not the stronger reviewer. |
 | sibling / family | Items that share a class, subject, cited range or named file with a confirmed wrong. |

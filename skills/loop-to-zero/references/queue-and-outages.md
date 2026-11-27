@@ -40,7 +40,8 @@
   reader stopped early with a next position), done, replaced (closed: a slot nobody will read, below), and dropped-by-owner
   (a range the owner approved dropping, with its decision id, usually `P-n`).
 - **Done means covered.** Before marking a job done, check that its result file covers its whole range.
-  Otherwise mark it stopped-context and send "continue from position P".
+  Otherwise mark it stopped-context and send "continue from position P", unless a limit or credits stopped it
+  ("Limits and credits", below).
 - **Opaque slot names** (`queue init --opaque`) keep a reader from inferring another reader exists. Record each
   agent's transcript path at launch (`mark <slot> running --agent <id> --transcript <path>`), so `ltz cost --queue`
   can total the round. For a session the owner opens, ask the owner for its transcript file.
@@ -49,7 +50,7 @@
 - **Launching.** Fill up to the cap. When a job's completion notification arrives:
   1. check its result file;
   2. mark it done;
-  3. launch the next job.
+  3. launch the next job `ltz queue next` lists (none during a known limit wait).
 - **Lost notifications.** Keep a fallback wakeup of 20 to 30 minutes in case a notification is lost.
 - **Resume position.** A job's resume position is read from its result file, which is appended window by
   window, so every continue is exact. After a hard stop mid-window, continue from the first missing position,

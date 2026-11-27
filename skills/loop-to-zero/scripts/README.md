@@ -970,7 +970,7 @@ Notes on these fields:
   - `ruledOks`: `[{id, slot, ruling, refs}]`, every `ok` whose note starts `ruled: <ruling id>` (the
     reader and fix-checker briefs' form for wording a ruling approved where the evidence differs). They
     come from the lines the merged view uses, and then from the fix checker's result files
-    `fixcheck-<K>-<part>.jsonl`, whose `slot` is the file's name (such as `fixcheck-1-p1`; `<part>` names a part of the fix set). `refs`
+    `fixcheck-<K>-<part>.jsonl`, whose `slot` is the file's name (such as `fixcheck-1-p1`; `<part>` names a part of the fix batch). `refs`
     are the note's file:line references. With config `rulingIdPattern` set, the ruling is that pattern's
     match at the start of what follows `ruled:`, so an id holding brackets, a comma or a semicolon
     (`R-4(a)`) is taken whole; otherwise it runs to the first space, comma, semicolon or bracket.

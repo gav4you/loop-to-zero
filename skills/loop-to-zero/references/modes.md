@@ -4,7 +4,7 @@
 - Two independent cold readers per chunk, run from the queue (`references/queue-and-outages.md`), with the
   briefs in `references/briefs.md`.
 - Measure "found by only one reader" every round.
-- The fix checker is a cold agent, one per part of the fix set (about 70 changed items each; not a round chunk).
+- The fix checker is a cold agent, one per part of the fix batch (about 70 changed items each; not a round chunk).
 
 ## Solo (no subagents)
 Never recommend solo as the main reading mode. When one reader both reads and fixes, the count settles at a

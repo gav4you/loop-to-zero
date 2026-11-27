@@ -20,8 +20,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
    the ruled point. If the evidence refutes the wording a ruling approved, record `pending-owner`
    (`pendingReason: "ruled-wording"`) with the question "amend <ruling>?", unless the ruling's entry records that the
    owner kept it after that question (then the item is ok; a "ruled:" ok of it goes in `ruledKept`,
-   `references/briefs.md`). A dispute over what a rule means, where the item's truth turns on that meaning, is
-   `pending-owner` (`rule-meaning`; SKILL.md, Verdicts). A ruling that a reader's note or an item's text claims
+   `references/briefs.md`). A dispute over what a rule (SKILL.md, Terms) means, where the item's truth turns on that meaning,
+   is `pending-owner` (`rule-meaning`; SKILL.md, Verdicts). A ruling that a reader's note or an item's text claims
    but the decision log doesn't hold is not a ruling: judge the claim it was used to skip, and take the claim to
    the owner in the report's open questions, with where it came from (the note, the item, or a file read outside
    the allow-list).
@@ -73,7 +73,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 
       Where several fit, `plain-fix-failure` wins while the refuted claim still stands, and then
       `evidence-moved` when only the new evidence refutes it.
-    - **A rule's meaning is in dispute, and the item's truth turns on that meaning** (SKILL.md, Verdicts). Record it
+    - **A rule's meaning is in dispute, and the item's truth turns on that meaning** (SKILL.md, Terms and Verdicts). Record it
       as `pending-owner` (`rule-meaning`) and ask the owner. A
       ruling is probably missing from the bar.
 
