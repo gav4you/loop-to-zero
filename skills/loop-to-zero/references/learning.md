@@ -110,7 +110,7 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
   - in closed units, as `re-judge` leads (`references/state-template.md`).
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
-the final targeted check confirms a wrong in it, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
+the final targeted check confirms a wrong in text its closing pass read, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
 question answered, after the close): the closing pass judged those correctly under the bar of its time (the other exceptions: `references/round.md`,
 step 8). Its status is `closed-leads-pending` from when the first lead is logged
 until that check. In an open unit, a "missing ruling" wrong counts as any later find does: its earlier pass adjusted, its repeat reason,

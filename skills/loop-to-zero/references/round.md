@@ -128,8 +128,7 @@ The retro, as in `references/learning.md`.
 The unit closes when one pass meets all of these:
 - every item was read at full depth (a filtered or tiered pass never counts; a partly skimmed one counts only once supplementary reads have re-read every skimmed range);
 - 0 confirmed wrongs;
-- no `boundary-silent` or `ruled-wording` `pending-owner` verdicts and no open "amend <ruling>?" question on one of its
-  items (`references/briefs.md`, "Ruled wording"), which no close setting lets through; and no `rule-meaning` ones, unless the
+- no `boundary-silent` or `ruled-wording` `pending-owner` verdicts (no close setting lets these through); and no `rule-meaning` ones, unless the
   owner decided (a process decision) that they don't block a close (see the closed statuses below);
 - no open defect for the unit in `S/defects.md`, if the owner decided that defects block a close (check the file:
   readers mark ok an item that describes a code fault accurately, so the round's verdicts can miss one);
@@ -184,7 +183,7 @@ closed status `loop.md` kept for it ("was <status>", carried forward from `close
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
 round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
 defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
-what a re-read can't clear" says. If round F confirmed any wrong (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
+what a re-read can't clear" says. If round F confirmed any wrong in text the closing pass read (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).

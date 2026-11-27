@@ -161,7 +161,7 @@ Open with two things, before item 1:
   the round and pin its figures are as of ("round 5, at v3.2"). Take every figure from `record`'s output; whether the unit can close is `countsAsZero` (or step 8's conditions where
   they override it: a defect closed by owner decision, a past round adjusted to 0) plus
   `references/round.md` step 8's own checks (`S/defects.md`, skimmed ranges, edits after the read, open "deferred"
-  lines logged after step 3, open "amend <ruling>?" questions).
+  lines logged after step 3).
 - **Decisions needed:** each open owner question that blocks a close or holds drafted fixes, one line each:
   what it blocks and by when the answer is needed (for example, before the next round's snapshot). Write "none"
   when there are none.

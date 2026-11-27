@@ -87,7 +87,7 @@ An item whose wording an "accepted by ruling" entry approves is not wrong for th
 judge its other claims and citations as usual. If the evidence differs from that wording,
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
-the evidence it cites, or a config `classes.md` maps to its policy, does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
+the evidence (a config only where the item cites it or `classes.md` maps it to its policy) does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
 defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
@@ -168,7 +168,7 @@ An item whose wording an "accepted by ruling" entry approves is not wrong for th
 judge its other claims and citations as usual. If the evidence differs from that wording,
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
-the evidence it cites, or a config `classes.md` maps to its policy, does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
+the evidence (a config only where the item cites it or `classes.md` maps it to its policy) does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
 defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
@@ -253,9 +253,9 @@ Reply with the path, the counts, and one line per wrong.
      `outsideBar`, `defects`, or `pending` for another reason), it goes in `pending` as `ruled-wording` all the
      same, its other point in the question and any fix that point needs held (`references/fixing.md`, check 2).
      Once the owner answers, the id goes back to its other list, or to the wrongs if the answer makes the ruled
-     point wrong. A fix checker's "ruled:" ok that the evidence refutes, on an item whose fix is already committed,
-     leaves the id where it is (its `record` warning is expected): ask "amend <ruling>?" in `S/owner-questions.md`;
-     until it is answered, that question blocks the close (`references/round.md`, step 8).
+     point wrong. Where the ruling was not kept, a fix checker's ok instead leaves the id where it is, in a list or in
+     none (the checker reads after the fix commit; its `record` warning is expected), and asks "amend <ruling>?" in
+     `S/owner-questions.md`.
      Readers mark ruled wording ok, so this is how it surfaces. `ltz record` lists them as `ruledOks` and warns about
      any neither pending as `ruled-wording` nor in `ruledKept` under that ruling. If the owner then amends the ruling, the item is a wrong of
      the round in which the amendment lands (`foundBy: "spot-check"`; `references/learning.md`, "Counting"), or a lead if its unit is

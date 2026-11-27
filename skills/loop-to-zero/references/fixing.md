@@ -109,7 +109,7 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   unedited unless the owner says otherwise (in text a fix wrote after this round's snapshot, a fix
   checker's find, fix it in the follow-up instead: `references/learning.md`, "Counting"). It becomes a
   `pending-owner` question only if the ambiguity is in a rule.
-- **Requirement items.** If the item states a requirement and the evidence it cites, or a config `classes.md` maps to its policy, does not meet it, record the
+- **Requirement items.** If the item states a requirement and the evidence does not meet it, record the
   verdict `defect`, work it and log it in `S/defects.md` (`references/debugging.md`), and leave the item (see
   "Requirement items" below). A
   `defect` is not counted as a wrong.
@@ -351,7 +351,7 @@ A value mismatch depends on what the cite is:
 - the cite is the requirement's own source (the policy): a copying error, so fix the item;
 - the cite is the implementation (the config): a `defect`.
 
-When an item states a requirement (a control or a policy) and the evidence it cites, or a config `classes.md` maps to its policy, does not meet it:
+When an item states a requirement (a control or a policy) and the evidence (a config only where the item cites it or `classes.md` maps it to its policy) does not meet it:
 - the mismatch goes to `S/defects.md` for the owner;
 - the item is not softened to match the evidence, unless the owner rules so;
 - a copying error (a wrong file, key, value or name) is fixed like any other wrong;
