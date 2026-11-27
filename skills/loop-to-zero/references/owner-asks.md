@@ -43,9 +43,10 @@ it with options, including the override path (SKILL.md, "Owner overrides").
   owner's words); it
   enters at once, like a ruling, and confirm check 1 then treats the item as ok.
 - If its scope is unclear, ask one narrowing question rather than guess. A scope is unclear when the ruling's
-  text admits two readings that would change at least one verdict. Record as `pending-owner` (`rule-meaning`) only
-  the verdicts whose truth depends on that scope; where the evidence refutes the wording and the scope decides only
-  whether the ruling approved it, record `ruled-wording` (question: "amend or narrow <ruling>?") instead. An item the evidence refutes under either reading stays `wrong`;
+  text admits two readings that would change at least one verdict. Record as `pending-owner` (`rule-meaning`; `boundary-silent` for the
+  evidence boundary's ruling: SKILL.md, Terms, "rule") only the verdicts whose truth depends on that scope; where the evidence refutes the wording and the scope decides only
+  whether the ruling approved it, record `ruled-wording` (question: "amend or narrow <ruling>?") instead. An item the evidence refutes under either reading stays `wrong`, unless one of its points is wording a ruling
+  approved (SKILL.md, Verdicts: it stays `pending-owner`, the other claim's fix held);
   its fix is drafted, and held until the answer only if the answer would change its wording (as in SKILL.md, "Cross-unit effects"). Never record as `pending-owner` an item the evidence plainly refutes, except under the three
   Verdicts exceptions in SKILL.md (a rule's meaning, a silent boundary, wording a ruling approved). Ask "amend
   <ruling>?" only when the evidence refutes the wording the ruling approved; otherwise the item is simply ok.

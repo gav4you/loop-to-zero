@@ -191,13 +191,13 @@ known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "k
   queue). Other `wrong` leads, unless a reader marks them, are confirmed by you (`foundBy: "sweep"` or `"spot-check"`, or `"audit"` for a lead from an outside review). If the pin moved since the unit closed, count each wrong round F confirms by the two-pin test in "Reopening a closed unit for the move" (below), whether or not the owner reopened the unit for the move. A `revert` lead is applied as a revert (`references/fixing.md`, "Reverting", steps 1 to 4), never itself entered in `confirmed.json`, and adjusts no closing count: the earlier round whose wrong it overturns is written as adjusted (`references/learning.md`, "Counting"), unless that round is the closing pass (a unit closed with known wrongs or by a stopping rule), whose count stays as it was. A `stale` lead is applied as the dependent's edit (`references/fixing.md`, "3. Dependents"), never itself entered in `confirmed.json`, and adjusts no count. A `re-judge` lead is judged with the confirm checks: an ok it overturns is then handled as a `wrong` lead, and a wrong it overturns as a `revert` lead. `ltz record` accepts a `final-check`
   unit with chunks left unqueued, and reports them as not read.
 - **Known wrongs** from `S/known-wrongs.txt` are not confirmed again in round F: they stay confirmed in the round
-  that closed with them, and a lead that restates one is settled with it, not confirmed again. Re-check the held
-  draft against today's bar, rulings and pin (or draft the fix now if its line names none), apply it once its item is not `pending`
-  (`references/fixing.md`, check 2), log it in round F's fixlog, and fix-check it. A round-F reader's wrong that restates a known wrong, or the flaw a `revert` or `stale` lead's
+  that closed with them, and a lead that restates one is settled with it, not confirmed again. Draft the fix now
+  if its line names none; once its item is not `pending` (`references/fixing.md`, check 2), re-check the draft
+  against today's bar, rulings and pin, apply it, log it in round F's fixlog, and fix-check it. A round-F reader's wrong that restates a known wrong, or the flaw a `revert` or `stale` lead's
   edit fixes, goes in `confirmed.json`'s `restated` list (`{"id", "of"}`, `of` naming the `known-wrongs.txt`
   line or the lead): it is not confirmed again, so it adds to no count and logs no lesson. A reader's wrong on
-  another claim of such an item is judged as any round-F reader wrong is; the id stays one wrong
-  (`references/fixing.md`, "Partly true items"), so where the closing count already holds it, it adds nothing to
+  another claim of such an item is judged as any round-F reader wrong is; the id stays one wrong in
+  one list (`references/fixing.md`, "Partly true items" and "The confirm checks"), so where the closing count already holds it, it adds nothing to
   that count.
 - **Mark each lead settled** in `closed-unit-leads.txt`, and each known wrong and dropped range in `known-wrongs.txt` (round F, date). If new leads are logged
   against a unit after its round F (by round F's sweeps or otherwise), the final targeted check repeats for those

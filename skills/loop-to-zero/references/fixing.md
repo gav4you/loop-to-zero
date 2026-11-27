@@ -30,7 +30,8 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
 
    An item parked by check 1's ruled wording or by check 2 stays `pending-owner` even if another of its claims is
    plainly refuted: that claim's fix is drafted in `drafts/<id>.md` and held; once the owner answers, the item is a
-   wrong of that pass and the draft is applied (`references/round.md`, "Blocked only by what a re-read can't clear").
+   wrong of that pass (a known wrong's or `restated` id excepted: `references/round.md`, "Known wrongs") and the
+   draft is applied (`references/round.md`, "Blocked only by what a re-read can't clear").
 3. **History**, including an earlier reasoned ok. If an earlier verdict gave a reasoned ok on this exact point,
    you, confirming, state in the note why that reasoning fails. One such reason is that the reader and the
    earlier ok read the item in two ways that the evidence judges differently (ambiguous wording, below); where it is
@@ -126,7 +127,10 @@ part of the fix, not a counted pass. Whole-unit re-reads have found several time
   re-run supersedes (`references/briefs.md`, "Verifying the readers' work"), a `replaced` rerun's, a removed
   duplicate or stray line's, a reply-only one (`references/queue-and-outages.md`), and the solo cold sample's
   (`references/modes.md`). Each goes in `retro.md` with its reason and the file:line that answers it, and counts with that reader's false alarms in the report
-  (`references/owner-asks.md`, "Reporting a round", item 2).
+  (`references/owner-asks.md`, "Reporting a round", item 2). An id takes one list: where readers' wrongs on it need
+  different ones, it takes the first of the wrongs, `pending`, `defects`, `withdrawn`, `outsideBar`, `restated` and
+  `rejected` (an item check 1's ruled wording or check 2 parks goes in `pending` all the same), and each other reader
+  wrong on it that you don't confirm is noted in `retro.md` the same way.
 
 ## 1. Sweep
 - **Write the class's sweep patterns first,** at least as wide as the seed. Sweep along every axis, not just
@@ -314,7 +318,7 @@ checker on that follow-up's items (iteration
 K+1). Repeat until a check returns 0; it usually takes one or two. A fix checker's wrong you don't confirm goes in
 the round's `retro.md` under its iteration, with its reason and the file:line that answers it, or, where the
 confirm checks park it, the question it waits on; a check whose only wrongs are so noted counts as returning 0 (`record` still counts them, so report it as "returned 0 after
-n dismissed", naming `retro.md`).
+n noted", naming `retro.md`).
 
 ## Reverting fixes caused by false wrongs
 When a verdict is overturned (by the owner, your own re-check (recorded as `spot-check`), a fix checker's "old text held" or a ruling):
