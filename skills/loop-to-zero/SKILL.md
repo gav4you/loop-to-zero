@@ -193,9 +193,9 @@ Nothing is edited and no counted reader runs until the owner has answered. Only 
    canaries.
 2. **Read:** cold readers in the owner's mode. No item file is edited or committed until the reading is done (fixes are
    drafted in `drafts/<id>.md`).
-3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`) and the other
-   finds step 3 lists, such as the cite groups `ltz crosscheck` flags and this unit's open "deferred"
-   `cross-unit-edits.txt` lines (`references/round.md`, step 3); write the find
+3. **Verify:** coverage from the files; confirm every wrong in the union (`references/fixing.md`), and judge what else
+   `references/round.md`, step 3, lists, such as the cite groups `ltz crosscheck` flags and this unit's open
+   "deferred" `cross-unit-edits.txt` lines; write the find
    list and run `record` (it scores the canaries); give any supplementary reads; spot-check 10 oks per reader, add
    their finds and run `record` again. Work each new `defect` through
    `references/debugging.md`, and never edit the evidence.

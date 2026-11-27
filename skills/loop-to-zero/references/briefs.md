@@ -239,8 +239,8 @@ Reply with the path, the counts, and one line per wrong.
      "Changing the bar's wording" to the class found mid-pass). Meanwhile its wrongs go through the confirm
      checks (`references/fixing.md`) like any other.
 2. **Confirm every wrong in the union** at the evidence, with the confirm checks in `references/fixing.md`.
-   Round step 3 also confirms or judges the other finds it lists, such as the cite groups `ltz crosscheck` flags,
-   the unit's deferred cross-unit lines and its mapped outside findings (`references/round.md`, step 3).
+   Round step 3 also confirms or judges what else it lists, such as the cite groups `ltz crosscheck` flags, the
+   unit's deferred cross-unit lines and its mapped outside findings (`references/round.md`, step 3).
    - A repeat the evidence plainly refutes is `wrong`, with `repeatReason` (`plain-fix-failure` when the refuted
      claim still stands, `new-text`, `earlier-miss`, or `evidence-moved` when only a moved pin refutes it), a `rulingsChecked` list (`references/fixing.md`)
      and a `repeatNote`. Only the Verdicts exceptions go in `pending` (a rule's meaning, a silent boundary, or

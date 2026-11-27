@@ -92,7 +92,7 @@ Follow `references/fixing.md`:
 5. `diffcheck`;
 6. commit.
 
-Add the sweep's confirmed finds, and finds from a whole-unit re-read, in this unit's old text (step 5) to `confirmed.json`
+Add the sweep's confirmed finds, and finds from a whole-unit re-read, in this unit's old text (step 5 below) to `confirmed.json`
 (`"foundBy": "sweep"`) as each is confirmed, before its fix. After the commit, re-run `record`, so the
 measure counts them as found by none.
 
