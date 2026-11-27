@@ -88,10 +88,10 @@ Map the project's own words onto these, and use the project's words with the own
 **Verdicts:**
 - readers give `ok` or `wrong`;
 - the writer may also record `pending-owner` (an item one of the three exceptions below sends to the owner), or `defect` (a
-  behaviour defect in the evidence itself, or a requirement item the evidence doesn't meet), or `outside-bar`
+  behaviour defect in the evidence itself, or a requirement item the evidence it cites, or a config `classes.md` maps to its policy, doesn't meet), or `outside-bar`
   (a wrong outside a frozen bar, listed for the owner). None counts as a wrong.
-- **An item the evidence plainly refutes is always `wrong`** (or `defect`, when it states a requirement the
-  evidence doesn't meet, a policy its config differs from included: see `defect` above), even on a repeat, when the refuter is inside
+- **An item the evidence plainly refutes is always `wrong`** (or `defect`, when it states a requirement that
+  evidence doesn't meet: see `defect` above), even on a repeat, when the refuter is inside
   the bar (on an open bar, a class found mid-pass included) and the evidence boundary. It is never parked as `pending-owner`. Three exceptions make it
   `pending-owner`, each recorded with a `pendingReason`:
   - a rule's meaning is in dispute (readers and writer read it differently, or its own text admits two readings), and

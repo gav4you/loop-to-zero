@@ -22,6 +22,9 @@ round folder for a reader's result file: the repeat check and `replay` read its 
 it is found in (`"foundBy": "spot-check"`; re-run `record`; `references/learning.md`, "Counting"), note each of its wrongs you don't confirm in `retro.md` (`references/fixing.md`, "The confirm checks"), and report the gap.
 
 Your judgments get no independent check, so the mode makes up for it with order and a fresh session:
+- **Before every context reset** (for the reading sessions, a re-run or a fix-check self-check), set `loop.md`'s
+  Next step and `S/HANDOFF.md` to where the writer's steps resume afterwards, as `references/setup.md` step 2 does
+  for setup.
 - **Recording your reading.** Queue one slot per chunk (`ltz queue <S> <unit> <R> init --opaque --per-chunk 1`),
   render and show under that slot, and append your verdicts to its `agent-<slot>.jsonl` as the reader brief
   says. `record` reads it like any reader's file. After the hand-back, check that each slot's result file covers

@@ -45,10 +45,9 @@ it with options, including the override path (SKILL.md, "Owner overrides").
 - If its scope is unclear, ask one narrowing question rather than guess. A scope is unclear when the ruling's
   text admits two readings that would change at least one verdict. Record as `pending-owner` (`rule-meaning`; `boundary-silent` for the
   evidence boundary's ruling: SKILL.md, Terms, "rule") only the verdicts whose truth depends on that scope; where the evidence refutes the wording and the scope decides only
-  whether the ruling approved it, record `ruled-wording` (question: "amend or narrow <ruling>?") instead. An item the evidence refutes under either reading stays `wrong`, unless one of its points is wording a ruling
-  approved (SKILL.md, Verdicts: it stays `pending-owner`, the other claim's fix held);
-  its fix is drafted, and held until the answer only if the answer would change its wording (as in SKILL.md, "Cross-unit effects"). Never record as `pending-owner` an item the evidence plainly refutes, except under the three
-  Verdicts exceptions in SKILL.md (a rule's meaning, a silent boundary, wording a ruling approved). Ask "amend
+  whether the ruling approved it, record `ruled-wording` (question: "amend or narrow <ruling>?") instead. An item the evidence refutes under either reading stays `wrong`, unless `references/fixing.md` check 1 or 2
+  parks one of its points (it then stays `pending-owner`, the other claim's fix held);
+  its fix is drafted, and held until the answer only if the answer would change its wording (as in SKILL.md, "Cross-unit effects"). Ask "amend
   <ruling>?" only when the evidence refutes the wording the ruling approved; otherwise the item is simply ok.
 - **A ruling enters the bar at once** because it is the owner's own change (one given in a solo reading or
   fix-check session enters at the hand-back: `references/modes.md`). Your entry wording is shown to the owner
@@ -162,7 +161,7 @@ Open with two things, before item 1:
   the round and pin its figures are as of ("round 5, at v3.2"). Take every figure from `record`'s output; whether the unit can close is `countsAsZero` (or step 8's conditions where
   they override it: a defect closed by owner decision, a past round adjusted to 0) plus
   `references/round.md` step 8's own checks (`S/defects.md`, skimmed ranges, edits after the read, open "deferred"
-  lines logged after step 3).
+  lines logged after step 3, open "amend <ruling>?" questions).
 - **Decisions needed:** each open owner question that blocks a close or holds drafted fixes, one line each:
   what it blocks and by when the answer is needed (for example, before the next round's snapshot). Write "none"
   when there are none.

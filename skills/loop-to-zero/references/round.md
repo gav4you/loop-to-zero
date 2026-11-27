@@ -109,7 +109,8 @@ measure counts them as found by none.
   wrongs in `confirmed.json`'s `rejected` list, the wrongs dismissed in `retro.md` (`references/fixing.md`,
   "The confirm checks" and "After the fix checker"), the `restated` list and the near-misses in `S/boundaries.md` before the round ends. A wrong it raises that you confirm is handled like a
   fix checker's find (above), with `"foundBy": "spot-check"` where it goes into `confirmed.json`; one from the
-  `rejected` or `restated` list instead moves out of that list into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
+  `rejected` list, or a `restated` one the reviewer shows is another claim than its `of` names, instead moves
+  out of that list into the wrongs with no `foundBy` (the reader's find, confirmed late). The writer
   adds to `boundaries.md` in step 3: an
   item confirmed ok after real doubt (a near-miss), with one line on why.
 
@@ -127,7 +128,8 @@ The retro, as in `references/learning.md`.
 The unit closes when one pass meets all of these:
 - every item was read at full depth (a filtered or tiered pass never counts; a partly skimmed one counts only once supplementary reads have re-read every skimmed range);
 - 0 confirmed wrongs;
-- no `boundary-silent` or `ruled-wording` `pending-owner` verdicts (no close setting lets these through); and no `rule-meaning` ones, unless the
+- no `boundary-silent` or `ruled-wording` `pending-owner` verdicts and no open "amend <ruling>?" question on one of its
+  items (`references/briefs.md`, "Ruled wording"), which no close setting lets through; and no `rule-meaning` ones, unless the
   owner decided (a process decision) that they don't block a close (see the closed statuses below);
 - no open defect for the unit in `S/defects.md`, if the owner decided that defects block a close (check the file:
   readers mark ok an item that describes a code fault accurately, so the round's verdicts can miss one);
