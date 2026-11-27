@@ -70,8 +70,8 @@ retire; quiet is not a reason to delete one.
   `references/setup.md`, question 0).
 - **Closed units' earlier rounds:** their `judgments.jsonl` lines and adjusted counts are written at the final
   targeted check.
-- **Fix-checker finds** on text written after the snapshot count in the retro as "own edit". They are not part
-  of the round's reading count.
+- **Fix-checker finds** on text written after the snapshot take their origin in the retro by "The retro", step 1.
+  They are not part of the round's reading count.
 - **Past rounds' `confirmed.json` and `report.json` stay as history.** Only `loop.md`'s trend shows adjusted
   counts. A ruling given during the current round edits that round's `confirmed.json`, and `record` is re-run.
 - **`judgments.jsonl` "was"** is the latest verdict on record for the item, or `"fix-text"` for a find in text
@@ -82,7 +82,7 @@ retire; quiet is not a reason to delete one.
   miss, unless its origin is "evidence moved" ("The retro", step 1).
 - **Fix-checker finds in this unit's old text** (`references/round.md`, step 5) go into this round's
   `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's old text are handled as in
-  `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit") and are fixed in the
+  `references/round.md`, step 5. Finds in text a fix wrote stay out of it and are fixed in the
   follow-up, an `outside-bar` one included: `outsideBar` holds only snapshot text.
 - **Revert and stale leads.** Either alone sets `closed-leads-pending`. The closing count (the confirmed count of
   the pass that closed the unit) changes only as `references/round.md`, step 8, says.
