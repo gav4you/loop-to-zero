@@ -80,7 +80,7 @@ retire; quiet is not a reason to delete one.
 - **Reverts of earlier rounds' edits** go in the current round's `fixlog.jsonl`.
 - **Fix-checker misses.** A later round's find in text the fix checker passed counts in the retro as a fix-checker
   miss, unless its origin is "evidence moved" ("The retro", step 1).
-- **Fix-checker finds in this unit's old text** (a named item, an unchanged field) go into this round's
+- **Fix-checker finds in this unit's old text** (`references/round.md`, step 5) go into this round's
   `confirmed.json` with `foundBy: "fixcheck"`; finds in another unit's old text are handled as in
   `references/round.md`, step 5. Finds in text a fix wrote stay out of it (origin "own edit") and are fixed in the
   follow-up, an `outside-bar` one included: `outsideBar` holds only snapshot text.
@@ -110,7 +110,7 @@ re-reads the edits those verdicts caused (`references/fixing.md`, "Reverting").
   - in closed units, as `re-judge` leads (`references/state-template.md`).
 
 Every earlier count it changes is written as adjusted. A closed unit's closing count is adjusted only when
-the final targeted check confirms a wrong in text its closing pass read, never for an "evidence moved" wrong or a "missing ruling" one (a ruling amended, or a
+the final targeted check confirms a wrong in text its closing pass read, never for an "evidence moved" wrong or a "missing ruling" one (a ruling given or amended, or a
 question answered, after the close): the closing pass judged those correctly under the bar of its time (the other exceptions: `references/round.md`,
 step 8). Its status is `closed-leads-pending` from when the first lead is logged
 until that check. In an open unit, a "missing ruling" wrong counts as any later find does: its earlier pass adjusted, its repeat reason,
@@ -128,7 +128,8 @@ only a closing count keeps the bar of its close.
      the estimate's calibration (step 3), and does not count toward the escalation trigger;
      `references/round.md`, "Between rounds only"). A verdict of yours later overturned is "writer misjudgment"; when
      a ruling overturns it, it is "missing ruling" if the bar lacked the ruling's point, and "writer misjudgment"
-     if the entry covered it and you misread it.
+     if the entry covered it and you misread it. Each wrong takes one origin: the first that fits of evidence moved,
+     missing ruling, a new class, writer misjudgment and your own edit, else pre-existing text.
    - **Who found it:** every reader of its chunk; some but not all (name the reader that missed it); none (the writer's own check (`spot-check`), a sweep, an audit, the fix
      checker in old text, or the extract).
 

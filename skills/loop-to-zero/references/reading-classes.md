@@ -105,8 +105,7 @@ before each round's copy too, and never use it for notes. Propose any change to 
 ## A class found mid-pass (open bar)
 The writer:
 1. writes its sweep patterns to `S/checks/patterns/` first, before the sweep and before any fix, then sweeps every
-   item, in every unit, for it as soon as `references/round.md`, step 2, lets sweeps run (a count-only
-   `ltz sweep --count` may run now);
+   item, in every unit, for it as soon as `references/round.md`, step 2, lets sweeps run;
 2. confirms its hits as any sweep's (`references/round.md`, step 4);
 3. replays it (`ltz replay`) if there is history, and adds its name, definition, what makes it wrong, fix form, "Is not"
    line and "Ok example" line to `S/classes.md` once the current round's last fix check is done (like a wording

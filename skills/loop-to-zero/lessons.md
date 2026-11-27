@@ -186,8 +186,8 @@ the loop that improves this skill's own text: repeated cold reads of one text, e
 
 ## Fixing
 - **✗ Your own fixes are a growing source of wrongs.**
-  - **Rule:** fix by subtraction, a hedge if softening is allowed, or a proven bound. Add no new
-    list, count or "only" without a search run at that moment.
+  - **Rule:** fix by subtraction, a hedge if softening is allowed, a proven bound, or a fact read and cited at
+    the pin. Add no new list, count or "only" without a search run at that moment.
   - **Why:** the writer's own fix text was found wrong at least 9 times across rounds and passes, including
     "only A" becoming "only A and B". In one improve-and-harden loop, of 13 changes the one that added a
     sentence of new procedure was the only one two cold checkers refuted; the 12 that removed, narrowed or

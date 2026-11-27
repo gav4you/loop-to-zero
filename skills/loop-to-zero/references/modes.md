@@ -54,7 +54,7 @@ Your judgments get no independent check, so the mode makes up for it with order 
   `queue rerun` slot, after a context reset started from that slot's filled reader brief (`references/round.md`,
   step 1).
 - **Sweeps after reading.** Run sweeps only after your own reading of the round is done, so their hits don't
-  colour items you haven't read yet. A count-only `ltz sweep --count` is allowed mid-read.
+  colour items you haven't read yet.
 - **The fix check.** Recommend to the owner that it run in a fresh session that never saw the fix's reasons.
   With the owner's OK:
   - write a paste-ready prompt (the state folder, the fix-checker brief and the round folder) for the owner

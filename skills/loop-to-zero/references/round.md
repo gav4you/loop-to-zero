@@ -41,8 +41,7 @@ Tool commands are `node <skill>/scripts/ltz.mjs <command>` (see `scripts/README.
   Whoever is reading (the reader agents, or you in
   solo mode) finishes the current window before stopping or turning to other work, so positions end on multiples of
   the window size. In solo mode, run sweeps only after your own reading
-  is done, so their hits don't colour items you haven't read yet. A count-only check (`ltz sweep` hit counts,
-  not the hits) is allowed mid-read. If a sweep did show you unread items, re-read them
+  is done, so their hits don't colour items you haven't read yet. If a sweep did show you unread items, re-read them
   after a context reset, as a re-run of their range (`references/modes.md`), before step 3 (`record` and the
   spot-check draw wait for it), and note them in `retro.md`.
 - **Reading order.** Readers keep list order, so chunks stay contiguous.
@@ -101,7 +100,7 @@ measure counts them as found by none.
   Build its `--list` input file from the changed items (with `changed`, each edited field's `old` text included) plus the named items (without it).
 - Fix its real wrongs as a follow-up commit, as `references/fixing.md` says (a find in old text is swept first), and
   check that follow-up too, until a check returns 0. Its finds in
-  this unit's old text (snapshot text the fix did not change: a named item or an unchanged field) go into
+  this unit's old text (snapshot text the fix did not change: a named item, an unchanged field, or a clause the fix kept word for word) go into
   `confirmed.json` (`"foundBy": "fixcheck"`). An "old text held" find is not one: it overturns the fix's wrong
   (`references/fixing.md`, "After the fix checker"). Re-run `record` after every fix check, a clean one included: it reads the checker's
   result files (the fix-check counts, and any "ruled:" ok). A find in another
@@ -185,7 +184,7 @@ closed status `loop.md` kept for it ("was <status>", carried forward from `close
 `closed-leads-pending` itself), or to `closed-leads-pending` again, with the same "was" status, if a lead logged since
 round F's snapshot is still open. A `pending-owner` verdict round F records that blocks a close, or an open
 defect when `defectsBlock` is set, keeps the unit in `final-check` until the owner answers, as "Blocked only by
-what a re-read can't clear" says. If round F confirmed any wrong in text the closing pass read (other than an "evidence moved" one, or a "missing ruling" one that a ruling amended or a question answered after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
+what a re-read can't clear" says. If round F confirmed any wrong in text the closing pass read (other than an "evidence moved" one, or a "missing ruling" one that a ruling given or amended, or a question answered, after the close made wrong: report those apart; and other than one on a known wrong's, or a `revert` or `stale` lead's, item that the closing count already holds: "Known wrongs", below), the unit is reported with its adjusted closing
 count (`<closing count> (adj <closing count + n>, fixed in the final check, <date>)`), never as a clean zero. A `closed-known-wrongs` unit whose
 known wrongs are all fixed stays `closed-known-wrongs`, with `loop.md` noting "known wrongs fixed in the final check
 (date)". If a known wrong remains unfixed, follow SKILL.md's "Owner overrides" (one challenge, the owner's choice).
@@ -266,8 +265,7 @@ unit's items is edited (`scripts/README.md`, "Re-runs and supplementary reads").
     <new pin>, round F".
 
 There are two exceptions mid-round:
-- **A new class on an open bar.** Sweep every unit for it as soon as step 2 lets sweeps run (a count-only
-  `ltz sweep --count` may run now), and confirm its hits as any sweep's (step 4). It
+- **A new class on an open bar.** Sweep every unit for it as soon as step 2 lets sweeps run, and confirm its hits as any sweep's (step 4). It
   joins `S/classes.md` for the next round's copy, and the report names it; the owner may drop it.
 - **A ruling.** It applies to this round's verdicts at once and goes into the decision log and
   `S/classes.md` (one given in a solo reading or fix-check session, after the hand-back: `references/modes.md`). Readers
