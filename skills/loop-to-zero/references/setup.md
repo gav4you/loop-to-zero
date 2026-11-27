@@ -396,7 +396,7 @@ the skill's maintainer).
    applied.
 
 **Policy and config evidence.** When a statement of what a policy says (a requirement item included) differs
-from the policy text it cites, that is a copying error: fix the statement. An item that cites only its policy, with no config
+from the policy text it cites, that is a copying error: fix the statement. A requirement item that cites only its policy, with no config
 mapped to that policy, is not judged against a config. The rest of this paragraph applies
 only when the item cites both the policy and the config, or a ruling says the config implements the cited
 policy. When the policy differs from the config, that is a `defect` for the owner: a requirement item is left

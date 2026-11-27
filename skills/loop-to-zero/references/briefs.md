@@ -88,7 +88,7 @@ judge its other claims and citations as usual. If the evidence differs from that
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
-defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config; an item that cites only its policy, with no config mapped to that policy, is not judged against a config. A mismatch between
+defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config; a requirement item that cites only its policy, with no config mapped to that policy, is not judged against a config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
 the policy for the config's value, fixes as a wrong and logs the defect beside it).
@@ -169,7 +169,7 @@ judge its other claims and citations as usual. If the evidence differs from that
 start the note with "ruled: <ruling id>" and name the differing file:line.
 An item that states a requirement (`type: requirement`, or "must"/"shall" only when the item has no `type`) that
 the evidence does not meet is marked wrong with a note starting "unmet requirement"; the writer records it as a
-defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config; an item that cites only its policy, with no config mapped to that policy, is not judged against a config. A mismatch between
+defect (or, where the item misquotes its own source, fixes it as a wrong). Where classes.md maps a config to the policy an item cites, also read that config; a requirement item that cites only its policy, with no config mapped to that policy, is not judged against a config. A mismatch between
 a policy and its config (mapped, or both cited by the item) is marked wrong with a note starting "policy vs
 config", which the writer records as a defect (or, for a descriptive item that misstates the config or cites only
 the policy for the config's value, fixes as a wrong and logs the defect beside it).
@@ -247,7 +247,8 @@ Reply with the path, the counts, and one line per wrong.
      ruled wording; `references/fixing.md`).
    - **Ruled wording.** Every ok (a reader's or a fix checker's) whose note starts "ruled:" and names a differing file:line is checked at the
      evidence. If the evidence refutes the approved wording, record it in `pending` (`ruled-wording`, with the
-     question "amend <ruling>?"), unless the ruling's entry records that the owner kept it after that question:
+     question "amend <ruling>?"; a fix checker's ok on another unit's item only gets that question, in
+     `S/owner-questions.md`, since `pending` holds this round's items), unless the ruling's entry records that the owner kept it after that question:
      then list it in `confirmed.json`'s `ruledKept` (`{"id", "ruling"}`), unless the id is also in the wrongs,
      `pending`, `defects`, `withdrawn`, `outsideBar` or `restated` (a `rejected` entry for the other reader's wrong is no bar; otherwise leave it out; its warning is expected).
      When the ruling was not kept and another list would hold the id (the wrongs, `restated`, `withdrawn`,

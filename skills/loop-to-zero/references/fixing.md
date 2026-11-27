@@ -351,7 +351,7 @@ A value mismatch depends on what the cite is:
 - the cite is the requirement's own source (the policy): a copying error, so fix the item;
 - the cite is the implementation (the config): a `defect`.
 
-When an item states a requirement (a control or a policy) and the evidence does not meet it (which configs count: `references/setup.md`, "Policy and config evidence"):
+When an item states a requirement (a control or a policy) and the evidence does not meet it (the exception for configs: `references/setup.md`, "Policy and config evidence"):
 - the mismatch goes to `S/defects.md` for the owner;
 - the item is not softened to match the evidence, unless the owner rules so;
 - a copying error (a wrong file, key, value or name) is fixed like any other wrong;
